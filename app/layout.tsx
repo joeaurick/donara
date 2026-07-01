@@ -15,11 +15,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const siteTitle =
     seo?.site_title ||
-    "Donara Street Food | Donat Premium Fresh Bekasi";
+    "Donara | Donat Lembut, Enak & Jajanan Murah Favorit";
 
   const description =
     seo?.meta_description ||
-    "Donara Street Food menyediakan donat premium fresh setiap hari dengan topping melimpah di Bekasi Barat.";
+    "Nikmati donat lembut, empuk, dan fresh dari Donara. Cocok untuk camilan, ulang tahun, acara kantor, hingga snack box dengan harga terjangkau.";
 
   const keywords =
     seo?.keywords
@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const siteUrl =
     seo?.canonical_url ||
     process.env.NEXT_PUBLIC_SITE_URL ||
-    "http://localhost:3000";
+    "https://donatku.vercel.app";
 
   return {
     title: siteTitle,
@@ -38,8 +38,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
     keywords,
 
-    robots:
-      seo?.robots || "index,follow",
+    robots: seo?.robots || "index,follow",
+
+    verification: {
+      google: seo?.google_verification || undefined,
+    },
 
     alternates: {
       canonical: siteUrl,
@@ -55,15 +58,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
     openGraph: {
       type: "website",
-
       locale: "id_ID",
-
       url: siteUrl,
-
-      siteName: "Donara Street Food",
-
+      siteName: "Donara",
       title: siteTitle,
-
       description,
 
       images: seo?.og_image
@@ -80,9 +78,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
     twitter: {
       card: "summary_large_image",
-
       title: siteTitle,
-
       description,
 
       images: seo?.og_image
@@ -99,29 +95,25 @@ export default function RootLayout({
 }) {
   return (
     <html lang="id">
-
       <body className={jakarta.className}>
+        <BusinessSchema />
 
-  <BusinessSchema />
+        {children}
 
-  {children}
-
-  <Toaster
-    position="top-right"
-    toastOptions={{
-      duration: 2500,
-      style: {
-        borderRadius: "14px",
-        background: "#ffffff",
-        color: "#222",
-        fontWeight: "600",
-        padding: "14px 18px",
-      },
-    }}
-  />
-
-</body>
-
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 2500,
+            style: {
+              borderRadius: "14px",
+              background: "#ffffff",
+              color: "#222",
+              fontWeight: "600",
+              padding: "14px 18px",
+            },
+          }}
+        />
+      </body>
     </html>
   );
 }
