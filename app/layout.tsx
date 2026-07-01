@@ -13,6 +13,8 @@ const jakarta = Plus_Jakarta_Sans({
 export async function generateMetadata(): Promise<Metadata> {
   const seo = await getSeoSettings();
 
+  console.log("SEO SETTINGS =>", seo);
+
   const siteTitle =
     seo?.site_title ||
     "Donara | Donat Lembut, Enak & Jajanan Murah Favorit";
