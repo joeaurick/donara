@@ -47,19 +47,14 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: siteUrl,
     },
-icons: {
-  icon: seo?.favicon
-    ? `${seo.favicon}?v=${Date.now()}`
-    : "/favicon.ico",
 
-  shortcut: seo?.favicon
-    ? `${seo.favicon}?v=${Date.now()}`
-    : "/favicon.ico",
-
-  apple: seo?.favicon
-    ? `${seo.favicon}?v=${Date.now()}`
-    : "/favicon.ico",
-},
+    icons: seo?.favicon
+      ? {
+          icon: seo.favicon,
+          shortcut: seo.favicon,
+          apple: seo.favicon,
+        }
+      : undefined,
 
     openGraph: {
       type: "website",
