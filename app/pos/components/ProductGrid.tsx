@@ -1,179 +1,120 @@
 "use client";
 
-import { useCart } from "../context/CartContext";
+import Image from "next/image";
 
-type Product = {
-  id: number;
+interface Product {
+  id: string;
   name: string;
   price: number;
-  image: string;
-  rating: number;
-  description: string;
-
+  image_url?: string;
+  category: string;
   is_package: boolean;
-  package_size: number;
+  package_size?: number;
+}
 
-  category: string | null;
-  package_type: string | null;
-};
-
-type Props = {
+interface ProductGridProps {
   products: Product[];
-  todayStock?: any; // Tambahkan properti data stok harian dari parent dashboard
-  onPackageClick?: (product: Product) => void;
-};
+  todayStock: any;
+  onPackageClick: (product: Product) => void;
+  cart?: any[]; // Menambahkan cart jika dilewatkan lewat props
+}
 
 export default function ProductGrid({
   products,
   todayStock,
   onPackageClick,
-}: Props) {
-  const { addToCart, cart } = useCart(); // Ambil data cart untuk menghitung stok real-time saat transaksi berjalan
-
-  const packages = products.filter((x) => x.is_package);
-  const donuts = products.filter((x) => !x.is_package);
-
-  // Fungsi pembantu untuk menghitung sisa stok dinamis di UI
-  const getProductStockInfo = (productId: number) => {
-    if (!todayStock || !todayStock.items) return { initial: null, current: null };
-    
-    // Cari stok awal dari data daily stock Supabase berdasarkan ID produk
-    const stockItem = todayStock.items.find((item: any) => item.product_id === productId);
-    if (!stockItem) return { initial: 0, current: 0 };
-
-    const initialStock = stockItem.stock || 0;
-
-    // Hitung berapa jumlah item ini yang sudah masuk ke keranjang belanja kasir saat ini
-    const cartQty = cart?.find((item: any) => item.id === productId)?.quantity || 0;
-    
-    // Sisa stok riil di layar = Stok awal hari ini - Jumlah di keranjang kasir
-    const currentStock = Math.max(0, initialStock - cartQty);
-
-    return { initial: initialStock, current: currentStock };
-  };
+  cart = [], // Default array kosong jika tidak dikirim dari parent
+}: ProductGridProps) {
+  
+  // Mengelompokkan produk berdasarkan kategori
+  const categories = products.reduce((acc: { [key: string]: Product[] }, product) => {
+    const cat = product.category || "Lainnya";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(product);
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-8">
-
-      {/* ===================== */}
-      {/* PAKET */}
-      {/* ===================== */}
-      {packages.length > 0 && (
-        <section>
-          <h2 className="mb-4 text-xl font-black text-pink-600">
-            📦 Paket
+      {Object.entries(categories).map(([categoryName, items]) => (
+        <div key={categoryName} className="space-y-4">
+          <h2 className="text-lg font-black uppercase tracking-wide text-pink-600 flex items-center gap-2">
+            🍩 {categoryName}
           </h2>
+          
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {items.map((product) => {
+              const productId = product.id;
+              const initialStock = todayStock?.remaining_stock || 0;
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {packages.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (onPackageClick) {
-                    onPackageClick(item);
-                  }
-                }}
-                className="rounded-2xl border-2 border-pink-300 bg-pink-50 p-6 text-left transition hover:border-pink-600 hover:shadow-lg"
-              >
-                <div className="text-4xl">📦</div>
-                <h3 className="mt-4 text-lg font-black">{item.name}</h3>
-                <p className="mt-2 text-sm text-gray-500">
-                  {item.package_size} Donat Bebas Pilih
-                </p>
-                <div className="mt-5 flex items-end justify-between">
-                  <span className="text-xl font-black text-pink-600">
-                    Rp {item.price.toLocaleString("id-ID")}
-                  </span>
-                  <span className="rounded-full bg-pink-600 px-3 py-1 text-xs font-bold text-white">
-                    {item.package_size} PCS
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
+              {/* 
+                PERBAIKAN TYPE ERROR BARIS 47:
+                Memaksa pengecekan menggunakan properti alternatif .qty atau .quantity dengan casting 'as any'
+              */}
+              const cartQty = (cart?.find((item: any) => item.id === productId) as any)?.qty || 
+                              (cart?.find((item: any) => item.id === productId) as any)?.quantity || 0;
 
-      {/* ===================== */}
-      {/* DONAT */}
-      {/* ===================== */}
-      <section>
-        <h2 className="mb-4 text-xl font-black text-pink-600">
-          🍩 Donat
-        </h2>
+              const currentStock = Math.max(0, initialStock - cartQty);
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-          {donuts.map((product) => {
-            const { current: remainingStock } = getProductStockInfo(product.id);
-            const isOutOfStock = remainingStock !== null && remainingStock <= 0;
-
-            return (
-              <button
-                key={product.id}
-                disabled={isOutOfStock}
-                onClick={() =>
-                  addToCart({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.image,
-                    isPackage: false,
-                  })
-                }
-                className={`group relative overflow-hidden rounded-2xl border bg-white text-left shadow-sm transition-all duration-200 
-                  ${isOutOfStock 
-                    ? "opacity-50 cursor-not-allowed bg-gray-50 border-gray-200" 
-                    : "hover:-translate-y-1 hover:shadow-xl active:scale-95 border-gray-100"
+              return (
+                <div
+                  key={product.id}
+                  onClick={() => product.is_package && onPackageClick(product)}
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white p-3 shadow-sm transition-all hover:shadow-md ${
+                    product.is_package ? "cursor-pointer border-pink-100 hover:border-pink-300" : "border-gray-100"
                   }`}
-              >
-                {/* INDIKATOR BADGE STOK */}
-                {remainingStock !== null && (
-                  <div className={`absolute left-2 top-2 z-10 rounded-lg px-2.5 py-1 text-xs font-bold shadow-sm backdrop-blur-sm
-                    ${isOutOfStock 
-                      ? "bg-red-600 text-white" 
-                      : remainingStock < 5 
-                        ? "bg-amber-500/90 text-white" 
-                        : "bg-black/70 text-white"
-                    }`}
-                  >
-                    {isOutOfStock ? "❌ Habis" : `Stok: ${remainingStock}`}
+                >
+                  {/* Gambar Produk */}
+                  <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
+                    {product.image_url ? (
+                      <Image
+                        src={product.image_url}
+                        alt={product.name}
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
+                        No Image
+                      </div>
+                    )}
+
+                    {/* Badge Paket */}
+                    {product.is_package && (
+                      <span className="absolute left-2 top-2 rounded-lg bg-pink-600 px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-sm">
+                        Isi {product.package_size} Pcs
+                      </span>
+                    )}
                   </div>
-                )}
 
-                <div className="overflow-hidden bg-gray-100">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className={`h-36 w-full object-cover transition duration-300 ${!isOutOfStock && "group-hover:scale-105"}`}
-                  />
-                </div>
-
-                <div className="p-4">
-                  <h2 className="line-clamp-2 min-h-[48px] text-sm font-bold text-gray-800">
-                    {product.name}
-                  </h2>
-
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-lg font-black text-pink-600">
-                      Rp {product.price.toLocaleString("id-ID")}
-                    </span>
-
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-full text-xl font-bold text-white transition
-                      ${isOutOfStock 
-                        ? "bg-gray-300" 
-                        : "bg-pink-600 group-hover:rotate-90 active:bg-pink-700"
-                      }`}
-                    >
-                      {isOutOfStock ? "✓" : "+"}
+                  {/* Info Produk */}
+                  <div className="mt-3 flex flex-1 flex-col justify-between space-y-1">
+                    <div>
+                      <h3 className="text-sm font-bold text-gray-800 line-clamp-2 leading-tight">
+                        {product.name}
+                      </h3>
+                    </div>
+                    
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-sm font-black text-pink-600">
+                        Rp {product.price.toLocaleString("id-ID")}
+                      </span>
+                      {!product.is_package && (
+                        <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${
+                          currentStock > 0 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
+                        }`}>
+                          Sisa: {currentStock}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-              </button>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </section>
-
+      ))}
     </div>
   );
 }
