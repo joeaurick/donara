@@ -55,6 +55,10 @@ export default function PaymentModal({
 
     console.log("1");
 
+  if (closed) {
+  alert("Toko sudah tutup. Transaksi dibatalkan.");
+  return;
+}
     const invoice = await getNextInvoice();
 
     console.log("2");
