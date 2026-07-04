@@ -35,7 +35,7 @@ export default function PosDashboardPage() {
   const [isAdmin, setIsAdmin] = useState(true); 
 
   const { openCart } = useMobileCart();
-  const { cart } = useCart();
+  const { cart, addToCart } = useCart(); // Menambahkan fungsi addToCart untuk aksi klik produk non-paket
   const packagePicker = usePackagePicker();
 
   useEffect(() => {
@@ -250,10 +250,13 @@ export default function PosDashboardPage() {
             </div>
 
             <div className="flex-1 overflow-visible xl:overflow-y-auto p-4 content-start">
+              {/* PERBAIKAN: Mengirimkan props cart dan handler addToCart ke ProductGrid */}
               <ProductGrid
                 products={filtered}
                 todayStock={todayStock} 
                 onPackageClick={packagePicker.openPicker}
+                cart={cart}
+                onProductClick={(product) => addToCart(product)}
               />
             </div>
           </section>
@@ -289,12 +292,11 @@ export default function PosDashboardPage() {
                     </div>
                   </div>
                 </form>
-                {/* KOTAK KUNING DATA RINGKASAN SUDAH DIHAPUS DARI SINI */}
               </div>
             )}
 
-            {/* Area Keranjang Belanja: min-h dicopot & overflow diatur agar mengambil semua sisa tinggi layar */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Area Keranjang Belanja */}
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
               <CartPanel />
             </div>
           </aside>

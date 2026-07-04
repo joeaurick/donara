@@ -10,13 +10,14 @@ interface Product {
   category: string;
   is_package: boolean;
   package_size?: number;
-  [key: string]: any; // Mengizinkan properti tambahan seperti image atau package_type
+  [key: string]: any;
 }
 
 interface ProductGridProps {
   products: Product[];
   todayStock: any;
-  onPackageClick: (product: any) => void; // Diubah ke any agar kompatibel dengan hook picker
+  onPackageClick: (product: any) => void;
+  onProductClick: (product: any) => void; // Menambahkan handler untuk produk satuan
   cart?: any[];
 }
 
@@ -24,10 +25,10 @@ export default function ProductGrid({
   products,
   todayStock,
   onPackageClick,
+  onProductClick,
   cart = [],
 }: ProductGridProps) {
   
-  // Mengelompokkan produk berdasarkan kategori
   const categories = products.reduce((acc: { [key: string]: Product[] }, product) => {
     const cat = product.category || "Lainnya";
     if (!acc[cat]) acc[cat] = [];
@@ -53,26 +54,38 @@ export default function ProductGrid({
 
               const currentStock = Math.max(0, initialStock - cartQty);
 
+              // PERBAIKAN AKSI KLIK: Jika paket buka modal picker, jika biasa langsung masukkan keranjang
+              const handleItemClick = () => {
+                if (product.is_package) {
+                  onPackageClick(product);
+                } else {
+                  if (currentStock > 0) {
+                    onProductClick(product);
+                  } else {
+                    alert("Stok produk ini telah habis!");
+                  }
+                }
+              };
+
               return (
                 <div
                   key={product.id}
-                  onClick={() => product.is_package && onPackageClick(product)}
-                  className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white p-3 shadow-sm transition-all hover:shadow-md ${
-                    product.is_package ? "cursor-pointer border-pink-100 hover:border-pink-300" : "border-gray-100"
+                  onClick={handleItemClick}
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white p-3 shadow-sm transition-all hover:shadow-md cursor-pointer ${
+                    product.is_package ? "border-pink-100 hover:border-pink-300" : "border-gray-100 hover:border-pink-200"
                   }`}
                 >
                   {/* Gambar Produk */}
                   <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
+                    {/* PERBAIKAN GAMBAR: Menggunakan standar img element jika next/image mengalami problem domain hosting */}
                     {product.image_url ? (
-                      <Image
+                      <img
                         src={product.image_url}
                         alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, 33vw"
-                        className="object-cover transition-transform group-hover:scale-105"
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400">
+                      <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400 text-xs">
                         No Image
                       </div>
                     )}
@@ -98,7 +111,7 @@ export default function ProductGrid({
                         Rp {product.price.toLocaleString("id-ID")}
                       </span>
                       {!product.is_package && (
-                        <span className={`text-[11px] font-medium px-1.5 py-0.5 rounded ${
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
                           currentStock > 0 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
                         }`}>
                           Sisa: {currentStock}
