@@ -10,20 +10,21 @@ interface Product {
   category: string;
   is_package: boolean;
   package_size?: number;
+  [key: string]: any; // Mengizinkan properti tambahan seperti image atau package_type
 }
 
 interface ProductGridProps {
   products: Product[];
   todayStock: any;
-  onPackageClick: (product: Product) => void;
-  cart?: any[]; // Menambahkan cart jika dilewatkan lewat props
+  onPackageClick: (product: any) => void; // Diubah ke any agar kompatibel dengan hook picker
+  cart?: any[];
 }
 
 export default function ProductGrid({
   products,
   todayStock,
   onPackageClick,
-  cart = [], // Default array kosong jika tidak dikirim dari parent
+  cart = [],
 }: ProductGridProps) {
   
   // Mengelompokkan produk berdasarkan kategori
@@ -47,10 +48,6 @@ export default function ProductGrid({
               const productId = product.id;
               const initialStock = todayStock?.remaining_stock || 0;
 
-              {/* 
-                PERBAIKAN TYPE ERROR BARIS 47:
-                Memaksa pengecekan menggunakan properti alternatif .qty atau .quantity dengan casting 'as any'
-              */}
               const cartQty = (cart?.find((item: any) => item.id === productId) as any)?.qty || 
                               (cart?.find((item: any) => item.id === productId) as any)?.quantity || 0;
 
