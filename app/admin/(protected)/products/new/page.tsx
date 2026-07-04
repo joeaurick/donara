@@ -16,6 +16,7 @@ export default function NewProductPage() {
     image: "",
     rating: 5,
     description: "",
+    category: "normal",
   });
 
   async function saveProduct() {
@@ -39,6 +40,7 @@ export default function NewProductPage() {
         image: form.image,
         rating: form.rating,
         description: form.description,
+        category: form.category,
       });
 
     setLoading(false);
@@ -115,6 +117,25 @@ export default function NewProductPage() {
             <option value={2}>⭐⭐</option>
             <option value={1}>⭐</option>
           </select>
+
+          <select
+  className="w-full rounded-xl border p-4"
+  value={form.category}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      category: e.target.value,
+    })
+  }
+>
+  <option value="normal">
+    Normal
+  </option>
+
+  <option value="hemat">
+    Hemat
+  </option>
+</select>
 
           <textarea
             className="h-40 w-full rounded-xl border p-4"

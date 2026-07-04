@@ -1,10 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request,
-  });
+  let response = NextResponse.next();
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,47 +12,59 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
+
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-
-          response = NextResponse.next({
-            request,
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            response.cookies.set(name, value, options);
           });
-
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
         },
       },
     }
   );
 
+  await supabase.auth.getUser();
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  console.log(
-    "[Middleware]",
-    request.nextUrl.pathname,
-    "Session:",
-    session?.user?.email ?? null
-  );
+  const pathname = request.nextUrl.pathname;
 
-  if (
-    request.nextUrl.pathname.startsWith("/admin") &&
-    !request.nextUrl.pathname.startsWith("/admin/login") &&
-    !session
-  ) {
-    console.log("[Middleware] Redirect ke /admin/login");
+  // =========================
+  // POS
+  // =========================
 
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+  if (pathname.startsWith("/pos")) {
+    if (!session && pathname !== "/pos/login") {
+      return NextResponse.redirect(new URL("/pos/login", request.url));
+    }
+
+    if (session && pathname === "/pos/login") {
+      return NextResponse.redirect(new URL("/pos/dashboard", request.url));
+    }
+  }
+
+  // =========================
+  // ADMIN WEBSITE
+  // =========================
+
+  if (pathname.startsWith("/admin")) {
+    if (!session && pathname !== "/admin/login") {
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+
+    if (session && pathname === "/admin/login") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/pos/:path*",
+    "/admin/:path*",
+  ],
 };

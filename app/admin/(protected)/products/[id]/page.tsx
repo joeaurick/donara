@@ -18,6 +18,7 @@ export default function EditProductPage() {
     image: "",
     rating: 5,
     description: "",
+    category: "normal",
   });
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function EditProductPage() {
           image: data.image,
           rating: data.rating,
           description: data.description,
+          category: data.category ?? "normal",
         });
       }
     } catch (err) {
@@ -78,6 +80,7 @@ export default function EditProductPage() {
           image: form.image.trim(),
           rating: form.rating,
           description: form.description.trim(),
+          category: form.category,
         })
         .eq("id", Number(params.id));
 
@@ -167,6 +170,25 @@ export default function EditProductPage() {
             <option value={2}>⭐⭐</option>
             <option value={1}>⭐</option>
           </select>
+
+          <select
+  className="w-full rounded-xl border p-4"
+  value={form.category}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      category: e.target.value,
+    })
+  }
+>
+  <option value="normal">
+    Normal
+  </option>
+
+  <option value="hemat">
+    Hemat
+  </option>
+</select>
 
           <textarea
             className="h-40 w-full rounded-xl border p-4"
