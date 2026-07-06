@@ -10,14 +10,21 @@ export default async function PosHistoryPage({ searchParams }: Props) {
   const supabase = await createClient();
   const params = await searchParams;
 
-  const currentDate = new Date();
-  const currentMonth = params.month || String(currentDate.getMonth() + 1).padStart(2, "0");
-  const currentYear = params.year || String(currentDate.getFullYear());
+  // Ganti bagian penentuan tanggal menjadi seperti ini:
+const currentDate = new Date();
+const currentMonth = params.month || String(currentDate.getMonth() + 1).padStart(2, "0");
+const currentYear = params.year || String(currentDate.getFullYear());
 
-  const startDate = `${currentYear}-${currentMonth}-01T00:00:00.000Z`;
-  const nextMonth = Number(currentMonth) === 12 ? "01" : String(Number(currentMonth) + 1).padStart(2, "0");
-  const nextYear = Number(currentMonth) === 12 ? String(Number(currentYear) + 1) : currentYear;
-  const endDate = `${nextYear}-${nextMonth}-01T00:00:00.000Z`;
+// Tambahkan offset 7 jam (WIB) ke dalam string tanggal
+// Menggunakan format ISO yang disesuaikan dengan zona waktu lokal
+const start = new Date(`${currentYear}-${currentMonth}-01T00:00:00`);
+const startDate = new Date(start.getTime() - (7 * 60 * 60 * 1000)).toISOString();
+
+// Hitung akhir bulan
+const nextMonth = Number(currentMonth) === 12 ? "01" : String(Number(currentMonth) + 1).padStart(2, "0");
+const nextYear = Number(currentMonth) === 12 ? String(Number(currentYear) + 1) : currentYear;
+const end = new Date(`${nextYear}-${nextMonth}-01T00:00:00`);
+const endDate = new Date(end.getTime() - (7 * 60 * 60 * 1000)).toISOString();
 
   const { data: transactions, error } = await supabase
     .from("transactions")
