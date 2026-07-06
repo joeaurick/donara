@@ -40,7 +40,8 @@ export default function MobileCartSheet() {
 
         {/* BUNGKUSAN CARTPANEL */}
         <div className="flex-1 min-h-0 w-full overflow-hidden pb-safe">
-          <CartPanel onPaymentSuccess={closeCart} />
+          {/* Properti onPaymentSuccess dihapus agar cetak struk tidak langsung hancur/hilang */}
+          <CartPanel />
         </div>
 
       </div>

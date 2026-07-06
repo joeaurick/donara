@@ -1,22 +1,21 @@
 import { supabase } from "./client";
 
-export async function getTodayReport(
-  period: "today" | "week" | "month" = "today"
-) {
+export async function getTodayReport(period: "today" | "week" | "month" = "today") {
   const { start, end } = getDateRange(period);
 
+  // Pastikan .from("transactions") sesuai dengan nama tabel di gambar
   const { data, error } = await supabase
-    .from("transactions")
-    .select("*")
+    .from("transactions") 
+    .select("total, created_at")
     .gte("created_at", start)
     .lte("created_at", end);
 
-  if (error) throw error;
+  if (error) {
+    console.error("Error fetching report:", error);
+    return { omzet: 0, transaksi: 0 };
+  }
 
-  const omzet = data.reduce(
-    (sum, trx) => sum + trx.total,
-    0
-  );
+  const omzet = data.reduce((sum, trx) => sum + (trx.total || 0), 0);
 
   return {
     omzet,
