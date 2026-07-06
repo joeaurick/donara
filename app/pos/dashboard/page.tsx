@@ -32,10 +32,13 @@ export default function PosDashboardPage() {
   const [inputStock, setInputStock] = useState<string>("");
   const [isUpdatingStock, setIsUpdatingStock] = useState(false);
 
+  // State untuk melipat ringkasan dashboard di versi mobile
+  const [showMobileMetrics, setShowMobileMetrics] = useState(false);
+  const [showAdminPanelMobile, setShowAdminPanelMobile] = useState(false);
   const [isAdmin, setIsAdmin] = useState(true); 
 
   const { openCart } = useMobileCart();
-  const { cart, addToCart } = useCart(); // Menambahkan fungsi addToCart untuk aksi klik produk non-paket
+  const { cart, addToCart } = useCart();
   const packagePicker = usePackagePicker();
 
   useEffect(() => {
@@ -100,12 +103,13 @@ export default function PosDashboardPage() {
 
       } else {
         const todayDate = new Date().toLocaleDateString("sv-SE");
+        
         const { data, error } = await supabase
           .from("daily_stock")
           .insert([{ 
             opening_stock: parsedStock, 
             remaining_stock: parsedStock,
-            date: todayDate,
+            stock_date: todayDate, 
             is_closed: false 
           }])
           .select()
@@ -195,22 +199,17 @@ export default function PosDashboardPage() {
 
   return (
     <>
-      <main className="flex h-auto xl:h-dvh w-full flex-col bg-gray-100 xl:overflow-hidden select-none pb-28 xl:pb-0">
+      <main className="flex h-dvh w-full flex-col bg-gray-50 overflow-hidden select-none pb-[80px] xl:pb-0">
 
         {/* BANNER TOKO TUTUP */}
         {cartDisabled && (
           isAdmin ? (
-            <div className="bg-amber-600 px-4 py-2 text-center text-sm font-medium text-white shadow-md z-[110]">
-              ⚠️ <span className="font-bold">Mode Admin:</span> Toko saat ini berstatus <span className="font-black">TUTUP</span>. Gunakan panel kanan untuk membuka atau mengatur stok harian Anda.
+            <div className="bg-amber-600 px-4 py-2 text-center text-xs font-medium text-white shadow-md z-[110] shrink-0">
+              ⚠️ Mode Admin: Status Toko <span className="font-black">TUTUP</span>.
             </div>
           ) : (
             <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm">
               <div className="rounded-2xl bg-white p-8 max-w-sm w-full mx-4 text-center shadow-2xl border border-red-100">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100 text-red-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-8 h-8">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
-                  </svg>
-                </div>
                 <h1 className="text-2xl font-black text-red-600 tracking-wide">TOKO TUTUP</h1>
                 <p className="mt-2 text-sm text-gray-500">Operasional hari ini telah berakhir.</p>
               </div>
@@ -218,39 +217,102 @@ export default function PosDashboardPage() {
           )
         )}
 
-        {/* HEADER */}
-        <DashboardHeader
-          todayStock={todayStock}
-          todayClosed={todayClosed}
-          closing={closing}
-          handleCloseDay={handleCloseDay}
-          handleOpenDay={handleOpenDay}
-        />
+        {/* HEADER RESPONSIVE TOGGLE */}
+        {/* Di Desktop tampil penuh seperti biasa. Di Mobile, dibungkus kontainer lipat agar hemat tempat */}
+        <div className="shrink-0 bg-white border-b border-gray-200">
+          <div className="xl:hidden px-4 py-2.5 flex justify-between items-center bg-white">
+            <div className="flex flex-col">
+              <span className="text-sm font-black text-pink-600 tracking-tight">DONARA POS</span>
+              <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                ● Toko Buka ({todayStock?.remaining_stock ?? 0} Sisa)
+              </span>
+            </div>
+            <button
+              onClick={() => setShowMobileMetrics(!showMobileMetrics)}
+              className="px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-xs font-black text-gray-700 transition-colors"
+            >
+              {showMobileMetrics ? "✕ Tutup Menu" : "📊 Menu Admin"}
+            </button>
+          </div>
 
-        {/* CONTENT AREA */}
-        <div className="flex flex-1 flex-col xl:flex-row overflow-visible xl:overflow-hidden min-h-0">
+          <div className={`${showMobileMetrics ? "block" : "hidden"} xl:block`}>
+            <DashboardHeader
+              todayStock={todayStock}
+              todayClosed={todayClosed}
+              closing={closing}
+              handleCloseDay={handleCloseDay}
+              handleOpenDay={handleOpenDay}
+            />
+          </div>
+        </div>
 
-          {/* Sisi Produk */}
-          <section className={`flex flex-col min-w-0 flex-1 ${(cartDisabled && !isAdmin) ? "pointer-events-none opacity-50" : ""}`}>
-            <div className="border-b bg-white p-4">
-              <div className="flex items-center gap-4">
+        {/* GRID UTAMA */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 flex-1 overflow-hidden min-h-0 w-full">
+
+          <section className={`col-span-1 xl:col-span-3 flex flex-col min-h-0 bg-gray-50 ${(cartDisabled && !isAdmin) ? "pointer-events-none opacity-50" : ""}`}>
+            
+            {/* PANEL MANAJEMEN STOK (LIPAT TOTAL DI MOBILE) */}
+            {isAdmin && (
+              <div className="bg-white border-b px-4 py-2 xl:p-4 xl:mx-4 xl:mt-4 xl:rounded-xl xl:shadow-sm shrink-0">
+                <div className="flex justify-between items-center xl:hidden">
+                  <button 
+                    type="button"
+                    onClick={() => setShowAdminPanelMobile(!showAdminPanelMobile)}
+                    className="text-xs font-bold text-gray-600 flex items-center justify-between w-full"
+                  >
+                    <span className="flex items-center gap-1">⚙️ {showAdminPanelMobile ? "Sembunyikan" : "Atur"} Kapasitas Adonan Awal</span>
+                    <span className="text-pink-600 font-black">{showAdminPanelMobile ? "▲" : "▼"}</span>
+                  </button>
+                </div>
+
+                <div className={`${showAdminPanelMobile ? "flex" : "hidden"} xl:flex flex-col md:flex-row md:items-center justify-between gap-3 mt-2 xl:mt-0`}>
+                  <div className="hidden xl:flex items-center gap-2">
+                    <span className="text-lg">⚙️</span>
+                    <div>
+                      <h3 className="text-xs font-black uppercase tracking-wider text-gray-700">Panel Manajemen Stok</h3>
+                      <p className="text-[11px] text-gray-400">Atur kapasitas ketersediaan adonan donat hari ini</p>
+                    </div>
+                  </div>
+                  <form onSubmit={handleUpdateStockFromPanel} className="flex gap-2 items-center w-full xl:w-auto">
+                    <input
+                      type="number"
+                      value={inputStock}
+                      onChange={(e) => setInputStock(e.target.value)}
+                      placeholder="Stok"
+                      className="flex-1 xl:w-32 rounded-lg border bg-gray-50 px-3 py-2 text-xs font-bold outline-none focus:border-pink-500 focus:bg-white"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isUpdatingStock}
+                      className="rounded-lg bg-gray-900 px-4 py-2 text-xs font-bold text-white hover:bg-gray-800 transition-colors shrink-0"
+                    >
+                      {isUpdatingStock ? "Simpan..." : "Simpan"}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* BAR PENCARIAN COMPACT */}
+            <div className="p-3 xl:p-4 shrink-0 bg-white xl:bg-transparent border-b xl:border-b-0">
+              <div className="flex items-center gap-2 bg-gray-100 xl:bg-white p-1 rounded-xl border border-transparent xl:border-gray-100 shadow-none xl:shadow-sm">
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Cari produk..."
-                  className="flex-1 rounded-2xl border p-4 outline-none focus:border-pink-500 text-base"
+                  placeholder="Cari produk donat..."
+                  className="flex-1 bg-transparent rounded-lg p-2 outline-none text-xs xl:text-sm"
                 />
                 <button
                   onClick={loadProducts}
-                  className="rounded-xl border px-5 py-4 font-bold hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                  className="rounded-lg bg-white xl:bg-gray-50 border px-3 py-2 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors shadow-sm xl:shadow-none"
                 >
                   Refresh
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-visible xl:overflow-y-auto p-4 content-start">
-              {/* PERBAIKAN: Mengirimkan props cart dan handler addToCart ke ProductGrid */}
+            {/* AREA UTAMA DAFTAR DONAT (Mendominasi Sisa Layar) */}
+            <div className="flex-1 overflow-y-auto p-3 xl:px-4 pb-6">
               <ProductGrid
                 products={filtered}
                 todayStock={todayStock} 
@@ -262,53 +324,19 @@ export default function PosDashboardPage() {
           </section>
 
           {/* DESKTOP SIDEBAR */}
-          <aside className="hidden h-full w-[420px] shrink-0 border-l bg-white xl:flex flex-col overflow-hidden">
-            {isAdmin && (
-              <div className="border-b bg-gray-50 p-4">
-                <h3 className="text-xs font-black uppercase tracking-wider text-gray-700 mb-2">
-                  ⚙️ Panel Manajemen Stok (Admin)
-                </h3>
-                
-                <form onSubmit={handleUpdateStockFromPanel}>
-                  <div>
-                    <label className="block text-[11px] font-medium text-gray-500 mb-1">
-                      {todayStock ? "Edit Stok Awal Hari Ini" : "Inisialisasi Stok Awal (Buka Toko)"}
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        value={inputStock}
-                        onChange={(e) => setInputStock(e.target.value)}
-                        placeholder="Contoh: 150"
-                        className="flex-1 rounded-xl border bg-white px-3 py-1.5 text-xs font-bold outline-none focus:border-pink-500"
-                      />
-                      <button
-                        type="submit"
-                        disabled={isUpdatingStock}
-                        className="rounded-xl bg-pink-600 px-4 py-1.5 text-xs font-bold text-white hover:bg-pink-700 disabled:bg-gray-300 transition-colors"
-                      >
-                        {isUpdatingStock ? "Proses..." : "Simpan"}
-                      </button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            )}
-
-            {/* Area Keranjang Belanja */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              <CartPanel />
-            </div>
+          <aside className="hidden xl:flex col-span-1 h-full bg-white border-l border-gray-200 flex-col overflow-hidden">
+            <CartPanel onPaymentSuccess={checkTodayStock} />
           </aside>
 
         </div>
 
-        {/* MOBILE BOTTOM CART PANEL */}
-        <div className="fixed bottom-0 left-0 right-0 border-t bg-white p-4 pb-safe xl:hidden shadow-[0_-6px_20px_rgba(0,0,0,0.1)] z-[90]">
+        {/* BOTTOM NAV BAR UNTUK MOBILE */}
+        {/* Menaikkan z-index ke 250 agar berada di atas indikator issue/error bawaan localhost */}
+        <div className="fixed bottom-0 left-0 right-0 border-t bg-white p-3 pb-safe xl:hidden shadow-[0_-8px_30px_rgba(0,0,0,0.06)] z-[250] shrink-0">
           <button
             onClick={openCart}
             disabled={cartDisabled && !isAdmin} 
-            className="w-full rounded-2xl bg-pink-600 p-4 text-center font-bold text-white shadow-lg active:scale-[0.98] transition-transform disabled:bg-gray-300 disabled:shadow-none"
+            className="w-full rounded-xl bg-pink-600 py-3.5 text-center font-black text-xs tracking-wider uppercase text-white shadow-lg shadow-pink-600/20 active:scale-[0.98] transition-all disabled:bg-gray-200 disabled:text-gray-400"
           >
             Lihat Keranjang ({cart?.length ?? 0} Item)
           </button>

@@ -7,6 +7,7 @@ interface Product {
   name: string;
   price: number;
   image_url?: string;
+  image?: string; // Menambahkan alternatif field gambar dari database Anda
   category: string;
   is_package: boolean;
   package_size?: number;
@@ -17,7 +18,7 @@ interface ProductGridProps {
   products: Product[];
   todayStock: any;
   onPackageClick: (product: any) => void;
-  onProductClick: (product: any) => void; // Menambahkan handler untuk produk satuan
+  onProductClick: (product: any) => void;
   cart?: any[];
 }
 
@@ -46,26 +47,17 @@ export default function ProductGrid({
           
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {items.map((product) => {
-              const productId = product.id;
-              const initialStock = todayStock?.remaining_stock || 0;
-
-              const cartQty = (cart?.find((item: any) => item.id === productId) as any)?.qty || 
-                              (cart?.find((item: any) => item.id === productId) as any)?.quantity || 0;
-
-              const currentStock = Math.max(0, initialStock - cartQty);
-
-              // PERBAIKAN AKSI KLIK: Jika paket buka modal picker, jika biasa langsung masukkan keranjang
+              
               const handleItemClick = () => {
                 if (product.is_package) {
                   onPackageClick(product);
                 } else {
-                  if (currentStock > 0) {
-                    onProductClick(product);
-                  } else {
-                    alert("Stok produk ini telah habis!");
-                  }
+                  onProductClick(product);
                 }
               };
+
+              // Menentukan path gambar yang valid dari properti database Anda
+              const finalImageUrl = product.image_url || product.image;
 
               return (
                 <div
@@ -77,12 +69,14 @@ export default function ProductGrid({
                 >
                   {/* Gambar Produk */}
                   <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
-                    {/* PERBAIKAN GAMBAR: Menggunakan standar img element jika next/image mengalami problem domain hosting */}
-                    {product.image_url ? (
-                      <img
-                        src={product.image_url}
+                    {finalImageUrl ? (
+                      <Image
+                        src={finalImageUrl}
                         alt={product.name}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 768px) 50vw, 33vw"
+                        className="object-cover transition-transform group-hover:scale-105"
+                        priority={true}
                       />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-gray-100 text-gray-400 text-xs">
@@ -110,13 +104,6 @@ export default function ProductGrid({
                       <span className="text-sm font-black text-pink-600">
                         Rp {product.price.toLocaleString("id-ID")}
                       </span>
-                      {!product.is_package && (
-                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${
-                          currentStock > 0 ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"
-                        }`}>
-                          Sisa: {currentStock}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
