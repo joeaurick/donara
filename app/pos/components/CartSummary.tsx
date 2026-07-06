@@ -304,6 +304,24 @@ console.log("Transaksi berhasil disimpan.");
                     </div>
                   </div>
                 )}
+                {paymentMethod === "QRIS" && (
+  <div className="mt-4 rounded-xl border bg-white p-4 text-center">
+    <img
+      src="/images/qris-donara.png"
+      alt="QRIS"
+      className="mx-auto w-64"
+    />
+
+    <p className="mt-3 text-sm font-bold text-gray-700">
+      Scan QRIS menggunakan aplikasi pembayaran Anda
+    </p>
+
+    <p className="text-xs text-gray-500">
+      Setelah pembayaran berhasil,
+      tekan tombol Konfirmasi Sukses.
+    </p>
+  </div>
+)}
                 <div className="mt-4 bg-gray-50 rounded-xl p-4 flex flex-col gap-2 border border-gray-100">
                   <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-wider"><span>Total Item Belanja</span><span className="text-gray-700 font-black">{totalItemCount} Qty</span></div>
                   <div className="flex justify-between items-baseline pt-1 border-t border-gray-200/60"><span className="font-extrabold text-xs text-gray-500 uppercase tracking-wider">Uang Kembalian</span><span className="text-xl font-black text-emerald-600 tracking-tight">Rp {paymentMethod === "CASH" ? kembalian.toLocaleString("id-ID") : "0"}</span></div>
