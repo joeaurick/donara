@@ -1,25 +1,58 @@
 import { supabase } from "./client";
 
-export async function getTodayReport(period: "today" | "week" | "month" = "today") {
+const OFFSET = 7 * 60 * 60 * 1000;
+
+function getDateRange(period: "today" | "week" | "month") {
+  const now = new Date();
+
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+
+  const start = new Date(now);
+
+  switch (period) {
+    case "today":
+      start.setHours(0, 0, 0, 0);
+      break;
+
+    case "week":
+      start.setDate(start.getDate() - 6);
+      start.setHours(0, 0, 0, 0);
+      break;
+
+    case "month":
+      start.setDate(start.getDate() - 29);
+      start.setHours(0, 0, 0, 0);
+      break;
+  }
+
+  return {
+    start: new Date(start.getTime() - OFFSET).toISOString(),
+    end: new Date(end.getTime() - OFFSET).toISOString(),
+  };
+}
+
+export async function getTodayReport(
+  period: "today" | "week" | "month" = "today"
+) {
   const { start, end } = getDateRange(period);
 
-  // Pastikan .from("transactions") sesuai dengan nama tabel di gambar
   const { data, error } = await supabase
-    .from("transactions") 
-    .select("total, created_at")
+    .from("transactions")
+    .select("id,total")
     .gte("created_at", start)
     .lte("created_at", end);
 
-  if (error) {
-    console.error("Error fetching report:", error);
-    return { omzet: 0, transaksi: 0 };
-  }
-
-  const omzet = data.reduce((sum, trx) => sum + (trx.total || 0), 0);
+  if (error) throw error;
 
   return {
-    omzet,
-    transaksi: data.length,
+    omzet:
+      data?.reduce(
+        (sum, item) => sum + Number(item.total),
+        0
+      ) ?? 0,
+
+    transaksi: data?.length ?? 0,
   };
 }
 
@@ -40,37 +73,49 @@ export async function getTopProducts(
 
   if (error) throw error;
 
-  const filtered = data.filter((item: any) => {
-    if (!item.transaction) return false;
-
-    const date = new Date(item.transaction.created_at);
-
-    return (
-      date >= new Date(start) &&
-      date <= new Date(end)
-    );
-  });
-
-  const map: Record<
+  const map = new Map<
     string,
     {
       name: string;
       qty: number;
     }
-  > = {};
+  >();
 
-  filtered.forEach((item: any) => {
-    if (!map[item.product_name]) {
-      map[item.product_name] = {
-        name: item.product_name,
-        qty: 0,
-      };
-    }
+  data.forEach((item: any) => {
+    if (!item.transaction) return;
 
-    map[item.product_name].qty += item.qty;
+    const created = new Date(
+      item.transaction.created_at
+    ).getTime();
+
+    if (
+      created < new Date(start).getTime() ||
+      created > new Date(end).getTime()
+    )
+      return;
+
+    const name = item.product_name.trim();
+
+// Abaikan item paket
+if (
+  name.toLowerCase().includes("paket") ||
+  name.toLowerCase().startsWith("paket")
+) {
+  return;
+}
+
+const current =
+  map.get(name) ?? {
+    name,
+    qty: 0,
+  };
+
+current.qty += Number(item.qty);
+
+map.set(name, current);
   });
 
-  return Object.values(map).sort(
+  return [...map.values()].sort(
     (a, b) => b.qty - a.qty
   );
 }
@@ -90,39 +135,52 @@ export async function getHourlySales(
   if (error) throw error;
 
   if (period === "today") {
-    const hours = Array.from({ length: 24 }, (_, i) => ({
-      label: `${String(i).padStart(2, "0")}:00`,
-      total: 0,
-    }));
+    const hours = Array.from(
+      { length: 24 },
+      (_, i) => ({
+        label: `${String(i).padStart(2, "0")}:00`,
+        total: 0,
+      })
+    );
 
     data.forEach((trx) => {
-      const hour = new Date(trx.created_at).getHours();
-      hours[hour].total += trx.total;
+      const date = new Date(
+        new Date(trx.created_at).getTime() + OFFSET
+      );
+
+      hours[date.getHours()].total += Number(trx.total);
     });
 
     return hours;
   }
 
-  const map: Record<string, number> = {};
+  const map = new Map<string, number>();
 
   data.forEach((trx) => {
-    const date = new Date(trx.created_at)
-      .toLocaleDateString("en-CA");
+    const date = new Date(
+      new Date(trx.created_at).getTime() + OFFSET
+    );
 
-    map[date] = (map[date] || 0) + trx.total;
+    const key = date.toLocaleDateString("id-ID");
+
+    map.set(
+      key,
+      (map.get(key) ?? 0) + Number(trx.total)
+    );
   });
 
-  return Object.entries(map).map(([label, total]) => ({
-    label,
-    total,
-  }));
+  return [...map.entries()].map(
+    ([label, total]) => ({
+      label,
+      total,
+    })
+  );
 }
 
-export async function getPaymentSummary() {
-  const today = new Date().toLocaleDateString("en-CA");
-
-  const start = `${today}T00:00:00`;
-  const end = `${today}T23:59:59`;
+export async function getPaymentSummary(
+  period: "today" | "week" | "month" = "today"
+) {
+  const { start, end } = getDateRange(period);
 
   const { data, error } = await supabase
     .from("transactions")
@@ -139,10 +197,12 @@ export async function getPaymentSummary() {
   };
 
   data.forEach((trx) => {
-    if (trx.payment_method in summary) {
+    if (
+      trx.payment_method in summary
+    ) {
       summary[
         trx.payment_method as keyof typeof summary
-      ] += trx.total;
+      ] += Number(trx.total);
     }
   });
 
@@ -160,34 +220,4 @@ export async function getPaymentSummary() {
       total: summary.Transfer,
     },
   ];
-}
-
-export function getDateRange(period: "today" | "week" | "month") {
-  const now = new Date();
-
-  const end = new Date(now);
-  end.setHours(23, 59, 59, 999);
-
-  const start = new Date(now);
-
-  switch (period) {
-    case "today":
-      start.setHours(0, 0, 0, 0);
-      break;
-
-    case "week":
-      start.setDate(now.getDate() - 6);
-      start.setHours(0, 0, 0, 0);
-      break;
-
-    case "month":
-      start.setDate(now.getDate() - 29);
-      start.setHours(0, 0, 0, 0);
-      break;
-  }
-
-  return {
-    start: start.toISOString(),
-    end: end.toISOString(),
-  };
 }

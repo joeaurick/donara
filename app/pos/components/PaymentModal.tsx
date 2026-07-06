@@ -53,17 +53,13 @@ export default function PaymentModal({
   try {
     setLoading(true);
 
-    console.log("1");
+    console.log("=== MULAI PEMBAYARAN ===");
 
-  if (closed) {
-  alert("Toko sudah tutup. Transaksi dibatalkan.");
-  return;
-}
     const invoice = await getNextInvoice();
 
-    console.log("2");
+    console.log("Invoice:", invoice);
 
-    await createTransaction({
+    const trx = await createTransaction({
       invoice,
       paymentMethod: method,
       subtotal,
@@ -75,34 +71,39 @@ export default function PaymentModal({
       items: cart,
     });
 
-    console.log("3");
+    console.log("TRANSAKSI BERHASIL");
+    console.log(trx);
 
     let totalQty = 0;
 
-for (const item of cart) {
-  if (!item.isPackage) {
-    totalQty += item.qty;
-    continue;
-  }
+    for (const item of cart) {
+      if (!item.isPackage) {
+        totalQty += item.qty;
+      } else {
+        for (const donut of item.packageProducts ?? []) {
+          totalQty += donut.qty * item.qty;
+        }
+      }
+    }
 
-  for (const donut of item.packageProducts ?? []) {
-    totalQty += donut.qty * item.qty;
-  }
-}
+    console.log("Total Qty:", totalQty);
 
-await decreaseTodayStock(totalQty);
+    await decreaseTodayStock(totalQty);
 
-// Beri tahu dashboard bahwa stok berubah
-window.dispatchEvent(new Event("stock-updated"));
+    console.log("Stock berhasil dikurangi");
 
-clear();
+    window.dispatchEvent(new Event("stock-updated"));
 
-onClose();
+    clear();
 
-alert("Pembayaran berhasil.");
+    onClose();
+
+    alert("Pembayaran berhasil");
   } catch (err: any) {
+    console.error("ERROR PAYMENT");
     console.error(err);
-    alert(err.message);
+
+    alert(JSON.stringify(err, null, 2));
   } finally {
     setLoading(false);
   }

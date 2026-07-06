@@ -12,9 +12,7 @@ type CartItem = {
   price: number;
   image: string;
   qty: number;
-
   isPackage?: boolean;
-
   packageProducts?: PackageProduct[];
 };
 
@@ -33,36 +31,46 @@ type TransactionPayload = {
 export async function createTransaction(
   payload: TransactionPayload
 ) {
-  //----------------------------------
-  // SIMPAN HEADER TRANSAKSI
-  //----------------------------------
-
-  const { data: transaction, error } =
-    await supabase
-      .from("transactions")
-      .insert({
-        invoice: payload.invoice,
-        payment_method: payload.paymentMethod,
-        subtotal: payload.subtotal,
-        discount: payload.discount,
-        tax: payload.tax,
-        total: payload.total,
-        paid: payload.paid,
-        change: payload.change,
-      })
-      .select()
-      .single();
-
-  if (error) throw error;
+  console.log("========== CREATE TRANSACTION ==========");
+  console.log(payload);
 
   //----------------------------------
-  // DETAIL TRANSAKSI
+  // SIMPAN HEADER
+  //----------------------------------
+
+  const trxResult = await supabase
+    .from("transactions")
+    .insert({
+      invoice: payload.invoice,
+      payment_method: payload.paymentMethod,
+      subtotal: payload.subtotal,
+      discount: payload.discount,
+      tax: payload.tax,
+      total: payload.total,
+      paid: payload.paid,
+      change: payload.change,
+    })
+    .select()
+    .single();
+
+  console.log("HEADER RESULT");
+  console.log(trxResult);
+
+  if (trxResult.error) {
+    console.error(trxResult.error);
+    throw trxResult.error;
+  }
+
+  const transaction = trxResult.data;
+
+  //----------------------------------
+  // DETAIL
   //----------------------------------
 
   const detailRows: any[] = [];
 
   //----------------------------------
-  // STOK YANG HARUS DIKURANGI
+  // STOK
   //----------------------------------
 
   const stockReduce = new Map<number, number>();
@@ -86,10 +94,6 @@ export async function createTransaction(
       continue;
     }
 
-    //----------------------------------
-    // BARIS PAKET
-    //----------------------------------
-
     detailRows.push({
       transaction_id: transaction.id,
       product_id: item.id,
@@ -98,10 +102,6 @@ export async function createTransaction(
       qty: item.qty,
       subtotal: item.price * item.qty,
     });
-
-    //----------------------------------
-    // ISI PAKET
-    //----------------------------------
 
     for (const donut of item.packageProducts ?? []) {
       detailRows.push({
@@ -121,38 +121,66 @@ export async function createTransaction(
     }
   }
 
+  console.log("DETAIL ROWS");
+  console.table(detailRows);
+
   //----------------------------------
   // INSERT DETAIL
   //----------------------------------
 
-  const { error: detailError } =
-    await supabase
-      .from("transaction_items")
-      .insert(detailRows);
+  const detailResult = await supabase
+    .from("transaction_items")
+    .insert(detailRows)
+    .select();
 
-  if (detailError) throw detailError;
+  console.log("DETAIL RESULT");
+  console.log(detailResult);
+
+  if (detailResult.error) {
+    console.error("DETAIL ERROR");
+    console.error(detailResult.error);
+    throw detailResult.error;
+  }
 
   //----------------------------------
   // UPDATE STOK
   //----------------------------------
 
   for (const [productId, qty] of stockReduce) {
-    const { data: product, error } =
-      await supabase
-        .from("products")
-        .select("stock")
-        .eq("id", productId)
-        .single();
+    const productResult = await supabase
+      .from("products")
+      .select("stock")
+      .eq("id", productId)
+      .single();
 
-    if (error) throw error;
+    console.log("PRODUCT");
+    console.log(productResult);
 
-    await supabase
+    if (productResult.error) {
+      console.error(productResult.error);
+      throw productResult.error;
+    }
+
+    const updateResult = await supabase
       .from("products")
       .update({
-        stock: Math.max(0, product.stock - qty),
+        stock: Math.max(
+          0,
+          productResult.data.stock - qty
+        ),
       })
       .eq("id", productId);
+
+    console.log("UPDATE STOCK");
+    console.log(updateResult);
+
+    if (updateResult.error) {
+      console.error(updateResult.error);
+      throw updateResult.error;
+    }
   }
+
+  console.log("TRANSACTION SUCCESS");
 
   return transaction;
 }

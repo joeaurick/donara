@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useCart } from "../context/CartContext";
 import { supabase } from "@/lib/supabase/client";
+import { createTransaction } from "@/lib/supabase/transactions";
+import { getNextInvoice } from "@/lib/supabase/invoice";
 
 interface CartSummaryProps {
   onPaymentSuccess?: () => void;
@@ -25,7 +27,22 @@ export default function CartSummary({ onPaymentSuccess }: CartSummaryProps) {
   const pajak = 0;
   const total = subtotal - diskon + pajak;
 
-  const totalItemCount = cart.reduce((sum: number, item: any) => sum + item.qty, 0);
+  const totalItemCount = cart.reduce(
+  (sum: number, item: any) => {
+    if (!item.isPackage) {
+      return sum + item.qty;
+    }
+
+    const isiPaket = (item.packageProducts ?? []).reduce(
+      (total: number, donut: any) =>
+        total + donut.qty,
+      0
+    );
+
+    return sum + isiPaket * item.qty;
+  },
+  0
+);
   const kembalian = Math.max(0, nominalPaid - total);
 
   useEffect(() => {
@@ -59,14 +76,42 @@ async function handleProcessPayment() {
   console.log("Memulai proses pembayaran...");
 
   try {
-    // 1. PROSES TRANSAKSI (Ganti dengan kode insert Anda yang sudah ada)
-    // const { error: txError } = await supabase.from("transactions").insert(...);
-    // if (txError) throw txError;
-    // console.log("Transaksi berhasil disimpan.");
+   const invoice = await getNextInvoice();
+
+await createTransaction({
+  invoice,
+  paymentMethod: paymentMethod,
+  subtotal,
+  discount: diskon,
+  tax: pajak,
+  total,
+  paid: paymentMethod === "CASH" ? nominalPaid : total,
+  change: paymentMethod === "CASH" ? kembalian : 0,
+  items: cart,
+});
+
+console.log("Transaksi berhasil disimpan.");
 
     // 2. PROSES UPDATE STOK
     console.log("Mencoba update stok...");
-    const totalQty = cart.reduce((sum: number, item: any) => sum + (item.qty || 1), 0);
+    const totalQty = cart.reduce(
+  (sum: number, item: any) => {
+    if (!item.isPackage) {
+      return sum + item.qty;
+    }
+
+    const isiPaket = (item.packageProducts ?? []).reduce(
+      (total: number, donut: any) =>
+        total + donut.qty,
+      0
+    );
+
+    return sum + isiPaket * item.qty;
+  },
+  0
+);
+
+    window.dispatchEvent(new Event("stock-updated"));
 
     // TAMBAHKAN DUA BARIS INI:
     forceClearCart(); // Ini akan mengosongkan keranjang

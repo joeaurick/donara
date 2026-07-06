@@ -2,6 +2,9 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import FilterPeriode from "./FilterPeriode"; // Impor komponen baru di sini
 
+// POSISI YANG BENAR: Letakkan di sini, setelah import, sebelum fungsi dimulai
+export const dynamic = "force-dynamic";
+
 interface Props {
   searchParams: Promise<{ month?: string; year?: string }>;
 }
