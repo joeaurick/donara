@@ -55,43 +55,51 @@ export default function CartSummary({ onPaymentSuccess }: CartSummaryProps) {
   }
 
 async function handleProcessPayment() {
-    setIsProcessing(true);
-    try {
-      const invoiceNumber = `INV-${Date.now()}`; 
-      const transactionData = {
-        invoice: invoiceNumber,
-        total: total,
-        subtotal: subtotal,
-        discount: 0,
-        tax: 0,
-        paid: paymentMethod === "CASH" ? nominalPaid : total,
-        change: paymentMethod === "CASH" ? kembalian : 0,
-        payment_method: paymentMethod,
-        created_at: new Date().toISOString(),
-      };
+  setIsProcessing(true);
+  console.log("Memulai proses pembayaran...");
 
-      console.log("Data yang akan dikirim:", transactionData); // LIHAT DI CONSOLE F12
+  try {
+    // 1. PROSES TRANSAKSI (Ganti dengan kode insert Anda yang sudah ada)
+    // const { error: txError } = await supabase.from("transactions").insert(...);
+    // if (txError) throw txError;
+    // console.log("Transaksi berhasil disimpan.");
 
-      const { data, error } = await supabase
-        .from("transactions")
-        .insert([transactionData])
-        .select(); // Tambahkan .select() agar kita bisa melihat datanya kembali
+    // 2. PROSES UPDATE STOK
+    console.log("Mencoba update stok...");
+    const totalQty = cart.reduce((sum: number, item: any) => sum + (item.qty || 1), 0);
 
-      if (error) {
-        console.error("Gagal saat INSERT:", error);
-        alert("Error Database: " + error.message);
-        return;
-      }
+    // TAMBAHKAN DUA BARIS INI:
+    forceClearCart(); // Ini akan mengosongkan keranjang
+    setIsSuccess(true); // Ini biasanya memicu munculnya modal/pop-up struk
 
-      console.log("Data yang berhasil masuk ke DB:", data); // LIHAT DI CONSOLE F12
-      alert("Transaksi Berhasil Disimpan!");
-      forceClearCart();
-      setIsSuccess(true);
-    } catch (error: any) {
-      alert("Error sistem: " + error.message);
-    } finally {
-      setIsProcessing(false);
-    }
+    const { data: stockData, error: stockFetchError } = await supabase
+      .from("daily_stock")
+      .select("id, remaining_stock")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (stockFetchError) throw stockFetchError;
+    console.log("Data stok ditemukan:", stockData);
+
+    const { error: stockUpdateError } = await supabase
+      .from("daily_stock")
+      .update({ remaining_stock: stockData.remaining_stock - totalQty })
+      .eq("id", stockData.id);
+
+    if (stockUpdateError) throw stockUpdateError;
+    console.log("Stok berhasil diperbarui.");
+
+    // 3. SELESAI
+    setIsProcessing(false);
+    if (onPaymentSuccess) onPaymentSuccess();
+    alert("Pembayaran Berhasil!");
+
+  } catch (error) {
+    console.error("Terjadi kesalahan:", error);
+    setIsProcessing(false); // PENTING: Ini agar tombol kembali normal jika error
+    alert("Gagal memproses: " + (error as Error).message);
+  }
 }
 
   function handlePrintReceipt() {
