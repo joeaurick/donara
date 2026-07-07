@@ -29,9 +29,6 @@ export default function Home() {
       <BreadcrumbSchema />
       <FAQSchema />
       <Navbar />
-      <Hero />
-      <About />
-      <Menu />
     </>
   );
 }
