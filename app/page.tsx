@@ -31,7 +31,12 @@ export default function Home() {
       <Navbar />
       <Hero />
       <About />
-      <Menu />
+      <WhyChoose />
+      <Gallery />
+      <Review />
+      <CTA />
+      <Contact />
+      <Footer />
     </>
   );
 }
