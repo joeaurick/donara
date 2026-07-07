@@ -29,14 +29,8 @@ export default function Home() {
       <BreadcrumbSchema />
       <FAQSchema />
       <Navbar />
+      <Hero />
       <About />
-      <Menu />
-      <WhyChoose />
-      <Gallery />
-      <Review />
-      <CTA />
-      <Contact />
-      <Footer />
     </>
   );
 }
