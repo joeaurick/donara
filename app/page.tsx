@@ -20,24 +20,25 @@ import Contact from "./components/Contact";
 export default function Home() {
   return (
     <>
-      <LocalBusinessSchema />
-      <ProductSchema />
-      <ReviewSchema />
-      <OrganizationSchema />
-      <WebsiteSchema />
-      <SearchActionSchema />
-      <BreadcrumbSchema />
-      <FAQSchema />
-      <Navbar />
-      <Hero />
-      <About />
-      <Menu />
-      <WhyChoose />
-      <Gallery />
-      <Review />
-      <CTA />
-      <Contact />
-      <Footer />
-    </>
+  {/* <LocalBusinessSchema /> */}
+  {/* <ProductSchema /> */}
+  {/* <ReviewSchema /> */}
+  {/* <OrganizationSchema /> */}
+  {/* <WebsiteSchema /> */}
+  {/* <SearchActionSchema /> */}
+  {/* <BreadcrumbSchema /> */}
+  {/* <FAQSchema /> */}
+
+  <Navbar />
+  <Hero />
+  <About />
+  <Menu />
+  <WhyChoose />
+  <Gallery />
+  <Review />
+  <CTA />
+  <Contact />
+  <Footer />
+</>
   );
 }
