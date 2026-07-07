@@ -34,7 +34,7 @@ export default function ProtectedLayout({
         .from("profiles")
         .select("role")
         .eq("id", session.user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error(error);
@@ -45,13 +45,21 @@ export default function ProtectedLayout({
         return;
       }
 
-      // Bukan admin
-      if (profile.role !== "admin") {
-        await supabase.auth.signOut();
+      // Profile tidak ada
+if (!profile) {
+  await supabase.auth.signOut();
 
-        router.replace("/admin/login");
-        return;
-      }
+  router.replace("/admin/login");
+  return;
+}
+
+// Bukan admin
+if (profile.role !== "admin") {
+  await supabase.auth.signOut();
+
+  router.replace("/admin/login");
+  return;
+}
 
       setLoading(false);
     } catch (err) {

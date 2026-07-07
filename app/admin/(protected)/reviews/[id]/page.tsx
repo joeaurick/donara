@@ -25,7 +25,7 @@ export default function EditReviewPage() {
       .from("reviews")
       .select("*")
       .eq("id", Number(params.id))
-      .single();
+      .maybeSingle();
 
     if (error) {
       alert(error.message);

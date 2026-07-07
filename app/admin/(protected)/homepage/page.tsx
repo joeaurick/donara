@@ -40,7 +40,7 @@ export default function HomepagePage() {
       .from("homepage_content")
       .select("*")
       .eq("id", 1)
-      .single();
+      .maybeSingle();
 
     if (error) {
       toast.error(error.message);

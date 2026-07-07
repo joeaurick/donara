@@ -9,13 +9,13 @@ export default async function LocalBusinessSchema() {
         .from("business_profile")
         .select("*")
         .eq("id", 1)
-        .single(),
+        .maybeSingle(),
 
       supabase
         .from("settings")
         .select("*")
         .eq("id", 1)
-        .single(),
+        .maybeSingle(),
     ]);
 
   const schema = {

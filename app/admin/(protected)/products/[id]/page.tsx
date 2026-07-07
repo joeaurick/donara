@@ -33,7 +33,7 @@ export default function EditProductPage() {
         .from("products")
         .select("*")
         .eq("id", Number(params.id))
-        .single();
+        .maybeSingle();
 
       if (error) {
         alert(error.message);

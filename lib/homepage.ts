@@ -7,7 +7,7 @@ export async function getHomepageContent() {
     .from("homepage_content")
     .select("*")
     .eq("id", 1)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error(error);

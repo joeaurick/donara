@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       .select("*")
       .eq("username", username)
       .eq("is_active", true)
-      .single();
+      .maybeSingle();
 
     if (error || !user) {
       return NextResponse.json(

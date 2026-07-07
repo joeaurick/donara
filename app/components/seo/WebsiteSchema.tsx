@@ -7,7 +7,7 @@ export default async function WebsiteSchema() {
     .from("settings")
     .select("*")
     .eq("id", 1)
-    .single();
+    .maybeSingle();
 
   const url =
     process.env.NEXT_PUBLIC_SITE_URL ||

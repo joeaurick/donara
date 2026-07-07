@@ -51,7 +51,7 @@ export async function createTransaction(
       change: payload.change,
     })
     .select()
-    .single();
+    .maybeSingle();
 
   console.log("HEADER RESULT");
   console.log(trxResult);
@@ -62,6 +62,10 @@ export async function createTransaction(
   }
 
   const transaction = trxResult.data;
+
+if (!transaction) {
+  throw new Error("Transaction gagal dibuat.");
+}
 
   //----------------------------------
   // DETAIL
@@ -143,42 +147,45 @@ export async function createTransaction(
   }
 
   //----------------------------------
-  // UPDATE STOK
-  //----------------------------------
+// UPDATE STOK
+//----------------------------------
 
-  for (const [productId, qty] of stockReduce) {
-    const productResult = await supabase
-      .from("products")
-      .select("stock")
-      .eq("id", productId)
-      .single();
+for (const [productId, qty] of stockReduce) {
+  const productResult = await supabase
+    .from("products")
+    .select("stock")
+    .eq("id", productId)
+    .maybeSingle();
 
-    console.log("PRODUCT");
-    console.log(productResult);
+  console.log("PRODUCT");
+  console.log(productResult);
 
-    if (productResult.error) {
-      console.error(productResult.error);
-      throw productResult.error;
-    }
-
-    const updateResult = await supabase
-      .from("products")
-      .update({
-        stock: Math.max(
-          0,
-          productResult.data.stock - qty
-        ),
-      })
-      .eq("id", productId);
-
-    console.log("UPDATE STOCK");
-    console.log(updateResult);
-
-    if (updateResult.error) {
-      console.error(updateResult.error);
-      throw updateResult.error;
-    }
+  if (productResult.error) {
+    console.error(productResult.error);
+    throw productResult.error;
   }
+
+  const product = productResult.data;
+
+  if (!product) {
+    throw new Error(`Produk ${productId} tidak ditemukan.`);
+  }
+
+  const updateResult = await supabase
+    .from("products")
+    .update({
+      stock: Math.max(0, product.stock - qty),
+    })
+    .eq("id", productId);
+
+  console.log("UPDATE STOCK");
+  console.log(updateResult);
+
+  if (updateResult.error) {
+    console.error(updateResult.error);
+    throw updateResult.error;
+  }
+}
 
   console.log("TRANSACTION SUCCESS");
 

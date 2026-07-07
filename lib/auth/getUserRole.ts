@@ -13,10 +13,14 @@ export async function getUserRole() {
     .from("profiles")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error(error);
+    return null;
+  }
+
+  if (!data) {
     return null;
   }
 

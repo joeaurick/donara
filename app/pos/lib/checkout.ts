@@ -39,7 +39,7 @@ export async function checkout(data: CheckoutData) {
         change: data.change,
       })
       .select()
-      .single();
+      .maybeSingle();
 
   if (error) throw error;
 

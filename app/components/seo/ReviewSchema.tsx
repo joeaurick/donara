@@ -16,7 +16,7 @@ export default async function ReviewSchema() {
         .from("business_profile")
         .select("*")
         .eq("id", 1)
-        .single(),
+        .maybeSingle(),
     ]);
 
   if (!reviews || reviews.length === 0) {

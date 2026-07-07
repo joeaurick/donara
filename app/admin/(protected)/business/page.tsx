@@ -56,7 +56,7 @@ export default function BusinessPage() {
       .from("business_profile")
       .select("*")
       .eq("id", 1)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.error(error);

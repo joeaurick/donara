@@ -122,15 +122,22 @@ console.log("Transaksi berhasil disimpan.");
       .select("id, remaining_stock")
       .order("created_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (stockFetchError) throw stockFetchError;
-    console.log("Data stok ditemukan:", stockData);
 
-    const { error: stockUpdateError } = await supabase
-      .from("daily_stock")
-      .update({ remaining_stock: stockData.remaining_stock - totalQty })
-      .eq("id", stockData.id);
+if (!stockData) {
+  throw new Error("Data stok hari ini tidak ditemukan.");
+}
+
+console.log("Data stok ditemukan:", stockData);
+
+const { error: stockUpdateError } = await supabase
+  .from("daily_stock")
+  .update({
+    remaining_stock: stockData.remaining_stock - totalQty,
+  })
+  .eq("id", stockData.id);
 
     if (stockUpdateError) throw stockUpdateError;
     console.log("Stok berhasil diperbarui.");

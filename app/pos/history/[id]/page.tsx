@@ -19,7 +19,7 @@ export default async function TransactionDetail({
     .from("transactions")
     .select("*")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
   if (!trx) notFound();
 

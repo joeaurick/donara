@@ -39,7 +39,7 @@ export default function SeoPage() {
       .from("settings")
       .select("*")
       .eq("id", 1)
-      .single();
+      .maybeSingle();
 
     if (error) {
       toast.error(error.message);

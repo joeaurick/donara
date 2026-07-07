@@ -53,7 +53,7 @@ export async function saveTodayStock(stock: number) {
       is_closed: false,
     })
     .select()
-    .single();
+    .maybeSingle();
 
   if (insertError) throw insertError;
 
@@ -160,7 +160,7 @@ export async function saveOrUpdateTodayStock(stock: number) {
         is_closed: false,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (insertError) throw insertError;
 
@@ -181,7 +181,7 @@ export async function saveOrUpdateTodayStock(stock: number) {
     })
     .eq("id", data.id)
     .select()
-    .single();
+    .maybeSingle();
 
   if (updateError) throw updateError;
 

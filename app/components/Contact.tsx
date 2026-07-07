@@ -14,7 +14,7 @@ export default async function Contact() {
     .from("business_profile")
     .select("*")
     .eq("id", 1)
-    .single();
+    .maybeSingle();
 
   const instagramUsername = (data?.instagram ?? "").replace("@", "");
 
