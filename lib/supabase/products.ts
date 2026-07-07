@@ -1,8 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { supabase } from "./client";
 
 export async function getProducts() {
-  const supabase = await createClient();
-
   const { data, error } = await supabase
     .from("products")
     .select(`
@@ -24,5 +22,5 @@ export async function getProducts() {
     return [];
   }
 
-  return data ?? [];
+  return data;
 }
