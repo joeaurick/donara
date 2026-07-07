@@ -8,6 +8,7 @@ import {
   getTodayStock,
   closeTodayStock,
   isTodayClosed,
+  saveOrUpdateTodayStock,
 } from "@/lib/supabase/daily-stock";
 
 import ProductGrid from "../components/ProductGrid";
@@ -19,10 +20,12 @@ import { useCart } from "../context/CartContext";
 import DashboardHeader from "../components/DashboardHeader";
 import PackagePickerModal from "../components/PackagePickerModal";
 import usePackagePicker from "../hooks/usePackagePicker";
+import { useRouter } from "next/navigation";
 
 export default function PosDashboardPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const router = useRouter();
 
   const [todayStock, setTodayStock] = useState<any>(null);
   const [todayClosed, setTodayClosed] = useState(false);
@@ -42,13 +45,21 @@ export default function PosDashboardPage() {
   const packagePicker = usePackagePicker();
 
   useEffect(() => {
-    async function initDashboard() {
-      setIsLoading(true);
-      await Promise.all([loadProducts(), checkTodayStock(), loadClosedStatus()]);
-      setIsLoading(false);
-    }
-    initDashboard();
-  }, []);
+  async function checkLogin() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    console.log("SESSION DASHBOARD =", session);
+
+    await loadProducts();
+    await checkTodayStock();
+
+    setIsLoading(false);
+  }
+
+  checkLogin();
+}, []);
 
   useEffect(() => {
     if (todayStock) {
@@ -62,72 +73,44 @@ export default function PosDashboardPage() {
   }
 
   async function checkTodayStock() {
-    const stock = await getTodayStock();
-    setTodayStock(stock);
+  const stock = await getTodayStock();
+
+  if (!stock) {
+    setTodayStock(null);
+    setTodayClosed(true);
+    return;
   }
 
-  async function loadClosedStatus() {
-    const closed = await isTodayClosed();
-    setTodayClosed(!!closed);
-  }
+  setTodayStock(stock);
+  setTodayClosed(stock.is_closed);
+}
 
   async function handleUpdateStockFromPanel(e: React.FormEvent) {
-    e.preventDefault();
-    const parsedStock = parseInt(inputStock, 10);
-    if (isNaN(parsedStock) || parsedStock < 0) {
-      alert("Mohon masukkan angka jumlah stok yang valid.");
-      return;
-    }
+  e.preventDefault();
 
-    setIsUpdatingStock(true);
-    try {
-      if (todayStock?.id) {
-        const currentSales = (todayStock.opening_stock || 0) - (todayStock.remaining_stock || 0);
-        const newRemaining = Math.max(0, parsedStock - currentSales);
+  const parsedStock = parseInt(inputStock, 10);
 
-        const { error } = await supabase
-          .from("daily_stock")
-          .update({ 
-            opening_stock: parsedStock,
-            remaining_stock: newRemaining
-          })
-          .eq("id", todayStock.id);
-
-        if (error) throw error;
-
-        setTodayStock((prev: any) => ({
-          ...prev,
-          opening_stock: parsedStock,
-          remaining_stock: newRemaining
-        }));
-
-      } else {
-        const todayDate = new Date().toLocaleDateString("sv-SE");
-        
-        const { data, error } = await supabase
-          .from("daily_stock")
-          .insert([{ 
-            opening_stock: parsedStock, 
-            remaining_stock: parsedStock,
-            stock_date: todayDate, 
-            is_closed: false 
-          }])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        if (data) setTodayStock(data);
-      }
-
-      await loadClosedStatus();
-      alert("Data stok berhasil diperbarui!");
-    } catch (err: any) {
-      alert("Gagal memperbarui stok: " + err.message);
-    } finally {
-      setIsUpdatingStock(false);
-    }
+  if (isNaN(parsedStock) || parsedStock < 0) {
+    alert("Mohon masukkan angka jumlah stok yang valid.");
+    return;
   }
+
+  setIsUpdatingStock(true);
+
+  try {
+    const stock = await saveOrUpdateTodayStock(parsedStock);
+
+    setTodayStock(stock);
+
+    await checkTodayStock();
+
+    alert("Data stok berhasil diperbarui!");
+  } catch (err: any) {
+    alert("Gagal memperbarui stok: " + err.message);
+  } finally {
+    setIsUpdatingStock(false);
+  }
+}
 
   async function handleCloseDay() {
     if (!confirm("Tutup operasional hari ini?")) return;

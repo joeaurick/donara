@@ -13,22 +13,22 @@ export default function PosLoginPage() {
   const [loading, setLoading] = useState(false);
 
   async function login() {
-    setLoading(true);
+  setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
 
+  if (error) {
     setLoading(false);
-
-    if (error) {
-      alert(error.message);
-      return;
-    }
-
-    router.push("/pos/dashboard");
+    alert(error.message);
+    return;
   }
+
+  router.replace("/pos/dashboard");
+  router.refresh();
+}
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
@@ -46,20 +46,20 @@ export default function PosLoginPage() {
         <div className="space-y-5">
 
           <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-2xl border p-4 outline-none focus:border-pink-500"
-          />
+  type="email"
+  placeholder="Email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  className="w-full rounded-2xl border border-gray-300 p-4 outline-none focus:border-pink-500"
+/>
 
           <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-2xl border p-4 outline-none focus:border-pink-500"
-          />
+  type="password"
+  placeholder="Password"
+  value={password}
+  onChange={(e) => setPassword(e.target.value)}
+  className="w-full rounded-2xl border border-gray-300 p-4 outline-none focus:border-pink-500"
+/>
 
           <button
             onClick={login}

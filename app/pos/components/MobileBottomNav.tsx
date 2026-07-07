@@ -15,11 +15,6 @@ const menus = [
     icon: "🧾",
   },
   {
-    title: "POS",
-    href: "/pos/dashboard",
-    icon: "🛒",
-  },
-  {
     title: "Laporan",
     href: "/pos/report",
     icon: "📊",

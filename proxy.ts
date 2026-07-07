@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next();
+export async function proxy(request: NextRequest) {
+  let response = NextResponse.next({
+    request,
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,6 +18,7 @@ export async function middleware(request: NextRequest) {
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
             request.cookies.set(name, value);
+
             response.cookies.set(name, value, options);
           });
         },
@@ -31,10 +34,7 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // =========================
   // POS
-  // =========================
-
   if (pathname.startsWith("/pos")) {
     if (!session && pathname !== "/pos/login") {
       return NextResponse.redirect(new URL("/pos/login", request.url));
@@ -45,10 +45,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // =========================
-  // ADMIN WEBSITE
-  // =========================
-
+  // ADMIN
   if (pathname.startsWith("/admin")) {
     if (!session && pathname !== "/admin/login") {
       return NextResponse.redirect(new URL("/admin/login", request.url));
@@ -63,8 +60,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/pos/:path*",
-    "/admin/:path*",
-  ],
+  matcher: ["/pos/:path*", "/admin/:path*"],
 };

@@ -1,24 +1,32 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, useEffect } from "react";
 import Link from "next/link";
-
 import PosSidebar from "./components/PosSidebar";
 import MobileBottomNav from "./components/MobileBottomNav";
-
 import { CartProvider } from "./context/CartContext";
 import { MobileCartProvider } from "./context/MobileCartContext";
+import { isTodayClosed } from "@/lib/supabase/daily-stock";
 
-export default function PosLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function PosLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [storeClosed, setStoreClosed] = useState(false);
 
-  // Login tidak memakai sidebar/layout POS
+  useEffect(() => {
+  async function loadStatus() {
+    try {
+      const closed = await isTodayClosed();
+      setStoreClosed(closed);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  loadStatus();
+}, []);
+
   if (pathname === "/pos/login") {
     return children;
   }
@@ -34,18 +42,15 @@ export default function PosLayout({
     <CartProvider>
       <MobileCartProvider>
         <div className="flex min-h-screen bg-gray-100">
-          
-          {/* SIDEBAR DESKTOP */}
           <div className="hidden lg:block">
             <PosSidebar />
           </div>
 
-          {/* KONTEN UTAMA */}
           <main className="flex-1 overflow-auto pb-20 lg:pb-0 relative">
-            
-            {/* 📱 TOMBOL HAMBURGER MOBILE (Hanya muncul di layar HP) */}
             <div className="lg:hidden bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-[40] shadow-xs">
-              <span className="font-black text-pink-600 tracking-tight text-md">DONARA POS</span>
+              <span className="font-black text-pink-600 tracking-tight text-md">
+                DONARA POS {storeClosed ? "(Tutup)" : ""}
+              </span>
               <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="p-2 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-bold text-xl active:scale-95"
@@ -54,7 +59,6 @@ export default function PosLayout({
               </button>
             </div>
 
-            {/* LACI NAVIGASI HAMBURGER MOBILE (Slide out dari kanan) */}
             <div className={`
               fixed top-[53px] right-0 bottom-0 z-[50] w-64 bg-white border-l shadow-xl p-4
               transition-transform duration-300 ease-in-out lg:hidden
@@ -83,7 +87,6 @@ export default function PosLayout({
               </div>
             </div>
 
-            {/* OVERLAY LATAR HITAM (Klik di luar laci untuk menutup menu) */}
             {isMenuOpen && (
               <div 
                 onClick={() => setIsMenuOpen(false)}
@@ -91,13 +94,10 @@ export default function PosLayout({
               />
             )}
 
-            {/* Isi halaman POS */}
             {children}
           </main>
 
-          {/* NAVIGASI BAWAH MOBILE */}
           <MobileBottomNav />
-
         </div>
       </MobileCartProvider>
     </CartProvider>
