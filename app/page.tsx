@@ -29,6 +29,14 @@ export default function Home() {
       <BreadcrumbSchema />
       <FAQSchema />
       <Navbar />
+      <About />
+      <Menu />
+      <WhyChoose />
+      <Gallery />
+      <Review />
+      <CTA />
+      <Contact />
+      <Footer />
     </>
   );
 }
