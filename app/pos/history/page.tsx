@@ -48,19 +48,22 @@ const endDate = new Date(end.getTime() - (7 * 60 * 60 * 1000)).toISOString();
   }
 
   const groupedTransactions: { [key: string]: typeof transactions } = {};
-  transactions?.forEach((trx) => {
-    const dateKey = new Date(trx.created_at).toLocaleDateString("id-ID", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
 
-    if (!groupedTransactions[dateKey]) {
-      groupedTransactions[dateKey] = [];
-    }
-    groupedTransactions[dateKey].push(trx);
-  } );
+transactions?.forEach((trx) => {
+  const dateKey = new Date(trx.created_at).toLocaleDateString("id-ID", {
+    timeZone: "Asia/Jakarta",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  if (!groupedTransactions[dateKey]) {
+    groupedTransactions[dateKey] = [];
+  }
+
+  groupedTransactions[dateKey].push(trx);
+});
 
   return (
     <main className="p-4 xl:p-8 max-w-7xl mx-auto w-full">
@@ -105,9 +108,11 @@ const endDate = new Date(end.getTime() - (7 * 60 * 60 * 1000)).toISOString();
                     <tbody className="divide-y divide-gray-100 text-xs font-medium text-gray-700">
                       {groupedTransactions[dateLabel].map((trx) => {
                         const timeString = new Date(trx.created_at).toLocaleTimeString("id-ID", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        });
+  timeZone: "Asia/Jakarta",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
                         const method = (trx.payment_method || "Cash").toUpperCase();
 
                         return (

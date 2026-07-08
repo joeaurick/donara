@@ -87,7 +87,10 @@ export default async function TransactionDetail({
             </p>
 
             <p>
-              {new Date(trx.created_at).toLocaleString("id-ID")}
+              {new Date(trx.created_at).toLocaleString("id-ID", {
+  timeZone: "Asia/Jakarta",
+  hour12: false,
+})}
             </p>
 
           </div>
