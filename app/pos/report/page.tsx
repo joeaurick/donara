@@ -29,6 +29,12 @@ export default function ReportPage() {
         getPaymentSummary()
       ]);
 
+      console.log("REPORT =", r);
+console.log("PRODUCT =", p);
+console.log("STOCK =", s);
+console.log("HOURLY =", h);
+console.log("PAYMENT =", pay);
+
       setReport(r);
       setProducts(p);
       setStock(s);

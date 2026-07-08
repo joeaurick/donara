@@ -1,34 +1,33 @@
 import { supabase } from "./client";
 
-const OFFSET = 7 * 60 * 60 * 1000;
-
 function getDateRange(period: "today" | "week" | "month") {
   const now = new Date();
 
-  const end = new Date(now);
-  end.setHours(23, 59, 59, 999);
-
   const start = new Date(now);
+  const end = new Date(now);
 
   switch (period) {
     case "today":
       start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
       break;
 
     case "week":
       start.setDate(start.getDate() - 6);
       start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
       break;
 
     case "month":
       start.setDate(start.getDate() - 29);
       start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
       break;
   }
 
   return {
-    start: new Date(start.getTime() - OFFSET).toISOString(),
-    end: new Date(end.getTime() - OFFSET).toISOString(),
+    start: start.toISOString(),
+    end: end.toISOString(),
   };
 }
 
@@ -46,12 +45,7 @@ export async function getTodayReport(
   if (error) throw error;
 
   return {
-    omzet:
-      data?.reduce(
-        (sum, item) => sum + Number(item.total),
-        0
-      ) ?? 0,
-
+    omzet: data?.reduce((sum, item) => sum + Number(item.total), 0) ?? 0,
     transaksi: data?.length ?? 0,
   };
 }
@@ -73,51 +67,35 @@ export async function getTopProducts(
 
   if (error) throw error;
 
-  const map = new Map<
-    string,
-    {
-      name: string;
-      qty: number;
-    }
-  >();
+  const map = new Map<string, { name: string; qty: number }>();
 
   data.forEach((item: any) => {
     if (!item.transaction) return;
 
-    const created = new Date(
-      item.transaction.created_at
-    ).getTime();
+    const created = new Date(item.transaction.created_at);
 
-    if (
-      created < new Date(start).getTime() ||
-      created > new Date(end).getTime()
-    )
-      return;
+    if (created < new Date(start) || created > new Date(end)) return;
 
     const name = item.product_name.trim();
 
-// Abaikan item paket
-if (
-  name.toLowerCase().includes("paket") ||
-  name.toLowerCase().startsWith("paket")
-) {
-  return;
-}
+    if (
+      name.toLowerCase().includes("paket") ||
+      name.toLowerCase().startsWith("paket")
+    ) {
+      return;
+    }
 
-const current =
-  map.get(name) ?? {
-    name,
-    qty: 0,
-  };
+    const current = map.get(name) ?? {
+      name,
+      qty: 0,
+    };
 
-current.qty += Number(item.qty);
+    current.qty += Number(item.qty);
 
-map.set(name, current);
+    map.set(name, current);
   });
 
-  return [...map.values()].sort(
-    (a, b) => b.qty - a.qty
-  );
+  return [...map.values()].sort((a, b) => b.qty - a.qty);
 }
 
 export async function getHourlySales(
@@ -135,20 +113,14 @@ export async function getHourlySales(
   if (error) throw error;
 
   if (period === "today") {
-    const hours = Array.from(
-      { length: 24 },
-      (_, i) => ({
-        label: `${String(i).padStart(2, "0")}:00`,
-        total: 0,
-      })
-    );
+    const hours = Array.from({ length: 24 }, (_, i) => ({
+      label: `${String(i).padStart(2, "0")}:00`,
+      total: 0,
+    }));
 
     data.forEach((trx) => {
-      const date = new Date(
-        new Date(trx.created_at).getTime() + OFFSET
-      );
-
-      hours[date.getHours()].total += Number(trx.total);
+      const hour = new Date(trx.created_at).getHours();
+      hours[hour].total += Number(trx.total);
     });
 
     return hours;
@@ -157,24 +129,15 @@ export async function getHourlySales(
   const map = new Map<string, number>();
 
   data.forEach((trx) => {
-    const date = new Date(
-      new Date(trx.created_at).getTime() + OFFSET
-    );
+    const key = new Date(trx.created_at).toLocaleDateString("id-ID");
 
-    const key = date.toLocaleDateString("id-ID");
-
-    map.set(
-      key,
-      (map.get(key) ?? 0) + Number(trx.total)
-    );
+    map.set(key, (map.get(key) ?? 0) + Number(trx.total));
   });
 
-  return [...map.entries()].map(
-    ([label, total]) => ({
-      label,
-      total,
-    })
-  );
+  return [...map.entries()].map(([label, total]) => ({
+    label,
+    total,
+  }));
 }
 
 export async function getPaymentSummary(
@@ -197,12 +160,8 @@ export async function getPaymentSummary(
   };
 
   data.forEach((trx) => {
-    if (
-      trx.payment_method in summary
-    ) {
-      summary[
-        trx.payment_method as keyof typeof summary
-      ] += Number(trx.total);
+    if (trx.payment_method in summary) {
+      summary[trx.payment_method as keyof typeof summary] += Number(trx.total);
     }
   });
 
