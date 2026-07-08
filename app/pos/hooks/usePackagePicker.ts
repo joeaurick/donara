@@ -8,6 +8,8 @@ type Product = {
   name: string;
   price: number;
   image: string;
+  category?: string;
+  track_stock?: boolean;
   package_size: number;
   package_type: string | null;
 };
@@ -115,15 +117,17 @@ export default function usePackagePicker() {
     }
 
     addPackageToCart(
-      {
-        id: Date.now(),
-        name: selectedPackage.name,
-        price: selectedPackage.price,
-        image: selectedPackage.image,
-        isPackage: true,
-      },
-      selectedProducts
-    );
+  {
+    id: Date.now(),
+    name: selectedPackage.name,
+    price: selectedPackage.price,
+    image: selectedPackage.image,
+    category: selectedPackage.category,
+    track_stock: false,
+    isPackage: true,
+  },
+  selectedProducts
+);
 
     closePicker();
   }

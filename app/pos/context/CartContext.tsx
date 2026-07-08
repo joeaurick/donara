@@ -21,7 +21,9 @@ export type CartItem = {
   image: string;
   qty: number;
 
-  category: string;
+  category?: string;
+
+  track_stock?: boolean;
 
   isPackage: boolean;
 
