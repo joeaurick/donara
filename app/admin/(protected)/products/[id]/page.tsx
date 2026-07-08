@@ -13,13 +13,14 @@ export default function EditProductPage() {
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    name: "",
-    price: "",
-    image: "",
-    rating: 5,
-    description: "",
-    category: "normal",
-  });
+  name: "",
+  price: "",
+  image: "",
+  rating: 5,
+  description: "",
+  category: "normal",
+  track_stock: true,
+});
 
   useEffect(() => {
     loadProduct();
@@ -42,13 +43,14 @@ export default function EditProductPage() {
 
       if (data) {
         setForm({
-          name: data.name,
-          price: String(data.price),
-          image: data.image,
-          rating: data.rating,
-          description: data.description,
-          category: data.category ?? "normal",
-        });
+  name: data.name,
+  price: String(data.price),
+  image: data.image,
+  rating: data.rating,
+  description: data.description,
+  category: data.category ?? "normal",
+  track_stock: data.track_stock ?? true,
+});
       }
     } catch (err) {
       console.error(err);
@@ -75,13 +77,14 @@ export default function EditProductPage() {
       const { error } = await supabase
         .from("products")
         .update({
-          name: form.name.trim(),
-          price: Number(form.price),
-          image: form.image.trim(),
-          rating: form.rating,
-          description: form.description.trim(),
-          category: form.category,
-        })
+  name: form.name.trim(),
+  price: Number(form.price),
+  image: form.image.trim(),
+  rating: form.rating,
+  description: form.description.trim(),
+  category: form.category,
+  track_stock: form.track_stock,
+})
         .eq("id", Number(params.id));
 
       if (error) {
@@ -189,6 +192,33 @@ export default function EditProductPage() {
     Hemat
   </option>
 </select>
+
+<div className="rounded-xl border p-4">
+  <label className="flex items-center gap-3 cursor-pointer">
+    <input
+      type="checkbox"
+      checked={form.track_stock}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          track_stock: e.target.checked,
+        })
+      }
+      className="h-5 w-5"
+    />
+
+    <div>
+      <p className="font-bold">
+        Kurangi stok harian
+      </p>
+
+      <p className="text-sm text-gray-500">
+        Aktifkan untuk produk donat.
+        Nonaktifkan untuk kopi, minuman, snack, dll.
+      </p>
+    </div>
+  </label>
+</div>
 
           <textarea
             className="h-40 w-full rounded-xl border p-4"

@@ -297,12 +297,12 @@ export default function PosDashboardPage() {
             {/* AREA UTAMA DAFTAR DONAT (Mendominasi Sisa Layar) */}
             <div className="flex-1 overflow-y-auto p-3 xl:px-4 pb-6">
               <ProductGrid
-                products={filtered}
-                todayStock={todayStock} 
-                onPackageClick={packagePicker.openPicker}
-                cart={cart}
-                onProductClick={(product) => addToCart(product)}
-              />
+  products={filtered}
+  todayStock={todayStock}
+  onPackageClick={packagePicker.openPicker}
+  cart={cart}
+  onProductClick={(product) => addToCart(product)}
+/>
             </div>
           </section>
 

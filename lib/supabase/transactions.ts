@@ -12,6 +12,9 @@ type CartItem = {
   price: number;
   image: string;
   qty: number;
+
+  track_stock?: boolean;
+
   isPackage?: boolean;
   packageProducts?: PackageProduct[];
 };
@@ -81,22 +84,24 @@ if (!transaction) {
 
   for (const item of payload.items) {
     if (!item.isPackage) {
-      detailRows.push({
-        transaction_id: transaction.id,
-        product_id: item.id,
-        product_name: item.name,
-        price: item.price,
-        qty: item.qty,
-        subtotal: item.price * item.qty,
-      });
+  detailRows.push({
+    transaction_id: transaction.id,
+    product_id: item.id,
+    product_name: item.name,
+    price: item.price,
+    qty: item.qty,
+    subtotal: item.price * item.qty,
+  });
 
-      stockReduce.set(
-        item.id,
-        (stockReduce.get(item.id) ?? 0) + item.qty
-      );
+  if (item.track_stock) {
+    stockReduce.set(
+      item.id,
+      (stockReduce.get(item.id) ?? 0) + item.qty
+    );
+  }
 
-      continue;
-    }
+  continue;
+}
 
     detailRows.push({
       transaction_id: transaction.id,

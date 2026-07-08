@@ -76,19 +76,27 @@ export default function PaymentModal({
 
     let totalQty = 0;
 
-    for (const item of cart) {
-      if (!item.isPackage) {
-        totalQty += item.qty;
-      } else {
-        for (const donut of item.packageProducts ?? []) {
-          totalQty += donut.qty * item.qty;
-        }
-      }
+for (const item of cart) {
+  // Produk selain Donat tidak mengurangi stok
+  if (
+    item.category &&
+    item.category.toLowerCase() !== "donat"
+  ) {
+    continue;
+  }
+
+  if (!item.isPackage) {
+    totalQty += item.qty;
+  } else {
+    for (const donut of item.packageProducts ?? []) {
+      totalQty += donut.qty * item.qty;
     }
+  }
+}
 
-    console.log("Total Qty:", totalQty);
-
-    await decreaseTodayStock(totalQty);
+if (totalQty > 0) {
+  await decreaseTodayStock(totalQty);
+}
 
     console.log("Stock berhasil dikurangi");
 

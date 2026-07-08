@@ -21,6 +21,8 @@ export type CartItem = {
   image: string;
   qty: number;
 
+  category: string;
+
   isPackage: boolean;
 
   packageProducts?: PackageProduct[];

@@ -11,13 +11,14 @@ export default function NewProductPage() {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    name: "",
-    price: "",
-    image: "",
-    rating: 5,
-    description: "",
-    category: "normal",
-  });
+  name: "",
+  price: "",
+  image: "",
+  rating: 5,
+  description: "",
+  category: "normal",
+  track_stock: true,
+});
 
   async function saveProduct() {
     if (
@@ -35,13 +36,14 @@ export default function NewProductPage() {
     const { error } = await supabase
       .from("products")
       .insert({
-        name: form.name,
-        price: Number(form.price),
-        image: form.image,
-        rating: form.rating,
-        description: form.description,
-        category: form.category,
-      });
+  name: form.name,
+  price: Number(form.price),
+  image: form.image,
+  rating: form.rating,
+  description: form.description,
+  category: form.category,
+  track_stock: form.track_stock,
+});
 
     setLoading(false);
 
@@ -148,6 +150,33 @@ export default function NewProductPage() {
               })
             }
           />
+
+          <div className="rounded-xl border p-4">
+  <label className="flex items-center gap-3 cursor-pointer">
+    <input
+      type="checkbox"
+      checked={form.track_stock}
+      onChange={(e) =>
+        setForm({
+          ...form,
+          track_stock: e.target.checked,
+        })
+      }
+      className="h-5 w-5"
+    />
+
+    <div>
+      <p className="font-bold">
+        Kurangi stok harian
+      </p>
+
+      <p className="text-sm text-gray-500">
+        Aktifkan untuk produk donat.
+        Nonaktifkan untuk kopi, minuman, snack, dll.
+      </p>
+    </div>
+  </label>
+</div>
 
           <div className="flex gap-4">
 
