@@ -6,6 +6,7 @@ import WebsiteSchema from "./components/seo/WebsiteSchema";
 import SearchActionSchema from "./components/seo/SearchActionSchema";
 import BreadcrumbSchema from "./components/seo/BreadcrumbSchema";
 import FAQSchema from "./components/seo/FAQSchema";
+
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import About from "./components/About";
@@ -14,8 +15,8 @@ import WhyChoose from "./components/WhyChoose";
 import Gallery from "./components/Gallery";
 import Review from "./components/Review";
 import CTA from "./components/CTA";
-import Footer from "./components/Footer";
 import Contact from "./components/Contact";
+import Footer from "./components/Footer";
 
 export default function Home() {
   return (
@@ -28,14 +29,23 @@ export default function Home() {
       <SearchActionSchema />
       <BreadcrumbSchema />
       <FAQSchema />
+
       <Navbar />
-      <Hero />
-      <About />
-      <WhyChoose />
-      <Gallery />
-      <Review />
-      <CTA />
-      <Contact />
+
+      <main className="pt-20">
+        <Hero />
+        <About />
+
+        {/* MENU HARUS DIPANGGIL */}
+        <Menu />
+
+        <WhyChoose />
+        <Gallery />
+        <Review />
+        <CTA />
+        <Contact />
+      </main>
+
       <Footer />
     </>
   );
