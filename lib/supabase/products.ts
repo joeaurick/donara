@@ -20,7 +20,7 @@ export async function getProducts() {
     .order("id");
 
   if (error) {
-    console.error("Error getProducts:", error);
+    console.error(error);
     return [];
   }
 
