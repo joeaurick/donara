@@ -143,7 +143,7 @@ export default function LoginPage() {
                   <input
   type="text"
   autoComplete="username"
-  placeholder="admin@donara.com atau donara"
+  placeholder="Masukan Email atau Username"
   className="h-14 w-full rounded-2xl border border-pink-100 bg-pink-50/40 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 transition-all duration-300 focus:border-pink-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-pink-100"
   value={loginId}
   onChange={(e) => setLoginId(e.target.value)}
