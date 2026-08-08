@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 
 import SidebarHeader from "./SidebarHeader";
-import SidebarClock from "./SidebarClock";
+
 import SidebarFooter from "./SidebarFooter";
 
 const menus = [
@@ -17,7 +17,7 @@ const menus = [
   },
   {
     title: "Dashboard",
-    href: "/admin/dashboard",
+    href: "/admin",
     icon: "🏠",
   },
   {
@@ -116,11 +116,11 @@ export default function Sidebar({ open, setOpen }: Props) {
 
       {/* SIDEBAR */}
       <aside
-        style={{ width }}
-        className={`fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-pink-100 bg-white transition-transform duration-300 ease-in-out ${
-          open ? "translate-x-0" : "-translate-x-full"
-        } md:sticky md:top-0 md:z-20 md:translate-x-0`}
-      >
+  style={{ width }}
+  className={`fixed left-0 top-0 z-50 flex h-screen flex-col bg-white transition-transform duration-300 ease-in-out ${
+    open ? "translate-x-0 shadow-none" : "-translate-x-full"
+  } md:sticky md:top-0 md:z-20 md:translate-x-0 md:border-r md:border-pink-100 md:shadow-none`}
+>
         {/* HEADER MOBILE */}
         <div className="flex items-center justify-between border-b border-pink-100 px-5 py-4 md:hidden">
           <div>
@@ -145,15 +145,16 @@ export default function Sidebar({ open, setOpen }: Props) {
         </div>
 
         {/* JAM */}
-        <div className="border-b border-pink-100 px-4 py-4">
-          <SidebarClock />
-        </div>
+        
 
         {/* MENU */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <div className="space-y-2">
             {menus.map((menu) => {
-              const active = pathname.startsWith(menu.href);
+              const active =
+  menu.href === "/admin"
+    ? pathname === "/admin"
+    : pathname.startsWith(menu.href);
 
               return (
                 <Link

@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 type Props = {
   title: string;
   subtitle: string;
@@ -7,14 +11,57 @@ export default function AdminHeader({
   title,
   subtitle,
 }: Props) {
+  const [now, setNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setNow(new Date());
+
+    const timer = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-pink-100 bg-pink-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-pink-600">
-          Donara CMS
+    <div className="mb-8 flex items-start justify-between gap-4">
+      <div className="flex-1">
+        {/* JAM REAL-TIME */}
+        <div className="mb-4 flex items-center gap-3 rounded-2xl border border-pink-100 bg-white px-4 py-3 shadow-sm">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 text-xl">
+            ⏰
+          </div>
+
+          <div className="leading-tight">
+            <p className="text-[11px] font-black uppercase tracking-[0.28em] text-pink-500">
+              JAM SEKARANG
+            </p>
+
+            <div className="text-lg font-black text-slate-900 font-mono tracking-wide">
+              {now
+                ? now.toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })
+                : "00:00:00"}
+            </div>
+
+            <p className="text-xs text-slate-500">
+              {now
+                ? now.toLocaleDateString("id-ID", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
+                : "Memuat tanggal..."}
+            </p>
+          </div>
         </div>
 
-        <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+        {/* JUDUL HALAMAN */}
+        <h1 className="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
           {title}
         </h1>
 

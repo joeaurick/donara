@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Menu, X, Bell, Search } from "lucide-react";
 import Sidebar from "@/app/components/admin/Sidebar";
 
@@ -10,6 +10,16 @@ export default function AdminLayout({
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+
+  const [now, setNow] = useState(new Date());
+
+useEffect(() => {
+  const timer = setInterval(() => {
+    setNow(new Date());
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, []);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-b from-[#fff8f7] via-[#fffdfc] to-white">
@@ -34,10 +44,10 @@ export default function AdminLayout({
 
         {/* Drawer */}
         <div
-          className={`absolute left-0 top-0 h-full w-72 transform border-r border-pink-100 bg-white shadow-2xl transition-transform duration-300 ${
-            open ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
+  className={`absolute left-0 top-0 h-full transform transition-transform duration-300 ${
+    open ? "translate-x-0" : "-translate-x-full"
+  }`}
+>
           <div className="flex items-center justify-between border-b border-pink-100 px-4 py-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
@@ -81,13 +91,33 @@ export default function AdminLayout({
                 </div>
               </button>
 
-              <div className="hidden sm:block">
-  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">
-    Donara CMS
-  </p>
-  <p className="text-sm text-slate-500">
-    Control Panel
-  </p>
+              <div className="hidden sm:flex items-center gap-3">
+  <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 text-pink-600 text-xl">
+    ⏰
+  </div>
+
+  <div className="leading-tight">
+    <p className="text-[11px] font-black uppercase tracking-[0.3em] text-pink-500">
+      JAM SEKARANG
+    </p>
+
+    <div className="text-lg font-black text-slate-900 font-mono tracking-wide">
+      {now.toLocaleTimeString("id-ID", {
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+})}
+    </div>
+
+    <p className="text-xs text-slate-500">
+      {now.toLocaleDateString("id-ID", {
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+})}
+    </p>
+  </div>
 </div>
             </div>
 
