@@ -57,16 +57,27 @@ type Props = {
 export default function SidebarMenu({ onNavigate }: Props) {
   const pathname = usePathname();
 
+  // Tentukan menu aktif secara manual
+  let activeMenu = "/admin";
+
+  if (pathname.startsWith("/admin/products")) {
+    activeMenu = "/admin/products";
+  } else if (pathname.startsWith("/admin/gallery")) {
+    activeMenu = "/admin/gallery";
+  } else if (pathname.startsWith("/admin/reviews")) {
+    activeMenu = "/admin/reviews";
+  } else if (pathname.startsWith("/admin/seo")) {
+    activeMenu = "/admin/seo";
+  } else if (pathname.startsWith("/admin/business")) {
+    activeMenu = "/admin/business";
+  } else if (pathname.startsWith("/admin/homepage")) {
+    activeMenu = "/admin/homepage";
+  }
+
   return (
     <div className="space-y-2">
       {menus.map((menu) => {
-        // Dashboard hanya aktif saat tepat /admin
-        // Menu lain aktif untuk semua sub-route
-        const active =
-          menu.href === "/admin"
-            ? pathname === "/admin"
-            : pathname.startsWith(menu.href);
-
+        const active = activeMenu === menu.href;
         const Icon = menu.icon;
 
         return (
