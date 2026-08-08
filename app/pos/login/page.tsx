@@ -9,22 +9,46 @@ import { supabase } from "@/lib/supabase/client";
 export default function PosLoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function login() {
-    if (!email.trim() || !password.trim()) {
-      alert("Email dan password wajib diisi.");
-      return;
-    }
+  if (!loginId.trim() || !password.trim()) {
+    alert("Email/Username dan password wajib diisi.");
+    return;
+  }
 
-    setLoading(true);
+  setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+  try {
+    let email = loginId.trim();
+
+    // Jika input bukan email, cari berdasarkan username
+if (!loginId.includes("@")) {
+  const { data: emailResult, error: rpcError } =
+    await supabase.rpc(
+      "get_email_by_username",
+      {
+        p_username: loginId.trim(),
+      }
+    );
+
+  if (rpcError || !emailResult) {
+    alert("Username tidak ditemukan.");
+    setLoading(false);
+    return;
+  }
+
+  email = emailResult;
+}
+
+    // Login menggunakan email asli
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
     setLoading(false);
 
@@ -35,7 +59,12 @@ export default function PosLoginPage() {
 
     router.replace("/pos/dashboard");
     router.refresh();
+  } catch (err) {
+    console.error(err);
+    setLoading(false);
+    alert("Terjadi kesalahan saat login.");
   }
+}
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-pink-50 via-white to-pink-100 px-4 py-10">
@@ -73,12 +102,11 @@ export default function PosLoginPage() {
               </span>
 
               <input
-                type="email"
-                placeholder="kasir@donara.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 pl-11 text-sm text-gray-800 outline-none transition-all duration-200 focus:border-pink-500 focus:ring-4 focus:ring-pink-100"
-              />
+  type="text"
+  placeholder="Email atau Username"
+  value={loginId}
+  onChange={(e) => setLoginId(e.target.value)}
+/>
             </div>
           </div>
 
