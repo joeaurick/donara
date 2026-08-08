@@ -7,6 +7,7 @@ import SidebarHeader from "./SidebarHeader";
 import SidebarClock from "./SidebarClock";
 import SidebarMenu from "./SidebarMenu";
 import SidebarFooter from "./SidebarFooter";
+import AdminLogout from "@/app/components/AdminLogout";
 
 type Props = {
   open: boolean;
@@ -14,7 +15,7 @@ type Props = {
 };
 
 export default function Sidebar({ open, setOpen }: Props) {
-  const [width, setWidth] = useState(272);
+  const [width, setWidth] = useState(248);
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
@@ -39,8 +40,8 @@ export default function Sidebar({ open, setOpen }: Props) {
 
       let newWidth = e.clientX;
 
-      if (newWidth < 248) newWidth = 248;
-      if (newWidth > 360) newWidth = 360;
+      if (newWidth < 220) newWidth = 220;
+      if (newWidth > 320) newWidth = 320;
 
       setWidth(newWidth);
     }
@@ -63,59 +64,66 @@ export default function Sidebar({ open, setOpen }: Props) {
       {/* Overlay Mobile */}
       <div
         onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
+        className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+          open
+            ? "opacity-100"
+            : "pointer-events-none opacity-0"
         }`}
       />
 
       {/* Sidebar */}
       <aside
-  style={{ width }}
-  className={`fixed left-0 top-0 z-50 h-screen overflow-hidden border-r border-pink-100 bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 ${
-    open ? "translate-x-0" : "-translate-x-full"
-  } md:sticky md:top-0 md:z-20 md:h-screen md:translate-x-0 md:shadow-none`}
->
-  <div className="flex h-full min-h-0 flex-col">
-          {/* Top */}
-          <div className="border-b border-pink-100 bg-gradient-to-r from-pink-50/70 to-orange-50/30">
-  <div className="flex items-center justify-between px-4 py-2 md:px-4">
-    <SidebarHeader />
+        style={{ width }}
+        className={`fixed left-0 top-0 z-50 h-screen overflow-hidden border-r border-pink-100 bg-white shadow-xl transition-transform duration-300 ${
+          open
+            ? "translate-x-0"
+            : "-translate-x-full"
+        } md:sticky md:top-0 md:z-20 md:h-screen md:translate-x-0 md:shadow-none`}
+      >
+        <div className="flex h-full flex-col">
+          {/* Tombol Close Mobile */}
+          <div className="flex items-center justify-end border-b border-pink-100 px-3 py-2 md:hidden">
+            <button
+              onClick={() => setOpen(false)}
+              className="flex h-7 w-7 items-center justify-center rounded-md border border-pink-100 bg-white text-slate-500 shadow-sm transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+              aria-label="Tutup menu"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
 
-    <button
-      onClick={() => setOpen(false)}
-      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-pink-100 bg-white text-slate-500 shadow-sm transition-all duration-200 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600 md:hidden"
-      aria-label="Tutup menu"
-    >
-      <X className="h-4 w-4" />
-    </button>
-  </div>
+          {/* Header */}
+          <div className="border-b border-pink-100 px-4 py-3">
+            <SidebarHeader />
+          </div>
 
-  <div className="px-4 pb-2 md:px-4">
-    <SidebarClock />
-  </div>
-</div>
+          {/* Clock */}
+          <div className="border-b border-pink-100 px-4 py-3">
+            <SidebarClock />
+          </div>
 
           {/* Menu */}
-          <div className="flex-1 overflow-y-auto px-3 py-4 md:px-4">
-  <div className="flex-1 overflow-y-auto p-6">
-  <SidebarMenu
-    onNavigate={() => setOpen(false)}
-  />
-</div>
-</div>
+          <div className="flex-1 overflow-y-auto px-3 py-3">
+            <SidebarMenu />
+          </div>
+
+          {/* Logout */}
+          <div className="border-t border-pink-100 px-3 py-3">
+            <div className="scale-90 origin-left">
+              <AdminLogout />
+            </div>
+          </div>
 
           {/* Footer */}
-          <div className="border-t border-pink-100 bg-white/70 px-4 py-4 md:px-5">
+          <div className="border-t border-pink-100 bg-white px-3 py-2">
             <SidebarFooter />
           </div>
 
-          {/* Resize Handle */}
+          {/* Resize Handle Desktop */}
           <div
             onMouseDown={() => setDragging(true)}
-            className="absolute right-0 top-0 hidden h-full w-1.5 cursor-col-resize rounded-full transition-all duration-200 hover:bg-pink-300 md:block"
-          >
-            <div className="mx-auto mt-24 h-20 w-0.5 rounded-full bg-pink-100" />
-          </div>
+            className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize hover:bg-pink-300 md:block"
+          />
         </div>
       </aside>
     </>

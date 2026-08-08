@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase/client";
 import { getUserRole } from "@/lib/auth/getUserRole";
@@ -61,70 +61,106 @@ export default function PosSidebar() {
   }
 
   return (
-    <aside className="flex h-screen w-72 flex-col border-r border-pink-100 bg-white shadow-sm">
-      {/* Logo */}
-      <div className="shrink-0 border-b border-pink-100 p-6">
-        <h1 className="text-2xl font-black tracking-tight text-pink-600">
-          DONARA POS
-        </h1>
+    <aside className="flex h-full w-full flex-col bg-white border-r border-gray-100">
+      {/* ================= HEADER ================= */}
+      <div className="border-b border-gray-100 px-5 py-6">
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/20">
+            <span className="text-lg font-black">D</span>
+          </div>
 
-        <p className="mt-1 text-sm text-gray-500">
-          Point of Sale
-        </p>
+          <div className="min-w-0">
+            <h1 className="text-lg font-black tracking-tight text-gray-900">
+              DONARA POS
+            </h1>
+
+            <p className="text-xs font-medium text-gray-400">
+              Point of Sale
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Menu */}
-      <nav className="flex-1 overflow-y-auto p-4">
+      {/* ================= MENU ================= */}
+      <nav className="flex-1 overflow-y-auto px-4 py-5">
+        <p className="mb-3 px-2 text-[10px] font-black uppercase tracking-[0.22em] text-gray-400">
+          Navigasi
+        </p>
+
         <div className="space-y-2">
           {menus
             .filter((menu) => {
               if (role === "cashier") {
-                return ![
-                  "/pos/report",
-                  "/pos/settings",
-                ].includes(menu.href);
+                return !["/pos/report", "/pos/settings"].includes(menu.href);
               }
 
               return true;
             })
             .map((menu) => {
-              const active =
-                pathname === menu.href ||
-                pathname.startsWith(menu.href + "/");
+              const active = pathname.startsWith(menu.href);
 
               return (
                 <Link
                   key={menu.href}
                   href={menu.href}
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+                  className={`group flex items-center gap-3 rounded-2xl px-4 py-3 transition-all duration-200 ${
                     active
-                      ? "bg-pink-600 text-white shadow-lg shadow-pink-200"
-                      : "text-gray-700 hover:bg-pink-50 hover:text-pink-600"
+                      ? "bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/25"
+                      : "text-gray-600 hover:bg-pink-50 hover:text-pink-600"
                   }`}
                 >
-                  <span className="text-lg">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl text-lg transition-all ${
+                      active
+                        ? "bg-white/15"
+                        : "bg-gray-100 group-hover:bg-pink-100"
+                    }`}
+                  >
                     {menu.icon}
-                  </span>
+                  </div>
 
-                  <span>
-                    {menu.title}
-                  </span>
+                  <div className="flex min-w-0 flex-1 items-center justify-between">
+                    <span className="truncate text-sm font-semibold">
+                      {menu.title}
+                    </span>
+
+                    {active && (
+                      <div className="h-2 w-2 rounded-full bg-white shadow-sm" />
+                    )}
+                  </div>
                 </Link>
               );
             })}
         </div>
       </nav>
 
-      {/* Footer / Logout */}
-      <div className="shrink-0 border-t border-pink-100 p-4">
+      {/* ================= FOOTER ================= */}
+      <div className="border-t border-gray-100 p-4">
+        <div className="mb-4 rounded-2xl border border-pink-100 bg-gradient-to-br from-pink-50 to-white p-4">
+          <p className="text-xs font-black uppercase tracking-wider text-pink-600">
+            Status Kasir
+          </p>
+
+          <div className="mt-2 flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+
+            <span className="text-sm font-semibold text-gray-700">
+              Online
+            </span>
+          </div>
+        </div>
+
         <button
-          type="button"
           onClick={logout}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-100 px-4 py-3 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-all duration-200 hover:border-red-200 hover:bg-red-100 active:scale-[0.98]"
         >
-          <span>🚪</span>
+          <span className="text-base">🚪</span>
           Logout
         </button>
+
+        <div className="mt-4 text-center text-[10px] font-medium text-gray-400">
+          Donara POS • v1.0
+        </div>
       </div>
     </aside>
   );
