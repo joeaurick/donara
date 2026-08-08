@@ -20,126 +20,139 @@ type Props = {
   items: Item[];
 };
 
-export default function Receipt(props: Props) {
+export default function Receipt({
+  invoice,
+  created_at,
+  payment_method,
+  subtotal,
+  discount,
+  tax,
+  total,
+  paid,
+  change,
+  items,
+}: Props) {
   return (
-    <div className="mx-auto w-[300px] bg-white p-4 text-sm">
+    <div className="w-[300px] bg-white p-4 text-[12px] font-mono text-black">
+      {/* Header */}
+      <div className="text-center">
+        <h1 className="text-lg font-black tracking-wider">
+          DONARA
+        </h1>
 
-      <h1 className="text-center text-xl font-black">
-        DONARA
-      </h1>
+        <p className="text-xs">
+          Point Of Sale
+        </p>
+      </div>
 
-      <p className="text-center">
-        Point Of Sale
-      </p>
+      <hr className="my-3 border-dashed border-black" />
 
-      <hr className="my-3" />
-
+      {/* Info transaksi */}
       <div className="space-y-1">
-
-        <div className="flex justify-between">
+        <div className="flex justify-between gap-3">
           <span>Invoice</span>
-          <span>{props.invoice}</span>
-        </div>
-
-        <div className="flex justify-between">
-          <span>Tanggal</span>
-          <span>
-            {new Date(props.created_at).toLocaleString("id-ID")}
+          <span className="text-right font-bold">
+            {invoice}
           </span>
         </div>
 
-        <div className="flex justify-between">
-          <span>Pembayaran</span>
-          <span>{props.payment_method}</span>
+        <div className="flex justify-between gap-3">
+          <span>Tanggal</span>
+          <span className="text-right">
+            {new Date(created_at).toLocaleString("id-ID")}
+          </span>
         </div>
 
+        <div className="flex justify-between gap-3">
+          <span>Pembayaran</span>
+          <span className="text-right font-bold">
+            {payment_method}
+          </span>
+        </div>
       </div>
 
-      <hr className="my-3" />
+      <hr className="my-3 border-dashed border-black" />
 
-      {props.items.map((item) => (
+      {/* Item */}
+      <div className="space-y-2">
+        {items.map((item, index) => (
+          <div key={`${item.product_name}-${index}`} className="space-y-1">
+            <div className="font-bold leading-tight">
+              {item.product_name}
+            </div>
 
-        <div
-          key={item.product_name}
-          className="mb-2"
-        >
+            <div className="flex justify-between gap-3 text-[11px]">
+              <span>
+                {item.qty} × Rp {item.price.toLocaleString("id-ID")}
+              </span>
 
-          <div className="font-bold">
-            {item.product_name}
+              <span className="font-bold">
+                Rp {item.subtotal.toLocaleString("id-ID")}
+              </span>
+            </div>
           </div>
+        ))}
+      </div>
 
-          <div className="flex justify-between">
+      <hr className="my-3 border-dashed border-black" />
 
-            <span>
-              {item.qty} × Rp{" "}
-              {item.price.toLocaleString("id-ID")}
-            </span>
-
-            <span>
-              Rp{" "}
-              {item.subtotal.toLocaleString("id-ID")}
-            </span>
-
-          </div>
-
-        </div>
-
-      ))}
-
-      <hr className="my-3" />
-
-      <div className="space-y-1">
-
+      {/* Ringkasan */}
+      <div className="space-y-1 text-[11px]">
         <div className="flex justify-between">
           <span>Subtotal</span>
           <span>
-            Rp {props.subtotal.toLocaleString("id-ID")}
+            Rp {subtotal.toLocaleString("id-ID")}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span>Diskon</span>
           <span>
-            Rp {props.discount.toLocaleString("id-ID")}
+            Rp {discount.toLocaleString("id-ID")}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span>Pajak</span>
           <span>
-            Rp {props.tax.toLocaleString("id-ID")}
+            Rp {tax.toLocaleString("id-ID")}
           </span>
         </div>
 
-        <div className="flex justify-between font-bold">
-          <span>Total</span>
+        <hr className="my-2 border-black" />
+
+        <div className="flex justify-between text-sm font-black">
+          <span>TOTAL</span>
           <span>
-            Rp {props.total.toLocaleString("id-ID")}
+            Rp {total.toLocaleString("id-ID")}
           </span>
         </div>
 
         <div className="flex justify-between">
           <span>Bayar</span>
           <span>
-            Rp {props.paid.toLocaleString("id-ID")}
+            Rp {paid.toLocaleString("id-ID")}
           </span>
         </div>
 
-        <div className="flex justify-between">
+        <div className="flex justify-between font-bold">
           <span>Kembali</span>
           <span>
-            Rp {props.change.toLocaleString("id-ID")}
+            Rp {change.toLocaleString("id-ID")}
           </span>
         </div>
-
       </div>
 
-      <hr className="my-3" />
+      <hr className="my-3 border-dashed border-black" />
 
-      <p className="text-center">
-        Terima kasih 🙏
-      </p>
+      {/* Footer */}
+      <div className="text-center text-[11px]">
+        <p>Terima kasih atas kunjungan Anda</p>
 
+        <p className="mt-1">
+          🙏 Selamat menikmati
+        </p>
+      </div>
     </div>
   );
 }

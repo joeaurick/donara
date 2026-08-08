@@ -2,43 +2,77 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function FilterPeriode({ currentMonth, currentYear }: { currentMonth: string; currentYear: string }) {
+type Props = {
+  currentMonth: string;
+  currentYear: string;
+};
+
+const daftarBulan = [
+  { value: "01", label: "Januari" },
+  { value: "02", label: "Februari" },
+  { value: "03", label: "Maret" },
+  { value: "04", label: "April" },
+  { value: "05", label: "Mei" },
+  { value: "06", label: "Juni" },
+  { value: "07", label: "Juli" },
+  { value: "08", label: "Agustus" },
+  { value: "09", label: "September" },
+  { value: "10", label: "Oktober" },
+  { value: "11", label: "November" },
+  { value: "12", label: "Desember" },
+];
+
+export default function FilterPeriode({
+  currentMonth,
+  currentYear,
+}: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const handleFilterChange = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString());
+  const handleFilterChange = (
+    key: string,
+    value: string
+  ) => {
+    const params = new URLSearchParams(
+      searchParams.toString()
+    );
+
     params.set(key, value);
+
     router.push(`?${params.toString()}`);
   };
 
-  const daftarBulan = [
-    { value: "01", label: "Januari" }, { value: "02", label: "Februari" },
-    { value: "03", label: "Maret" }, { value: "04", label: "April" },
-    { value: "05", label: "Mei" }, { value: "06", label: "Juni" },
-    { value: "07", label: "Juli" }, { value: "08", label: "Agustus" },
-    { value: "09", label: "September" }, { value: "10", label: "Oktobeer" },
-    { value: "11", label: "November" }, { value: "12", label: "Desember" }
-  ];
-
   return (
-    <div className="flex items-center gap-2 bg-white border p-1.5 rounded-xl shadow-xs shrink-0">
-      <span className="text-xs font-black text-gray-400 uppercase pl-2">Periode:</span>
-      <select 
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-sm">
+      <span className="text-[11px] font-black uppercase tracking-wider text-gray-500">
+        Periode
+      </span>
+
+      <select
         defaultValue={currentMonth}
-        onChange={(e) => handleFilterChange("month", e.target.value)}
-        className="bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold p-1.5 outline-none text-gray-700"
+        onChange={(e) =>
+          handleFilterChange("month", e.target.value)
+        }
+        className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-700 outline-none transition focus:border-pink-500 focus:bg-white"
       >
-        {daftarBulan.map((b) => (
-          <option key={b.value} value={b.value}>{b.label}</option>
+        {daftarBulan.map((bulan) => (
+          <option
+            key={bulan.value}
+            value={bulan.value}
+          >
+            {bulan.label}
+          </option>
         ))}
       </select>
-      
-      <select 
+
+      <select
         defaultValue={currentYear}
-        onChange={(e) => handleFilterChange("year", e.target.value)}
-        className="bg-gray-50 border border-gray-200 rounded-lg text-xs font-bold p-1.5 outline-none text-gray-700"
+        onChange={(e) =>
+          handleFilterChange("year", e.target.value)
+        }
+        className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-700 outline-none transition focus:border-pink-500 focus:bg-white"
       >
+        <option value="2025">2025</option>
         <option value="2026">2026</option>
         <option value="2027">2027</option>
       </select>

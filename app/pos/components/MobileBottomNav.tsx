@@ -30,38 +30,38 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-white xl:hidden">
-
-      <div className="grid grid-cols-5">
-
+    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-pink-100 bg-white/95 backdrop-blur lg:hidden">
+      <div className="grid grid-cols-4">
         {menus.map((menu) => {
-
-          const active = pathname.startsWith(menu.href);
+          const active =
+            pathname === menu.href ||
+            pathname.startsWith(menu.href + "/");
 
           return (
             <Link
               key={menu.href}
               href={menu.href}
-              className={`flex flex-col items-center justify-center py-2 text-xs transition ${
+              className={`flex flex-col items-center justify-center gap-1 py-3 text-[11px] font-semibold transition-all duration-200 ${
                 active
-                  ? "text-pink-600 font-bold"
-                  : "text-gray-500"
+                  ? "text-pink-600"
+                  : "text-gray-500 hover:text-pink-500"
               }`}
             >
-              <span className="text-xl">
+              <span
+                className={`text-xl transition-transform ${
+                  active ? "scale-110" : ""
+                }`}
+              >
                 {menu.icon}
               </span>
 
-              <span className="mt-1">
+              <span>
                 {menu.title}
               </span>
             </Link>
           );
-
         })}
-
       </div>
-
     </div>
   );
 }

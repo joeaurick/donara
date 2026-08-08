@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
+
 import Receipt from "./Receipt";
 
 type Item = {
@@ -33,7 +34,8 @@ export default function PrintReceiptButton({
   transaction,
   items,
 }: Props) {
-  const receiptRef = useRef<HTMLDivElement>(null);
+  const receiptRef =
+    useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
     contentRef: receiptRef,
@@ -43,12 +45,14 @@ export default function PrintReceiptButton({
   return (
     <>
       <button
-        onClick={() => handlePrint()}
-        className="rounded-xl bg-pink-600 px-5 py-3 font-bold text-white hover:bg-pink-700"
+        type="button"
+        onClick={handlePrint}
+        className="inline-flex items-center gap-2 rounded-xl bg-pink-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-pink-700 active:scale-95"
       >
         🖨 Cetak Struk
       </button>
 
+      {/* Area tersembunyi untuk dicetak */}
       <div className="hidden">
         <div ref={receiptRef}>
           <Receipt

@@ -114,8 +114,28 @@ console.log("Transaksi berhasil disimpan.");
     window.dispatchEvent(new Event("stock-updated"));
 
     // TAMBAHKAN DUA BARIS INI:
-    forceClearCart(); // Ini akan mengosongkan keranjang
-    setIsSuccess(true); // Ini biasanya memicu munculnya modal/pop-up struk
+    setReceiptData({
+  invoice,
+  items: cart,
+  subtotal,
+  total,
+  paymentMethod,
+  nominalPaid:
+    paymentMethod === "CASH"
+      ? nominalPaid
+      : total,
+  kembalian:
+    paymentMethod === "CASH"
+      ? kembalian
+      : 0,
+  date: new Date().toLocaleString("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }),
+});
+
+forceClearCart();
+setIsSuccess(true);// Ini biasanya memicu munculnya modal/pop-up struk
 
     const { data: stockData, error: stockFetchError } = await supabase
       .from("daily_stock")

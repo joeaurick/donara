@@ -4,46 +4,47 @@ import { useMobileCart } from "../context/MobileCartContext";
 import CartPanel from "./CartPanel";
 
 export default function MobileCartSheet() {
-  const {
-    open,
-    closeCart,
-  } = useMobileCart();
+  const { open, closeCart } = useMobileCart();
 
-  // JIKA TIDAK OPEN, JANGAN RENDER APAPUN KE DOM.
-  // Ini memutus loop setState dan mencegah React salah menghapus element Node DOM (removeChild error).
+  // Jika tidak dibuka, jangan render apa pun.
   if (!open) return null;
 
   return (
     <>
-      {/* BACKDROP BACKGROUND */}
+      {/* Backdrop */}
       <div
         onClick={closeCart}
-        className="fixed inset-0 z-[290] bg-black/50 backdrop-blur-sm xl:hidden"
+        className="fixed inset-0 z-[250] bg-black/40 backdrop-blur-sm xl:hidden"
       />
 
-      {/* KONTANER LACI UTAMA */}
+      {/* Drawer */}
       <div
-        className="fixed inset-x-0 bottom-0 z-[300] h-[85vh] rounded-t-3xl bg-white flex flex-col overflow-hidden xl:hidden animate-in slide-in-from-bottom duration-300"
+        className="fixed inset-x-0 bottom-0 z-[300] flex h-[85vh] flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl xl:hidden animate-in slide-in-from-bottom duration-300"
       >
-        {/* Handle Garis Atas */}
-        <div className="flex justify-center py-3 shrink-0 bg-white">
-          <div className="h-1.5 w-12 rounded-full bg-gray-300" />
+        {/* Handle */}
+        <div className="shrink-0 bg-white py-3">
+          <div className="mx-auto h-1.5 w-12 rounded-full bg-gray-300" />
         </div>
 
-        {/* Tombol Tutup X */}
-        <button
-          onClick={closeCart}
-          className="absolute right-4 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs font-black text-gray-500 active:scale-95 transition-all"
-        >
-          ✕
-        </button>
+        {/* Header */}
+        <div className="flex items-center justify-between border-b px-5 py-3">
+          <h2 className="text-lg font-black text-pink-600">
+            Keranjang
+          </h2>
 
-        {/* BUNGKUSAN CARTPANEL */}
-        <div className="flex-1 min-h-0 w-full overflow-hidden pb-safe">
-          {/* Properti onPaymentSuccess dihapus agar cetak struk tidak langsung hancur/hilang */}
+          <button
+            type="button"
+            onClick={closeCart}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-sm font-black text-gray-500 transition-all hover:bg-gray-200 active:scale-95"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="min-h-0 flex-1 overflow-hidden pb-safe">
           <CartPanel />
         </div>
-
       </div>
     </>
   );

@@ -9,8 +9,7 @@ type Props = {
   todayClosed: boolean;
   closing: boolean;
   handleCloseDay: () => void;
-  // Menambahkan callback untuk membuka toko kembali secara instan jika dibutuhkan oleh Admin
-  handleOpenDay?: () => void; 
+  handleOpenDay?: () => void;
 };
 
 export default function DashboardHeader({
@@ -24,7 +23,6 @@ export default function DashboardHeader({
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    // Set waktu di dalam useEffect untuk menghindari Next.js Hydration Error
     setNow(new Date());
 
     const timer = setInterval(() => {
@@ -47,31 +45,26 @@ export default function DashboardHeader({
   }
 
   return (
-    <header className="border-b bg-white shadow-sm">
-      <div className="flex flex-col gap-5 px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
-
-        {/* ========================= */}
-        {/* KIRI: Informasi Waktu     */}
-        {/* ========================= */}
-        <div>
-          <h1 className="text-3xl font-black text-pink-600">
+    <header className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        {/* KIRI */}
+        <div className="min-w-0">
+          <h1 className="text-2xl font-black text-pink-600">
             DONARA POS
           </h1>
-          <p className="text-sm text-gray-500">
-            Point of Sale
-          </p>
 
-          <div className="mt-4 flex flex-wrap gap-5">
+          <div className="mt-3 flex flex-wrap items-center gap-6 text-sm">
             <div>
-              <p className="text-xs uppercase tracking-wide text-gray-400">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
                 Tanggal
               </p>
+
               <p className="font-semibold text-gray-700">
                 {now
                   ? now.toLocaleDateString("id-ID", {
-                      weekday: "long",
+                      weekday: "short",
                       day: "numeric",
-                      month: "long",
+                      month: "short",
                       year: "numeric",
                     })
                   : "Memuat..."}
@@ -79,10 +72,11 @@ export default function DashboardHeader({
             </div>
 
             <div>
-              <p className="text-xs uppercase tracking-wide text-gray-400">
-                Jam Real-Time
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                Jam
               </p>
-              <p className="text-2xl font-black text-pink-600 font-mono tracking-wider">
+
+              <p className="font-mono text-xl font-black tracking-wider text-pink-600">
                 {now
                   ? now.toLocaleTimeString("id-ID", {
                       hour: "2-digit",
@@ -95,60 +89,56 @@ export default function DashboardHeader({
           </div>
         </div>
 
-        {/* ========================= */}
-        {/* KANAN: Kontrol & Stok     */}
-        {/* ========================= */}
-        <div className="flex flex-col items-start gap-4 lg:items-end">
-          
+        {/* KANAN */}
+        <div className="flex flex-col items-start gap-3 xl:items-end">
           {todayStock && (
-            <div className="flex flex-wrap gap-3">
-              <div className="rounded-xl bg-gray-100 px-4 py-2">
-                <p className="text-xs text-gray-500">Status Toko</p>
-                <p className={`font-bold ${todayClosed ? "text-red-600" : "text-green-600"}`}>
-                  {todayClosed ? "🔴 TUTUP" : "🟢 BUKA"}
-                </p>
-              </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <StatCard
+                label="Status"
+                value={todayClosed ? "🔴 Tutup" : "🟢 Buka"}
+              />
 
-              <div className="rounded-xl bg-gray-100 px-4 py-2">
-                <p className="text-xs text-gray-500">Stok Awal</p>
-                <p className="font-bold">{todayStock.opening_stock}</p>
-              </div>
+              <StatCard
+                label="Stok"
+                value={todayStock.opening_stock}
+              />
 
-              <div className="rounded-xl bg-gray-100 px-4 py-2">
-                <p className="text-xs text-gray-500">Sisa Stok</p>
-                <p className="font-bold text-green-600">{todayStock.remaining_stock}</p>
-              </div>
+              <StatCard
+                label="Sisa"
+                value={todayStock.remaining_stock}
+                color="text-green-600"
+              />
 
-              <div className="rounded-xl bg-gray-100 px-4 py-2">
-                <p className="text-xs text-gray-500">Terjual</p>
-                <p className="font-bold text-orange-600">
-                  {todayStock.opening_stock - todayStock.remaining_stock}
-                </p>
-              </div>
+              <StatCard
+                label="Terjual"
+                value={
+                  todayStock.opening_stock -
+                  todayStock.remaining_stock
+                }
+                color="text-orange-600"
+              />
             </div>
           )}
 
-          <div className="flex flex-wrap gap-3">
-            {/* FITUR TOMBOL AKSES: Tampilkan Buka Toko jika toko tutup */}
+          <div className="flex flex-wrap gap-2">
             {todayClosed ? (
               <button
                 onClick={() => {
                   if (handleOpenDay) {
                     handleOpenDay();
                   } else {
-                    // Fallback jika belum dihubungkan ke parent, langsung pancing ulang halaman
-                    window.location.reload(); 
+                    window.location.reload();
                   }
                 }}
-                className="rounded-xl bg-green-600 px-5 py-3 font-bold text-white transition hover:bg-green-700"
+                className="rounded-xl bg-green-600 px-4 py-2 text-sm font-bold text-white hover:bg-green-700"
               >
-                Buka Toko Kembali
+                Buka Toko
               </button>
             ) : (
               <button
                 onClick={handleCloseDay}
                 disabled={closing}
-                className="rounded-xl bg-red-600 px-5 py-3 font-bold text-white transition hover:bg-red-700 disabled:bg-gray-400"
+                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white hover:bg-red-700 disabled:bg-gray-400"
               >
                 {closing ? "Menutup..." : "Tutup Toko"}
               </button>
@@ -156,14 +146,35 @@ export default function DashboardHeader({
 
             <button
               onClick={logout}
-              className="rounded-xl bg-gray-800 px-5 py-3 font-bold text-white hover:bg-black transition-colors"
+              className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white hover:bg-black"
             >
               Logout
             </button>
           </div>
-
         </div>
       </div>
     </header>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  color = "text-gray-900",
+}: {
+  label: string;
+  value: string | number;
+  color?: string;
+}) {
+  return (
+    <div className="min-w-[88px] rounded-xl border border-gray-100 bg-gray-50 px-3 py-2">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-gray-400">
+        {label}
+      </p>
+
+      <p className={`mt-1 text-sm font-black ${color}`}>
+        {value}
+      </p>
+    </div>
   );
 }
