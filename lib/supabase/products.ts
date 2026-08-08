@@ -15,7 +15,8 @@ export async function getProducts() {
       category,
       package_type,
       product_type,
-      track_stock
+      track_stock,
+      promo_code
     `)
     .order("id");
 

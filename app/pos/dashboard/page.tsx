@@ -70,6 +70,7 @@ export default function PosDashboardPage() {
   async function loadProducts() {
     const data = await getProducts();
     setProducts(data ?? []);
+    console.log("PRODUCTS POS:", data);
   }
 
   async function checkTodayStock() {
@@ -301,7 +302,21 @@ export default function PosDashboardPage() {
   todayStock={todayStock}
   onPackageClick={packagePicker.openPicker}
   cart={cart}
-  onProductClick={(product) => addToCart(product)}
+  onProductClick={(product) =>
+  addToCart({
+    id: Number(product.id),
+    name: product.name,
+    price: product.price,
+    image: product.image_url || product.image || "",
+    category: product.category,
+    track_stock: product.track_stock,
+
+    // WAJIB
+    promo_code: product.promo_code,
+
+    isPackage: false,
+  })
+}
 />
             </div>
           </section>

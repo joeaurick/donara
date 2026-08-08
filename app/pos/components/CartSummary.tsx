@@ -11,21 +11,25 @@ interface CartSummaryProps {
 }
 
 export default function CartSummary({ onPaymentSuccess }: CartSummaryProps) {
-  const context = useCart() as any;
-  const cart = context?.cart || [];
+  const {
+  cart,
+  subtotal,
+  discount,
+  tax,
+  total,
+  clear,
+} = useCart() as any;
 
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [paymentMethod, setPaymentMethod] = useState<string>("CASH");
-  const [nominalPaid, setNominalPaid] = useState<number>(0);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
-  const [receiptData, setReceiptData] = useState<any>(null);
+const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+const [paymentMethod, setPaymentMethod] = useState<string>("CASH");
+const [nominalPaid, setNominalPaid] = useState<number>(0);
+const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const subtotal = cart.reduce((sum: number, item: any) => sum + item.price * item.qty, 0);
-  const diskon = 0;
-  const pajak = 0;
-  const total = subtotal - diskon + pajak;
+const [isSuccess, setIsSuccess] = useState<boolean>(false);
+const [receiptData, setReceiptData] = useState<any>(null);
+
+const diskon = discount;
+const pajak = tax;
 
   const totalItemCount = cart.reduce(
   (sum: number, item: any) => {
@@ -52,24 +56,12 @@ export default function CartSummary({ onPaymentSuccess }: CartSummaryProps) {
   }, [isModalOpen, total, isSuccess]);
 
   function forceClearCart() {
-    try {
-      if (typeof context.clearCart === "function") {
-        context.clearCart();
-        return;
-      }
-      if (typeof context.setCart === "function") {
-        context.setCart([]);
-        return;
-      }
-      if (typeof context.remove === "function") {
-        cart.forEach((item: any) => {
-          context.remove(item.id);
-        });
-      }
-    } catch (e) {
-      console.error("Gagal mereset state keranjang:", e);
-    }
+  try {
+    clear();
+  } catch (e) {
+    console.error("Gagal mereset state keranjang:", e);
   }
+}
 
 async function handleProcessPayment() {
   setIsProcessing(true);
@@ -165,7 +157,7 @@ const { error: stockUpdateError } = await supabase
     // 3. SELESAI
     setIsProcessing(false);
     if (onPaymentSuccess) onPaymentSuccess();
-    alert("Pembayaran Berhasil!");
+    
 
   } catch (error) {
     console.error("Terjadi kesalahan:", error);
@@ -278,6 +270,18 @@ const { error: stockUpdateError } = await supabase
           <span>Subtotal Item</span>
           <span className="text-gray-700 font-extrabold">Rp {subtotal.toLocaleString("id-ID")}</span>
         </div>
+
+        {diskon > 0 && (
+  <div className="flex items-center justify-between rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+    <span>
+      🎉 Anda hemat
+    </span>
+
+    <span>
+      -Rp {diskon.toLocaleString("id-ID")}
+    </span>
+  </div>
+)}
       </div>
 
       <div className="pt-2 border-t border-dashed border-gray-200 flex justify-between items-center">

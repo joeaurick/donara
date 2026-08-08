@@ -25,6 +25,9 @@ export type CartItem = {
 
   track_stock?: boolean;
 
+  // TAMBAHAN
+  promo_code?: string | null;
+
   isPackage: boolean;
 
   packageProducts?: PackageProduct[];
@@ -58,13 +61,68 @@ type CartContextType = {
 
   total: number;
 
-  setDiscount: (value: number) => void;
-
   setTax: (value: number) => void;
 };
 
 const CartContext =
   createContext<CartContextType | null>(null);
+
+function calculatePromoDiscount(cart: CartItem[]) {
+  let discount = 0;
+
+  // GROUP PROMO
+  const groups: Record<
+    string,
+    { qty: number; total: number; unitPrice: number }
+  > = {};
+
+  for (const item of cart) {
+    if (!item.promo_code || item.promo_code === "NORMAL") {
+      continue;
+    }
+
+    if (!groups[item.promo_code]) {
+      groups[item.promo_code] = {
+        qty: 0,
+        total: 0,
+        unitPrice: item.price,
+      };
+    }
+
+    groups[item.promo_code].qty += item.qty;
+    groups[item.promo_code].total += item.price * item.qty;
+  }
+
+  // DONAT 3 PCS = 10.000
+  if (groups["DONAT_3"]) {
+    const g = groups["DONAT_3"];
+
+    const bundleCount = Math.floor(g.qty / 3);
+    const remaining = g.qty % 3;
+
+    const promoTotal =
+      bundleCount * 10000 +
+      remaining * g.unitPrice;
+
+    discount += g.total - promoTotal;
+  }
+
+  // DONAT 6 PCS = 23.000
+  if (groups["DONAT_6"]) {
+    const g = groups["DONAT_6"];
+
+    const bundleCount = Math.floor(g.qty / 6);
+    const remaining = g.qty % 6;
+
+    const promoTotal =
+      bundleCount * 23000 +
+      remaining * g.unitPrice;
+
+    discount += g.total - promoTotal;
+  }
+
+  return discount;
+}
 
 export function CartProvider({
   children,
@@ -73,8 +131,6 @@ export function CartProvider({
 }) {
   const [cart, setCart] = useState<CartItem[]>([]);
 
-  const [discount, setDiscount] =
-    useState(0);
 
   const [tax, setTax] = useState(0);
 
@@ -90,15 +146,19 @@ export function CartProvider({
         );
 
         if (exist) {
-          return prev.map((x) =>
-            x.id === item.id
-              ? {
-                  ...x,
-                  qty: x.qty + 1,
-                }
-              : x
-          );
+  return prev.map((x) =>
+    x.id === item.id
+      ? {
+          ...x,
+          qty: x.qty + 1,
+
+          // PENTING
+          promo_code:
+            item.promo_code ?? x.promo_code,
         }
+      : x
+  );
+}
       }
 
       return [
@@ -162,7 +222,6 @@ export function CartProvider({
 
   function clear() {
     setCart([]);
-    setDiscount(0);
     setTax(0);
   }
 
@@ -174,6 +233,16 @@ export function CartProvider({
       0
     );
   }, [cart]);
+
+  const discount = useMemo(() => {
+  return calculatePromoDiscount(cart);
+}, [cart]);
+
+console.log(
+  "PROMO RESULT",
+  cart,
+  discount
+);
 
   const total = useMemo(() => {
     return subtotal - discount + tax;
@@ -207,8 +276,6 @@ export function CartProvider({
         tax,
 
         total,
-
-        setDiscount,
 
         setTax,
       }}

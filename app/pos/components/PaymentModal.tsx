@@ -58,7 +58,8 @@ export default function PaymentModal({
     const invoice = await getNextInvoice();
 
     console.log("Invoice:", invoice);
-
+    
+alert(`subtotal=${subtotal} | discount=${discount} | total=${total}`);
     const trx = await createTransaction({
       invoice,
       paymentMethod: method,

@@ -11,14 +11,17 @@ export default function NewProductPage() {
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
-    name: "",
-    price: "",
-    image: "",
-    rating: 5,
-    description: "",
-    category: "normal",
-    track_stock: true,
-  });
+  name: "",
+  price: "",
+  image: "",
+  rating: 5,
+  description: "",
+  category: "normal",
+  track_stock: true,
+
+  // TAMBAHAN PROMO
+  promo_code: "NORMAL",
+});
 
   async function saveProduct() {
     if (
@@ -43,6 +46,9 @@ export default function NewProductPage() {
         description: form.description,
         category: form.category,
         track_stock: form.track_stock,
+
+// TAMBAHAN
+promo_code: form.promo_code || null,
       });
 
     setLoading(false);
@@ -172,6 +178,39 @@ export default function NewProductPage() {
               <option value="paket">Paket</option>
             </select>
           </div>
+
+          <div>
+  <label className="mb-2 block text-sm font-semibold text-slate-700">
+    Promo Produk
+  </label>
+
+  <select
+  value={form.promo_code}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      promo_code: e.target.value,
+    })
+  }
+  className="w-full rounded-2xl border border-slate-200 px-4 py-3"
+>
+  <option value="NORMAL">
+    Normal (Tanpa Promo)
+  </option>
+
+  <option value="DONAT_3">
+    Donat Hemat 3 pcs (Rp 10.000)
+  </option>
+
+  <option value="DONAT_6">
+    Donat Hemat 6 pcs (Rp 23.000)
+  </option>
+</select>
+
+  <p className="mt-2 text-sm text-slate-500">
+    Pilih promo yang akan dihitung otomatis di kasir.
+  </p>
+</div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">

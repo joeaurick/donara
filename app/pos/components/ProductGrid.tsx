@@ -12,6 +12,10 @@ interface Product {
   category: string;
   is_package: boolean;
   package_size?: number;
+
+  // TAMBAHAN
+  promo_code?: string | null;
+
   [key: string]: any;
 }
 

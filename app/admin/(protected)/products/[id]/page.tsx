@@ -13,14 +13,17 @@ export default function EditProductPage() {
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-    name: "",
-    price: "",
-    image: "",
-    rating: 5,
-    description: "",
-    category: "normal",
-    track_stock: true,
-  });
+  name: "",
+  price: "",
+  image: "",
+  rating: 5,
+  description: "",
+  category: "normal",
+  track_stock: true,
+
+  // TAMBAHAN
+  promo_code: "NORMAL",
+});
 
   useEffect(() => {
     loadProduct();
@@ -43,14 +46,17 @@ export default function EditProductPage() {
 
       if (data) {
         setForm({
-          name: data.name,
-          price: String(data.price),
-          image: data.image,
-          rating: data.rating,
-          description: data.description,
-          category: data.category ?? "normal",
-          track_stock: data.track_stock ?? true,
-        });
+  name: data.name,
+  price: data.price.toString(),
+  image: data.image,
+  rating: data.rating,
+  description: data.description,
+  category: data.category,
+  track_stock: data.track_stock,
+
+  // TAMBAHAN
+  promo_code: data.promo_code || "NORMAL",
+});
       }
     } catch (err) {
       console.error(err);
@@ -77,14 +83,15 @@ export default function EditProductPage() {
       const { error } = await supabase
         .from("products")
         .update({
-          name: form.name.trim(),
-          price: Number(form.price),
-          image: form.image.trim(),
-          rating: form.rating,
-          description: form.description.trim(),
-          category: form.category,
-          track_stock: form.track_stock,
-        })
+  name: form.name.trim(),
+  price: Number(form.price),
+  image: form.image.trim(),
+  rating: form.rating,
+  description: form.description.trim(),
+  category: form.category,
+  track_stock: form.track_stock,
+  promo_code: form.promo_code,
+})
         .eq("id", Number(params.id));
 
       if (error) {
@@ -226,6 +233,35 @@ export default function EditProductPage() {
               <option value="paket">Paket</option>
             </select>
           </div>
+
+          <div>
+  <label className="mb-2 block text-sm font-semibold text-slate-700">
+    Tipe Promo
+  </label>
+
+  <select
+    className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
+    value={form.promo_code}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        promo_code: e.target.value,
+      })
+    }
+  >
+    <option value="NORMAL">
+      Normal (Tanpa Promo)
+    </option>
+
+    <option value="DONAT_3">
+      Donat Hemat 3 pcs (Rp 10.000)
+    </option>
+
+    <option value="DONAT_6">
+      Donat Hemat 6 pcs (Rp 23.000)
+    </option>
+  </select>
+</div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
