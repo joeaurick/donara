@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 
 import SidebarHeader from "./SidebarHeader";
 import SidebarClock from "./SidebarClock";
@@ -12,11 +13,8 @@ type Props = {
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-export default function Sidebar({
-  open,
-  setOpen,
-}: Props) {
-  const [width, setWidth] = useState(288);
+export default function Sidebar({ open, setOpen }: Props) {
+  const [width, setWidth] = useState(272);
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
@@ -32,10 +30,7 @@ export default function Sidebar({
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(
-      "sidebar-width",
-      width.toString()
-    );
+    localStorage.setItem("sidebar-width", width.toString());
   }, [width]);
 
   useEffect(() => {
@@ -44,8 +39,8 @@ export default function Sidebar({
 
       let newWidth = e.clientX;
 
-      if (newWidth < 250) newWidth = 250;
-      if (newWidth > 420) newWidth = 420;
+      if (newWidth < 248) newWidth = 248;
+      if (newWidth > 360) newWidth = 360;
 
       setWidth(newWidth);
     }
@@ -66,52 +61,61 @@ export default function Sidebar({
   return (
     <>
       {/* Overlay Mobile */}
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-black/40 md:hidden"
-        />
-      )}
+      <div
+        onClick={() => setOpen(false)}
+        className={`fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      />
 
+      {/* Sidebar */}
       <aside
-        style={{
-          width,
-        }}
-        className={`
-fixed left-0 top-0 z-50 h-screen bg-white shadow-xl border-r border-pink-100
-transition-transform duration-300
-${open ? "translate-x-0" : "-translate-x-full"}
-md:translate-x-0 md:static md:flex md:shrink-0
-`}
-      >
-        <div className="flex h-full flex-col">
+  style={{ width }}
+  className={`fixed left-0 top-0 z-50 h-screen overflow-hidden border-r border-pink-100 bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 ${
+    open ? "translate-x-0" : "-translate-x-full"
+  } md:sticky md:top-0 md:z-20 md:h-screen md:translate-x-0 md:shadow-none`}
+>
+  <div className="flex h-full min-h-0 flex-col">
+          {/* Top */}
+          <div className="border-b border-pink-100 bg-gradient-to-r from-pink-50/70 to-orange-50/30">
+  <div className="flex items-center justify-between px-4 py-2 md:px-4">
+    <SidebarHeader />
 
-          <div className="flex items-center justify-between md:block">
+    <button
+      onClick={() => setOpen(false)}
+      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-pink-100 bg-white text-slate-500 shadow-sm transition-all duration-200 hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600 md:hidden"
+      aria-label="Tutup menu"
+    >
+      <X className="h-4 w-4" />
+    </button>
+  </div>
 
-            <SidebarHeader />
+  <div className="px-4 pb-2 md:px-4">
+    <SidebarClock />
+  </div>
+</div>
 
-            <button
-              onClick={() => setOpen(false)}
-              className="mr-4 rounded-lg p-2 text-2xl md:hidden"
-            >
-              ✕
-            </button>
+          {/* Menu */}
+          <div className="flex-1 overflow-y-auto px-3 py-4 md:px-4">
+  <div className="flex-1 overflow-y-auto p-6">
+  <SidebarMenu
+    onNavigate={() => setOpen(false)}
+  />
+</div>
+</div>
 
+          {/* Footer */}
+          <div className="border-t border-pink-100 bg-white/70 px-4 py-4 md:px-5">
+            <SidebarFooter />
           </div>
 
-          <SidebarClock />
-
-          <div className="flex-1 overflow-y-auto p-6">
-            <SidebarMenu />
-          </div>
-
-          <SidebarFooter />
-
+          {/* Resize Handle */}
           <div
             onMouseDown={() => setDragging(true)}
-            className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize hover:bg-pink-400 md:block"
-          />
-
+            className="absolute right-0 top-0 hidden h-full w-1.5 cursor-col-resize rounded-full transition-all duration-200 hover:bg-pink-300 md:block"
+          >
+            <div className="mx-auto mt-24 h-20 w-0.5 rounded-full bg-pink-100" />
+          </div>
         </div>
       </aside>
     </>

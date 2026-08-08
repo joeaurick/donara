@@ -48,19 +48,19 @@ export default function SeoPage() {
     }
 
     setForm({
-      site_title: data.site_title ?? "",
-      homepage_h1: data.homepage_h1 ?? "",
-      meta_description: data.meta_description ?? "",
-      keywords: data.keywords ?? "",
-      focus_keyword: data.focus_keyword ?? "",
-      canonical_url: data.canonical_url ?? "",
-      robots: data.robots ?? "index,follow",
+      site_title: data?.site_title ?? "",
+      homepage_h1: data?.homepage_h1 ?? "",
+      meta_description: data?.meta_description ?? "",
+      keywords: data?.keywords ?? "",
+      focus_keyword: data?.focus_keyword ?? "",
+      canonical_url: data?.canonical_url ?? "",
+      robots: data?.robots ?? "index,follow",
 
-      og_image: data.og_image ?? "",
-      favicon: data.favicon ?? "",
+      og_image: data?.og_image ?? "",
+      favicon: data?.favicon ?? "",
 
-      google_analytics: data.google_analytics ?? "",
-      google_verification: data.google_verification ?? "",
+      google_analytics: data?.google_analytics ?? "",
+      google_verification: data?.google_verification ?? "",
     });
 
     setLoading(false);
@@ -86,174 +86,151 @@ export default function SeoPage() {
 
   if (loading) {
     return (
-      <main className="p-10">
+      <div className="py-10 text-center text-gray-500">
         Loading...
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#FFF8F3] p-10">
+    <main className="mx-auto max-w-7xl space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-black text-pink-600 md:text-5xl">
+          🌐 SEO Dashboard
+        </h1>
 
-      <div className="mx-auto max-w-7xl">
+        <p className="mt-2 text-gray-500">
+          Kelola seluruh SEO website Donara dari dashboard admin.
+        </p>
+      </div>
 
-        <div className="mb-10">
-
-          <h1 className="text-5xl font-black text-pink-600">
-            🌐 SEO Dashboard
-          </h1>
-
-          <p className="mt-2 text-gray-500">
-            Kelola seluruh SEO website Donara dari dashboard admin.
-          </p>
-
-        </div>
-
-        <div className="grid gap-8 lg:grid-cols-3">
-
-          {/* ================= LEFT ================= */}
-
-          <div className="space-y-8 lg:col-span-2">
-
+      {/* Content */}
+      <div className="grid gap-8 lg:grid-cols-3">
+        {/* LEFT */}
+        <div className="space-y-8 lg:col-span-2">
+          <div className="rounded-3xl border border-pink-100 bg-white p-8 shadow-sm">
             <GeneralSeoCard
               form={form}
               setForm={setForm}
             />
-
-            <div className="rounded-3xl bg-white p-8 shadow-xl">
-
-              <h2 className="mb-6 text-3xl font-black text-pink-600">
-                📱 Social Media
-              </h2>
-
-              <div className="space-y-8">
-
-                <div>
-
-                  <label className="mb-3 block font-bold">
-                    Open Graph Image
-                  </label>
-
-                  <ImageUpload
-                    value={form.og_image}
-                    onChange={(url)=>
-                      setForm(prev=>({
-                        ...prev,
-                        og_image:url
-                      }))
-                    }
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="mb-3 block font-bold">
-                    Favicon
-                  </label>
-
-                  <ImageUpload
-                    value={form.favicon}
-                    onChange={(url)=>
-                      setForm(prev=>({
-                        ...prev,
-                        favicon:url
-                      }))
-                    }
-                  />
-
-                </div>
-
-              </div>
-
-            </div>
-
-            <div className="rounded-3xl bg-white p-8 shadow-xl">
-
-              <h2 className="mb-6 text-3xl font-black text-pink-600">
-                📈 Google
-              </h2>
-
-              <div className="space-y-6">
-
-                <div>
-
-                  <label className="mb-2 block font-bold">
-                    Google Analytics
-                  </label>
-
-                  <input
-                    className="w-full rounded-xl border p-4"
-                    placeholder="G-XXXXXXXXXX"
-                    value={form.google_analytics}
-                    onChange={(e)=>
-                      setForm(prev=>({
-                        ...prev,
-                        google_analytics:e.target.value
-                      }))
-                    }
-                  />
-
-                </div>
-
-                <div>
-
-                  <label className="mb-2 block font-bold">
-                    Google Search Console
-                  </label>
-
-                  <input
-                    className="w-full rounded-xl border p-4"
-                    placeholder="google-site-verification=..."
-                    value={form.google_verification}
-                    onChange={(e)=>
-                      setForm(prev=>({
-                        ...prev,
-                        google_verification:e.target.value
-                      }))
-                    }
-                  />
-
-                </div>
-
-              </div>
-
-            </div>
-
           </div>
 
-          {/* ================= RIGHT ================= */}
+          {/* Social Media */}
+          <div className="rounded-3xl border border-pink-100 bg-white p-8 shadow-sm">
+            <h2 className="mb-6 text-3xl font-black text-pink-600">
+              📱 Social Media
+            </h2>
 
-          <div className="space-y-8">
+            <div className="space-y-8">
+              <div>
+                <label className="mb-3 block font-bold">
+                  Open Graph Image
+                </label>
 
-            <SeoScore
-              title={form.site_title}
-              description={form.meta_description}
-              keywords={form.keywords}
-              ogImage={form.og_image}
-              favicon={form.favicon}
-              analytics={form.google_analytics}
-            />
+                <ImageUpload
+                  value={form.og_image}
+                  onChange={(url) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      og_image: url,
+                    }))
+                  }
+                />
+              </div>
 
-            <SeoPreview
+              <div>
+                <label className="mb-3 block font-bold">
+                  Favicon
+                </label>
+
+                <ImageUpload
+                  value={form.favicon}
+                  onChange={(url) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      favicon: url,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Google */}
+          <div className="rounded-3xl border border-pink-100 bg-white p-8 shadow-sm">
+            <h2 className="mb-6 text-3xl font-black text-pink-600">
+              📈 Google
+            </h2>
+
+            <div className="space-y-6">
+              <div>
+                <label className="mb-2 block font-bold">
+                  Google Analytics
+                </label>
+
+                <input
+                  className="w-full rounded-xl border p-4"
+                  placeholder="G-XXXXXXXXXX"
+                  value={form.google_analytics}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      google_analytics: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block font-bold">
+                  Google Search Console
+                </label>
+
+                <input
+                  className="w-full rounded-xl border p-4"
+                  placeholder="google-site-verification=..."
+                  value={form.google_verification}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      google_verification: e.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT */}
+        <div className="space-y-8">
+          <SeoScore
+            title={form.site_title}
+            description={form.meta_description}
+            keywords={form.keywords}
+            ogImage={form.og_image}
+            favicon={form.favicon}
+            analytics={form.google_analytics}
+          />
+
+          <SeoPreview
             title={form.site_title}
             description={form.meta_description}
             favicon={form.favicon}
             canonicalUrl={form.canonical_url}
-            />
-
-          </div>
-
+          />
         </div>
-
-        <SaveButton
-        loading={saving}
-        onClick={saveSettings}
-        text="Simpan SEO"
-        />
-
       </div>
 
+      {/* Save Button */}
+      <div className="flex justify-end">
+        <SaveButton
+          loading={saving}
+          onClick={saveSettings}
+          text="Simpan SEO"
+        />
+      </div>
     </main>
   );
 }

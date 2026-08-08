@@ -140,100 +140,92 @@ export default function BusinessPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl">
+  <main className="space-y-8">
+    {/* Header */}
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <div className="inline-flex items-center gap-2 rounded-full border border-pink-100 bg-pink-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-pink-600">
+          DONARA CMS
+        </div>
 
-  <div className="mb-10">
+        <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">
+          Business Dashboard
+        </h1>
 
-    <h1 className="text-5xl font-black text-pink-600">
-      🏢 Business Dashboard
-    </h1>
-
-    <p className="mt-2 text-gray-500">
-      Kelola seluruh identitas bisnis Donara dari satu tempat.
-    </p>
-
-  </div>
-
-  <div className="grid gap-8 lg:grid-cols-3">
-
-    {/* Kiri */}
-
-    <div className="space-y-8 lg:col-span-2">
-
-      <BusinessInfoCard
-        form={form}
-        setForm={setForm}
-      />
-
-      <ContactCard
-        form={form}
-        setForm={setForm}
-      />
-
-      <LocationCard
-        form={form}
-        setForm={setForm}
-      />
-
-
-      <div className="rounded-3xl bg-white p-8 shadow-xl">
-
-        <h2 className="mb-6 text-3xl font-black text-pink-600">
-          🖼 Logo Bisnis
-        </h2>
-
-        <ImageUpload
-          value={form.logo}
-          onChange={(url) =>
-            setForm((prev) => ({
-              ...prev,
-              logo: url,
-            }))
-          }
-        />
-
+        <p className="mt-2 text-sm leading-6 text-slate-500 sm:text-base">
+          Kelola seluruh identitas bisnis Donara dari satu tempat dengan
+          tampilan yang modern dan profesional.
+        </p>
       </div>
 
+      <SaveButton
+        loading={saving}
+        onClick={saveBusiness}
+        text="Simpan Perubahan"
+      />
     </div>
 
-    {/* Kanan */}
-
+    {/* GRID UTAMA */}
     <div className="space-y-8">
+  <BusinessInfoCard
+    form={form}
+    setForm={setForm}
+  />
 
-      <BusinessScore
-        businessName={form.business_name}
-        address={form.address}
-        phone={form.phone}
-        email={form.email}
-        instagram={form.instagram}
-        openingHours={form.opening_hours}
-        mapsUrl={form.maps_url}
-        mapsEmbed={form.maps_embed}
-        logo={form.logo}
-        tagline={form.tagline}
-      />
+  <ContactCard
+    form={form}
+    setForm={setForm}
+  />
 
-      <BusinessPreview
-        businessName={form.business_name}
-        address={form.address}
-        phone={form.phone}
-        email={form.email}
-        instagram={form.instagram}
-        openingHours={form.opening_hours}
-        tagline={form.tagline}
-        logo={form.logo}
-      />
+  <LocationCard
+    form={form}
+    setForm={setForm}
+  />
 
+  <div className="rounded-3xl border border-pink-100 bg-white shadow-sm">
+    <div className="border-b border-pink-50 px-6 py-5">
+      <h2 className="text-2xl font-black text-slate-900">
+        Logo Bisnis
+      </h2>
     </div>
 
+    <div className="p-6 md:p-8">
+      <ImageUpload
+        value={form.logo}
+        onChange={(url) =>
+          setForm((prev) => ({
+            ...prev,
+            logo: url,
+          }))
+        }
+      />
+    </div>
   </div>
 
-  <SaveButton
-  loading={saving}
-  onClick={saveBusiness}
-  text="Simpan Business"
-/>
+  <BusinessScore
+    businessName={form.business_name}
+    address={form.address}
+    phone={form.phone}
+    email={form.email}
+    instagram={form.instagram}
+    openingHours={form.opening_hours}
+    mapsUrl={form.maps_url}
+    mapsEmbed={form.maps_embed}
+    logo={form.logo}
+    tagline={form.tagline}
+  />
 
-</main>
-  );
+  <BusinessPreview
+    businessName={form.business_name}
+    address={form.address}
+    phone={form.phone}
+    email={form.email}
+    instagram={form.instagram}
+    openingHours={form.opening_hours}
+    tagline={form.tagline}
+    logo={form.logo}
+  />
+</div>
+  </main>
+);
 }

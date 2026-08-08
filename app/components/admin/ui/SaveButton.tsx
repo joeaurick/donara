@@ -1,5 +1,7 @@
 "use client";
 
+import { Loader2, Save } from "lucide-react";
+
 type Props = {
   loading: boolean;
   onClick: () => void;
@@ -12,67 +14,23 @@ export default function SaveButton({
   text = "Simpan",
 }: Props) {
   return (
-    <div className="mt-10 flex justify-end border-t border-gray-200 pt-6">
-
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={loading}
-        className="
-          inline-flex
-          items-center
-          gap-2
-          rounded-xl
-          bg-pink-600
-          px-5
-          py-3
-          text-sm
-          font-semibold
-          text-white
-          shadow-md
-          transition-all
-          duration-200
-          hover:-translate-y-0.5
-          hover:bg-pink-700
-          hover:shadow-lg
-          active:scale-95
-          disabled:cursor-not-allowed
-          disabled:opacity-70
-        "
-      >
-        {loading ? (
-          <>
-            <svg
-              className="h-4 w-4 animate-spin"
-              viewBox="0 0 24 24"
-              fill="none"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="3"
-                opacity=".25"
-              />
-              <path
-                d="M22 12A10 10 0 0012 2"
-                stroke="currentColor"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            </svg>
-
-            Menyimpan...
-          </>
-        ) : (
-          <>
-            <span>💾</span>
-            {text}
-          </>
-        )}
-      </button>
-
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pink-600 to-rose-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-pink-500/25 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-pink-500/30 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0 disabled:hover:shadow-lg sm:px-6 sm:text-[15px]"
+    >
+      {loading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Menyimpan...
+        </>
+      ) : (
+        <>
+          <Save className="h-4 w-4" />
+          {text}
+        </>
+      )}
+    </button>
   );
 }

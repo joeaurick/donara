@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Clock3 } from "lucide-react";
 
 export default function SidebarClock() {
   const [now, setNow] = useState(new Date());
@@ -26,16 +27,18 @@ export default function SidebarClock() {
   });
 
   return (
-    <div className="border-t border-b border-pink-100 px-6 py-4">
+    <div className="rounded-2xl border border-pink-100 bg-white px-3 py-3 shadow-sm">
+      <div className="flex items-center gap-2 text-pink-600">
+        <Clock3 className="h-4 w-4" />
 
-      <div className="text-xl font-black text-pink-600">
-        🕒 {time}
+        <span className="text-xl font-black tracking-tight">
+          {time}
+        </span>
       </div>
 
-      <div className="mt-1 text-sm text-gray-500">
+      <p className="mt-1 text-xs text-slate-500">
         {date}
-      </div>
-
+      </p>
     </div>
   );
 }

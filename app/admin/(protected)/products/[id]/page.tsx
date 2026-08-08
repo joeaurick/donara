@@ -13,14 +13,14 @@ export default function EditProductPage() {
   const [saving, setSaving] = useState(false);
 
   const [form, setForm] = useState({
-  name: "",
-  price: "",
-  image: "",
-  rating: 5,
-  description: "",
-  category: "normal",
-  track_stock: true,
-});
+    name: "",
+    price: "",
+    image: "",
+    rating: 5,
+    description: "",
+    category: "normal",
+    track_stock: true,
+  });
 
   useEffect(() => {
     loadProduct();
@@ -43,14 +43,14 @@ export default function EditProductPage() {
 
       if (data) {
         setForm({
-  name: data.name,
-  price: String(data.price),
-  image: data.image,
-  rating: data.rating,
-  description: data.description,
-  category: data.category ?? "normal",
-  track_stock: data.track_stock ?? true,
-});
+          name: data.name,
+          price: String(data.price),
+          image: data.image,
+          rating: data.rating,
+          description: data.description,
+          category: data.category ?? "normal",
+          track_stock: data.track_stock ?? true,
+        });
       }
     } catch (err) {
       console.error(err);
@@ -77,14 +77,14 @@ export default function EditProductPage() {
       const { error } = await supabase
         .from("products")
         .update({
-  name: form.name.trim(),
-  price: Number(form.price),
-  image: form.image.trim(),
-  rating: form.rating,
-  description: form.description.trim(),
-  category: form.category,
-  track_stock: form.track_stock,
-})
+          name: form.name.trim(),
+          price: Number(form.price),
+          image: form.image.trim(),
+          rating: form.rating,
+          description: form.description.trim(),
+          category: form.category,
+          track_stock: form.track_stock,
+        })
         .eq("id", Number(params.id));
 
       if (error) {
@@ -106,138 +106,174 @@ export default function EditProductPage() {
 
   if (loading) {
     return (
-      <main className="p-10">
+      <div className="py-10 text-center text-gray-500">
         Loading...
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-[#FFF8F3] p-10">
-      <div className="mx-auto max-w-3xl rounded-3xl bg-white p-10 shadow-xl">
-
-        <h1 className="mb-8 text-4xl font-black text-pink-600">
+    <main className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-black text-slate-900">
           Edit Produk
         </h1>
 
+        <p className="mt-2 text-sm text-slate-500">
+          Perbarui informasi produk Donara.
+        </p>
+      </div>
+
+      <div className="rounded-3xl border border-pink-100 bg-white p-6 shadow-sm md:p-8">
         <div className="space-y-6">
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Nama Produk
+            </label>
 
-          <input
-            className="w-full rounded-xl border p-4"
-            placeholder="Nama Produk"
-            value={form.name}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                name: e.target.value,
-              })
-            }
-          />
+            <input
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
+              placeholder="Nama Produk"
+              value={form.name}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  name: e.target.value,
+                })
+              }
+            />
+          </div>
 
-          <input
-            className="w-full rounded-xl border p-4"
-            type="number"
-            placeholder="Harga"
-            value={form.price}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                price: e.target.value,
-              })
-            }
-          />
+          <div className="grid gap-6 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                Harga
+              </label>
 
-          <ImageUpload
-            value={form.image}
-            onChange={(url) =>
-              setForm({
-                ...form,
-                image: url,
-              })
-            }
-          />
+              <input
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
+                type="number"
+                placeholder="Harga"
+                value={form.price}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    price: e.target.value,
+                  })
+                }
+              />
+            </div>
 
-          <select
-            className="w-full rounded-xl border p-4"
-            value={form.rating}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                rating: Number(e.target.value),
-              })
-            }
-          >
-            <option value={5}>⭐⭐⭐⭐⭐</option>
-            <option value={4}>⭐⭐⭐⭐</option>
-            <option value={3}>⭐⭐⭐</option>
-            <option value={2}>⭐⭐</option>
-            <option value={1}>⭐</option>
-          </select>
+            <div>
+              <label className="mb-2 block text-sm font-semibold text-slate-700">
+                Rating
+              </label>
 
-          <select
-  className="w-full rounded-xl border p-4"
-  value={form.category}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      category: e.target.value,
-    })
-  }
->
-  <option value="normal">
-    Normal
-  </option>
+              <select
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
+                value={form.rating}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    rating: Number(e.target.value),
+                  })
+                }
+              >
+                <option value={5}>⭐⭐⭐⭐⭐</option>
+                <option value={4}>⭐⭐⭐⭐</option>
+                <option value={3}>⭐⭐⭐</option>
+                <option value={2}>⭐⭐</option>
+                <option value={1}>⭐</option>
+              </select>
+            </div>
+          </div>
 
-  <option value="hemat">
-    Hemat
-  </option>
-</select>
+          <div>
+            <label className="mb-3 block text-sm font-semibold text-slate-700">
+              Gambar Produk
+            </label>
 
-<div className="rounded-xl border p-4">
-  <label className="flex items-center gap-3 cursor-pointer">
-    <input
-      type="checkbox"
-      checked={form.track_stock}
-      onChange={(e) =>
-        setForm({
-          ...form,
-          track_stock: e.target.checked,
-        })
-      }
-      className="h-5 w-5"
-    />
+            <ImageUpload
+              value={form.image}
+              onChange={(url) =>
+                setForm({
+                  ...form,
+                  image: url,
+                })
+              }
+            />
+          </div>
 
-    <div>
-      <p className="font-bold">
-        Kurangi stok harian
-      </p>
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Kategori Produk
+            </label>
 
-      <p className="text-sm text-gray-500">
-        Aktifkan untuk produk donat.
-        Nonaktifkan untuk kopi, minuman, snack, dll.
-      </p>
-    </div>
-  </label>
-</div>
+            <select
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
+              value={form.category}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  category: e.target.value,
+                })
+              }
+            >
+              <option value="normal">Produk Normal</option>
+              <option value="donat">Donat</option>
+              <option value="minuman">Minuman</option>
+              <option value="snack">Snack</option>
+              <option value="paket">Paket</option>
+            </select>
+          </div>
 
-          <textarea
-            className="h-40 w-full rounded-xl border p-4"
-            placeholder="Deskripsi Produk"
-            value={form.description}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                description: e.target.value,
-              })
-            }
-          />
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Deskripsi Produk
+            </label>
 
-          <div className="flex gap-4">
+            <textarea
+              className="h-36 w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
+              placeholder="Deskripsi Produk"
+              value={form.description}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  description: e.target.value,
+                })
+              }
+            />
+          </div>
 
+          <div className="flex items-center justify-between rounded-2xl border border-pink-100 bg-pink-50/50 p-4">
+            <div>
+              <p className="font-semibold text-slate-900">
+                Kurangi stok harian
+              </p>
+
+              <p className="text-sm text-slate-500">
+                Aktifkan untuk produk donat.
+              </p>
+            </div>
+
+            <input
+              type="checkbox"
+              checked={form.track_stock}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  track_stock: e.target.checked,
+                })
+              }
+              className="h-5 w-5 rounded border-slate-300 text-pink-600 focus:ring-pink-500"
+            />
+          </div>
+
+          <div className="flex flex-col gap-3 pt-4 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={() => router.back()}
-              className="w-1/2 rounded-full border py-4 font-semibold"
+              className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
             >
               Batal
             </button>
@@ -246,15 +282,12 @@ export default function EditProductPage() {
               type="button"
               onClick={updateProduct}
               disabled={saving}
-              className="w-1/2 rounded-full bg-pink-600 py-4 font-bold text-white disabled:opacity-50"
+              className="rounded-2xl bg-pink-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-pink-700 disabled:opacity-60"
             >
               {saving ? "Menyimpan..." : "Simpan Perubahan"}
             </button>
-
           </div>
-
         </div>
-
       </div>
     </main>
   );
