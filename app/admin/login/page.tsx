@@ -8,7 +8,7 @@ import { Eye, EyeOff, Lock, Mail, Sparkles } from "lucide-react";
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [loginId, setLoginId] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -16,59 +16,81 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   async function login() {
-    console.log("=== LOGIN DIMULAI ===");
+  console.log("=== LOGIN DIMULAI ===");
 
-    setErrorMessage("");
+  setErrorMessage("");
 
-    if (!email.trim()) {
-      setErrorMessage("Email wajib diisi.");
-      return;
+  if (!loginId.trim()) {
+    setErrorMessage("Email atau username wajib diisi.");
+    return;
+  }
+
+  if (!password.trim()) {
+    setErrorMessage("Password wajib diisi.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    let email = loginId.trim();
+
+    // Jika bukan email, cari berdasarkan username
+    if (!loginId.includes("@")) {
+      const { data: emailResult, error: rpcError } =
+        await supabase.rpc(
+          "get_email_by_username",
+          {
+            p_username: loginId.trim(),
+          }
+        );
+
+      if (rpcError || !emailResult) {
+        setErrorMessage("Username tidak ditemukan.");
+        return;
+      }
+
+      email = emailResult;
     }
 
-    if (!password.trim()) {
-      setErrorMessage("Password wajib diisi.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+    const { data, error } =
+      await supabase.auth.signInWithPassword({
+        email,
         password,
       });
 
-      console.log("LOGIN DATA:", data);
-      console.log("LOGIN ERROR:", error);
+    console.log("LOGIN DATA:", data);
+    console.log("LOGIN ERROR:", error);
 
-      if (error) {
-        console.error(error);
-        setErrorMessage(error.message);
-        return;
-      }
-
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      console.log("SESSION:", session);
-
-      if (!session) {
-        setErrorMessage("Session tidak berhasil dibuat.");
-        return;
-      }
-
-      console.log("LOGIN BERHASIL");
-
-      router.replace("/admin");
-      router.refresh();
-    } catch (err) {
-      console.error("LOGIN EXCEPTION:", err);
-      setErrorMessage("Terjadi kesalahan saat login.");
-    } finally {
-      setLoading(false);
+    if (error) {
+      setErrorMessage(error.message);
+      return;
     }
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      setErrorMessage(
+        "Session tidak berhasil dibuat."
+      );
+      return;
+    }
+
+    console.log("LOGIN BERHASIL");
+
+    router.replace("/admin");
+    router.refresh();
+  } catch (err) {
+    console.error(err);
+    setErrorMessage(
+      "Terjadi kesalahan saat login."
+    );
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-[#fff5f7] via-[#fffdfc] to-[#fff8f5] px-4 py-10 sm:px-6 lg:px-8">
@@ -112,20 +134,20 @@ export default function LoginPage() {
             <div className="mt-8 space-y-5">
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  Email
-                </label>
+  Email atau Username
+</label>
 
                 <div className="relative">
                   <Mail className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
 
                   <input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="admin@donara.com"
-                    className="h-14 w-full rounded-2xl border border-pink-100 bg-pink-50/40 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 transition-all duration-300 focus:border-pink-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-pink-100"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+  type="text"
+  autoComplete="username"
+  placeholder="admin@donara.com atau donara"
+  className="h-14 w-full rounded-2xl border border-pink-100 bg-pink-50/40 pl-12 pr-4 text-slate-900 placeholder:text-slate-400 transition-all duration-300 focus:border-pink-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-pink-100"
+  value={loginId}
+  onChange={(e) => setLoginId(e.target.value)}
+/>
                 </div>
               </div>
 
