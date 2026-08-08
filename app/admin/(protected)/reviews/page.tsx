@@ -21,6 +21,8 @@ export default function AdminReviewsPage() {
   }, []);
 
   async function loadReviews() {
+    setLoading(true);
+
     const { data, error } = await supabase
       .from("reviews")
       .select("*")
@@ -56,101 +58,125 @@ export default function AdminReviewsPage() {
 
   if (loading) {
     return (
-      <main className="p-10">
-        Loading...
-      </main>
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-pink-200 border-t-pink-600" />
+          <p className="text-sm font-medium text-gray-500">
+            Memuat review...
+          </p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <main className="p-10">
-
-      <div className="mb-10 flex items-center justify-between">
-
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
+          <p className="text-xs font-black uppercase tracking-[0.24em] text-pink-500">
+            Customer Feedback
+          </p>
 
-          <h1 className="text-4xl font-black text-pink-600">
+          <h1 className="mt-2 text-3xl font-black tracking-tight text-gray-900 sm:text-4xl">
             Kelola Review
           </h1>
 
-          <p className="mt-2 text-gray-500">
-            Semua review pelanggan.
+          <p className="mt-1 text-sm text-gray-500">
+            Semua ulasan pelanggan Donara dalam satu dashboard.
           </p>
-
         </div>
 
         <Link
           href="/admin/reviews/new"
-          className="rounded-full bg-pink-600 px-6 py-3 font-bold text-white hover:bg-pink-700"
+          className="inline-flex items-center justify-center rounded-2xl bg-pink-600 px-5 py-3 text-sm font-black text-white shadow-lg shadow-pink-500/20 transition-all duration-200 hover:bg-pink-700 active:scale-[0.98]"
         >
           + Tambah Review
         </Link>
-
       </div>
 
-      <div className="space-y-6">
-
-        {reviews.length === 0 && (
-          <div className="rounded-2xl bg-white p-8 shadow">
-            Belum ada review.
+      {/* Empty State */}
+      {reviews.length === 0 ? (
+        <div className="rounded-3xl border border-dashed border-pink-200 bg-white p-12 text-center shadow-sm">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-pink-50 text-3xl">
+            ⭐
           </div>
-        )}
 
-        {reviews.map((review) => (
+          <h2 className="text-lg font-bold text-gray-800">
+            Belum ada review
+          </h2>
 
-          <div
-            key={review.id}
-            className="rounded-3xl bg-white p-8 shadow-lg"
-          >
+          <p className="mt-2 text-sm text-gray-500">
+            Tambahkan review pertama untuk menampilkan testimoni pelanggan.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-5">
+          {reviews.map((review) => (
+            <div
+              key={review.id}
+              className="rounded-3xl border border-pink-100 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+            >
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                {/* Konten Review */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="text-xl font-black tracking-tight text-gray-900">
+                        {review.name}
+                      </h2>
 
-            <div className="flex items-start justify-between">
+                      <div className="mt-1 flex items-center gap-2">
+                        <span className="text-lg text-yellow-400">
+                          {"⭐".repeat(review.rating)}
+                        </span>
 
-              <div>
+                        <span className="rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-bold text-yellow-700">
+                          {review.rating}/5
+                        </span>
+                      </div>
+                    </div>
 
-                <h2 className="text-2xl font-bold">
-                  {review.name}
-                </h2>
+                    <p className="text-xs font-medium text-gray-400 sm:text-right">
+                      {new Date(review.created_at).toLocaleDateString(
+                        "id-ID",
+                        {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        }
+                      )}
+                    </p>
+                  </div>
 
-                <p className="mt-2 text-xl text-yellow-500">
-                  {"⭐".repeat(review.rating)}
-                </p>
+                  <div className="mt-4 rounded-2xl bg-gray-50 p-4">
+                    <p className="text-sm leading-7 text-gray-700">
+                      {review.comment}
+                    </p>
+                  </div>
+                </div>
 
-                <p className="mt-4 text-gray-600">
-                  {review.comment}
-                </p>
+                {/* Aksi */}
+                <div className="flex shrink-0 gap-2 lg:flex-col">
+                  <Link
+                    href={`/admin/reviews/${review.id}`}
+                    className="inline-flex flex-1 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm font-bold text-blue-600 transition-all duration-200 hover:bg-blue-100 lg:min-w-[110px]"
+                  >
+                    ✏️ Edit
+                  </Link>
 
-                <p className="mt-4 text-sm text-gray-400">
-                  {new Date(review.created_at).toLocaleString("id-ID")}
-                </p>
-
+                  <button
+                    onClick={() => deleteReview(review.id)}
+                    className="inline-flex flex-1 items-center justify-center rounded-xl border border-red-100 bg-red-50 px-4 py-2.5 text-sm font-bold text-red-600 transition-all duration-200 hover:bg-red-100 lg:min-w-[110px]"
+                  >
+                    🗑 Hapus
+                  </button>
+                </div>
               </div>
-
-              <div className="flex gap-3">
-
-                <Link
-                  href={`/admin/reviews/${review.id}`}
-                  className="rounded-xl bg-blue-500 px-5 py-3 font-bold text-white hover:bg-blue-600"
-                >
-                  Edit
-                </Link>
-
-                <button
-                  onClick={() => deleteReview(review.id)}
-                  className="rounded-xl bg-red-500 px-5 py-3 font-bold text-white hover:bg-red-600"
-                >
-                  Hapus
-                </button>
-
-              </div>
-
             </div>
-
-          </div>
-
-        ))}
-
-      </div>
-
-    </main>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

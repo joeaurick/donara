@@ -1,13 +1,56 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 
 import SidebarHeader from "./SidebarHeader";
 import SidebarClock from "./SidebarClock";
-import SidebarMenu from "./SidebarMenu";
 import SidebarFooter from "./SidebarFooter";
-import AdminLogout from "@/app/components/AdminLogout";
+
+const menus = [
+  {
+    title: "Mulai Penjualan",
+    href: "/pos/dashboard",
+    icon: "🚀",
+  },
+  {
+    title: "Dashboard",
+    href: "/admin/dashboard",
+    icon: "🏠",
+  },
+  {
+    title: "Produk",
+    href: "/admin/products",
+    icon: "📦",
+  },
+  {
+    title: "Gallery",
+    href: "/admin/gallery",
+    icon: "🖼️",
+  },
+  {
+    title: "Review",
+    href: "/admin/reviews",
+    icon: "💬",
+  },
+  {
+    title: "SEO",
+    href: "/admin/seo",
+    icon: "🌐",
+  },
+  {
+    title: "Business",
+    href: "/admin/business",
+    icon: "🏢",
+  },
+  {
+    title: "Homepage",
+    href: "/admin/homepage",
+    icon: "🏡",
+  },
+];
 
 type Props = {
   open: boolean;
@@ -15,7 +58,9 @@ type Props = {
 };
 
 export default function Sidebar({ open, setOpen }: Props) {
-  const [width, setWidth] = useState(248);
+  const pathname = usePathname();
+
+  const [width, setWidth] = useState(272);
   const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
@@ -40,8 +85,8 @@ export default function Sidebar({ open, setOpen }: Props) {
 
       let newWidth = e.clientX;
 
-      if (newWidth < 220) newWidth = 220;
-      if (newWidth > 320) newWidth = 320;
+      if (newWidth < 248) newWidth = 248;
+      if (newWidth > 340) newWidth = 340;
 
       setWidth(newWidth);
     }
@@ -61,70 +106,92 @@ export default function Sidebar({ open, setOpen }: Props) {
 
   return (
     <>
-      {/* Overlay Mobile */}
-      <div
-        onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
-          open
-            ? "opacity-100"
-            : "pointer-events-none opacity-0"
-        }`}
-      />
+      {/* OVERLAY MOBILE */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-40 bg-black/35 md:hidden"
+        />
+      )}
 
-      {/* Sidebar */}
+      {/* SIDEBAR */}
       <aside
         style={{ width }}
-        className={`fixed left-0 top-0 z-50 h-screen overflow-hidden border-r border-pink-100 bg-white shadow-xl transition-transform duration-300 ${
-          open
-            ? "translate-x-0"
-            : "-translate-x-full"
-        } md:sticky md:top-0 md:z-20 md:h-screen md:translate-x-0 md:shadow-none`}
+        className={`fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-pink-100 bg-white transition-transform duration-300 ease-in-out ${
+          open ? "translate-x-0" : "-translate-x-full"
+        } md:sticky md:top-0 md:z-20 md:translate-x-0`}
       >
-        <div className="flex h-full flex-col">
-          {/* Tombol Close Mobile */}
-          <div className="flex items-center justify-end border-b border-pink-100 px-3 py-2 md:hidden">
-            <button
-              onClick={() => setOpen(false)}
-              className="flex h-7 w-7 items-center justify-center rounded-md border border-pink-100 bg-white text-slate-500 shadow-sm transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
-              aria-label="Tutup menu"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+        {/* HEADER MOBILE */}
+        <div className="flex items-center justify-between border-b border-pink-100 px-5 py-4 md:hidden">
+          <div>
+            <h1 className="text-xl font-black text-pink-600">DONARA</h1>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-gray-400">
+              CMS Admin
+            </p>
           </div>
 
-          {/* Header */}
-          <div className="border-b border-pink-100 px-4 py-3">
-            <SidebarHeader />
-          </div>
-
-          {/* Clock */}
-          <div className="border-b border-pink-100 px-4 py-3">
-            <SidebarClock />
-          </div>
-
-          {/* Menu */}
-          <div className="flex-1 overflow-y-auto px-3 py-3">
-            <SidebarMenu />
-          </div>
-
-          {/* Logout */}
-          <div className="border-t border-pink-100 px-3 py-3">
-            <div className="scale-90 origin-left">
-              <AdminLogout />
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-pink-100 bg-white px-3 py-2">
-            <SidebarFooter />
-          </div>
-
-          {/* Resize Handle Desktop */}
-          <div
-            onMouseDown={() => setDragging(true)}
-            className="absolute right-0 top-0 hidden h-full w-1 cursor-col-resize hover:bg-pink-300 md:block"
-          />
+          <button
+            onClick={() => setOpen(false)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-pink-100 bg-white text-gray-500 transition hover:bg-pink-50 hover:text-pink-600"
+            aria-label="Tutup menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
+
+        {/* HEADER DESKTOP */}
+        <div className="hidden border-b border-pink-100 px-5 py-5 md:block">
+          <SidebarHeader />
+        </div>
+
+        {/* JAM */}
+        <div className="border-b border-pink-100 px-4 py-4">
+          <SidebarClock />
+        </div>
+
+        {/* MENU */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          <div className="space-y-2">
+            {menus.map((menu) => {
+              const active = pathname.startsWith(menu.href);
+
+              return (
+                <Link
+                  key={menu.href}
+                  href={menu.href}
+                  onClick={() => {
+                    // AUTO CLOSE SAAT MENU DIKLIK
+                    setOpen(false);
+                  }}
+                  className={`group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all duration-200 ${
+                    active
+                      ? "bg-gradient-to-r from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/25"
+                      : "text-gray-700 hover:bg-pink-50 hover:text-pink-600"
+                  }`}
+                >
+                  <span className="text-lg">{menu.icon}</span>
+
+                  <span className="flex-1 truncate">{menu.title}</span>
+
+                  {active && (
+                    <span className="h-2 w-2 rounded-full bg-white/90" />
+                  )}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+        {/* FOOTER */}
+        <div className="border-t border-pink-100 bg-white px-4 py-4">
+          <SidebarFooter />
+        </div>
+
+        {/* RESIZE HANDLE DESKTOP */}
+        <div
+          onMouseDown={() => setDragging(true)}
+          className="absolute right-0 top-0 hidden h-full w-1.5 cursor-col-resize hover:bg-pink-200 md:block"
+        />
       </aside>
     </>
   );

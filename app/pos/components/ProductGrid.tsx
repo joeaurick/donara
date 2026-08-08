@@ -23,6 +23,54 @@ interface ProductGridProps {
   cart?: any[];
 }
 
+function animateToCart(sourceElement: HTMLElement) {
+  const cartButton = document.getElementById("mobile-cart-button");
+
+  if (!cartButton) return;
+
+  const sourceRect = sourceElement.getBoundingClientRect();
+  const targetRect = cartButton.getBoundingClientRect();
+
+  const clone = sourceElement.cloneNode(true) as HTMLElement;
+
+  clone.style.position = "fixed";
+  clone.style.left = `${sourceRect.left}px`;
+  clone.style.top = `${sourceRect.top}px`;
+  clone.style.width = `${sourceRect.width}px`;
+  clone.style.height = `${sourceRect.height}px`;
+  clone.style.zIndex = "9999";
+  clone.style.pointerEvents = "none";
+  clone.style.borderRadius = "20px";
+  clone.style.overflow = "hidden";
+  clone.style.transition =
+    "transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease";
+
+  document.body.appendChild(clone);
+
+  requestAnimationFrame(() => {
+    const translateX =
+      targetRect.left + targetRect.width / 2 -
+      (sourceRect.left + sourceRect.width / 2);
+
+    const translateY =
+      targetRect.top + targetRect.height / 2 -
+      (sourceRect.top + sourceRect.height / 2);
+
+    clone.style.transform = `translate(${translateX}px, ${translateY}px) scale(0.12)`;
+    clone.style.opacity = "0.15";
+  });
+
+  setTimeout(() => {
+    clone.remove();
+
+    cartButton.classList.add("cart-bounce");
+
+    setTimeout(() => {
+      cartButton.classList.remove("cart-bounce");
+    }, 500);
+  }, 700);
+}
+
 export default function ProductGrid({
   products,
   todayStock,
@@ -49,22 +97,28 @@ export default function ProductGrid({
         <div key={categoryName} className="space-y-4">
           <div className="flex items-center gap-2 border-b border-gray-200 pb-2">
             <span className="text-lg">🍩</span>
-            <h2 className="text-lg font-black text-gray-800 capitalize">
+            <h2 className="text-lg font-black capitalize text-gray-800">
               {categoryName}
             </h2>
           </div>
 
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
             {items.map((product) => {
-              const handleItemClick = () => {
-                if (product.is_package) {
-                  onPackageClick(product);
-                } else {
-                  onProductClick(product);
-                }
-              };
-
               const finalImageUrl = product.image_url || product.image;
+
+              const handleItemClick = (
+                e: React.MouseEvent<HTMLButtonElement>
+              ) => {
+                animateToCart(e.currentTarget);
+
+                setTimeout(() => {
+                  if (product.is_package) {
+                    onPackageClick(product);
+                  } else {
+                    onProductClick(product);
+                  }
+                }, 120);
+              };
 
               return (
                 <motion.button
@@ -77,14 +131,15 @@ export default function ProductGrid({
                   transition={{ duration: 0.22 }}
                   className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white p-3 text-left shadow-sm transition-all hover:-translate-y-1 hover:border-pink-200 hover:shadow-lg active:shadow-pink-200/40"
                 >
-                  {/* Efek pulse saat ditekan */}
                   <motion.div
                     className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-pink-300 opacity-0"
-                    whileTap={{ opacity: [0, 0.35, 0], scale: [1, 1.05, 1.08] }}
+                    whileTap={{
+                      opacity: [0, 0.35, 0],
+                      scale: [1, 1.05, 1.08],
+                    }}
                     transition={{ duration: 0.35 }}
                   />
 
-                  {/* Gambar Produk */}
                   <div className="relative aspect-square w-full overflow-hidden rounded-xl bg-gray-50">
                     {finalImageUrl ? (
                       <Image
@@ -108,7 +163,6 @@ export default function ProductGrid({
                     )}
                   </div>
 
-                  {/* Info Produk */}
                   <div className="mt-3 flex flex-1 flex-col justify-between space-y-2">
                     <h3 className="line-clamp-2 text-sm font-bold leading-tight text-gray-800">
                       {product.name}

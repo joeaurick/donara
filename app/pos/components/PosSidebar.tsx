@@ -10,7 +10,7 @@ import { getUserRole } from "@/lib/auth/getUserRole";
 const menus = [
   {
     title: "Dashboard",
-    href: "/pos/dashboard",
+    href: "/pos",
     icon: "🏠",
   },
   {
@@ -61,12 +61,12 @@ export default function PosSidebar() {
   }
 
   return (
-    <aside className="flex h-full w-full flex-col bg-white border-r border-gray-100">
+    <aside className="flex h-screen w-[280px] flex-col border-r border-pink-100 bg-white shadow-sm">
       {/* ================= HEADER ================= */}
-      <div className="border-b border-gray-100 px-5 py-6">
+      <div className="border-b border-pink-100 px-5 py-5">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 text-white shadow-lg shadow-pink-500/20">
-            <span className="text-lg font-black">D</span>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 text-lg font-black text-white shadow-lg shadow-pink-500/20">
+            D
           </div>
 
           <div className="min-w-0">
@@ -91,13 +91,18 @@ export default function PosSidebar() {
           {menus
             .filter((menu) => {
               if (role === "cashier") {
-                return !["/pos/report", "/pos/settings"].includes(menu.href);
+                return !["/pos/report", "/pos/settings"].includes(
+                  menu.href
+                );
               }
 
               return true;
             })
             .map((menu) => {
-              const active = pathname.startsWith(menu.href);
+              const active =
+                menu.href === "/pos"
+                  ? pathname === "/pos" || pathname === "/pos/dashboard"
+                  : pathname.startsWith(menu.href);
 
               return (
                 <Link
@@ -136,20 +141,19 @@ export default function PosSidebar() {
 
       {/* ================= FOOTER ================= */}
       <div className="border-t border-gray-100 p-4">
-        <div className="mb-4 rounded-2xl border border-pink-100 bg-gradient-to-br from-pink-50 to-white p-4">
-          <p className="text-xs font-black uppercase tracking-wider text-pink-600">
-            Status Kasir
-          </p>
+        {/* Status */}
+        
 
-          <div className="mt-2 flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+        {/* Kembali ke Admin */}
+        <Link
+          href="/admin"
+          className="mb-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-pink-200 bg-pink-50 px-4 py-3 text-sm font-bold text-pink-600 transition-all duration-200 hover:bg-pink-100 active:scale-[0.98]"
+        >
+          <span className="text-base">🏢</span>
+          Menu Admin
+        </Link>
 
-            <span className="text-sm font-semibold text-gray-700">
-              Online
-            </span>
-          </div>
-        </div>
-
+        {/* Logout */}
         <button
           onClick={logout}
           className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 transition-all duration-200 hover:border-red-200 hover:bg-red-100 active:scale-[0.98]"
