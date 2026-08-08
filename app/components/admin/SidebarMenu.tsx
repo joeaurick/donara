@@ -60,7 +60,13 @@ export default function SidebarMenu({ onNavigate }: Props) {
   return (
     <div className="space-y-2">
       {menus.map((menu) => {
-        const active = pathname === menu.href;
+        // Dashboard hanya aktif saat tepat /admin
+        // Menu lain aktif untuk semua sub-route
+        const active =
+          menu.href === "/admin"
+            ? pathname === "/admin"
+            : pathname.startsWith(menu.href);
+
         const Icon = menu.icon;
 
         return (
@@ -70,11 +76,11 @@ export default function SidebarMenu({ onNavigate }: Props) {
             onClick={onNavigate}
             className={`flex items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-200 ${
               active
-                ? "bg-pink-600 text-white shadow-lg"
-                : "text-gray-700 hover:bg-pink-100"
+                ? "bg-pink-600 text-white shadow-lg shadow-pink-500/20"
+                : "text-gray-700 hover:bg-pink-100 hover:text-pink-600"
             }`}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className="h-5 w-5 shrink-0" />
 
             <span className="font-semibold">
               {menu.title}
