@@ -17,7 +17,7 @@ const menus = [
   },
   {
     title: "Dashboard",
-    href: "/admin/dashboard",
+    href: "/admin",
     icon: "🏠",
   },
   {
