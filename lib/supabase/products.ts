@@ -18,7 +18,8 @@ export async function getProducts() {
       track_stock,
       promo_code
     `)
-    .order("id");
+    .order("category", { ascending: true })
+.order("sort_order", { ascending: true });
 
   if (error) {
     console.error(error);

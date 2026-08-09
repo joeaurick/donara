@@ -40,10 +40,16 @@ export default function PaymentModal({
 
   if (!open) return null;
 
-  const change =
-    method === "Cash"
-      ? Math.max(0, paid - total)
-      : 0;
+// ⬇️ TAMBAHAN
+const totalItems = cart.reduce(
+  (sum, item) => sum + item.qty,
+  0
+);
+
+const change =
+  method === "Cash"
+    ? Math.max(0, paid - total)
+    : 0;
 
   const quickMoney = (value: number) => {
     setPaid(value);
@@ -270,7 +276,7 @@ if (totalQty > 0) {
 
               <span>Total Item</span>
 
-              <span>{cart.length}</span>
+              <span>{totalItems}</span>
 
             </div>
 

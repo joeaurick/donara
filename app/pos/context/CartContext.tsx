@@ -136,41 +136,45 @@ export function CartProvider({
   const [tax, setTax] = useState(0);
 
   function addToCart(
-    item: Omit<CartItem, "qty">
-  ) {
-    setCart((prev) => {
-      if (!item.isPackage) {
-        const exist = prev.find(
-          (x) =>
-            !x.isPackage &&
-            x.id === item.id
-        );
+  item: Omit<CartItem, "qty">
+) {
+  setCart((prev) => {
+    // pastikan selalu boolean
+    const isPackage = item.isPackage === true;
 
-        if (exist) {
-  return prev.map((x) =>
-    x.id === item.id
-      ? {
-          ...x,
-          qty: x.qty + 1,
+    // cari item yang sama
+    const exist = prev.find(
+      (x) =>
+        x.id === item.id &&
+        (x.isPackage === true) === isPackage
+    );
 
-          // PENTING
-          promo_code:
-            item.promo_code ?? x.promo_code,
-        }
-      : x
-  );
+    // jika sudah ada → tambah qty
+    if (exist) {
+      return prev.map((x) =>
+        x.id === item.id &&
+        (x.isPackage === true) === isPackage
+          ? {
+              ...x,
+              qty: x.qty + 1,
+              promo_code:
+                item.promo_code ?? x.promo_code,
+            }
+          : x
+      );
+    }
+
+    // jika belum ada → tambahkan baru
+    return [
+      ...prev,
+      {
+        ...item,
+        isPackage,
+        qty: 1,
+      },
+    ];
+  });
 }
-      }
-
-      return [
-        ...prev,
-        {
-          ...item,
-          qty: 1,
-        },
-      ];
-    });
-  }
 
   function addPackageToCart(
     packageItem: Omit<CartItem, "qty">,
