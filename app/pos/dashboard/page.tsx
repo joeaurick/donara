@@ -206,7 +206,7 @@ export default function PosDashboardPage() {
         <div className="shrink-0 bg-white border-b border-gray-200">
           <div className="xl:hidden px-4 py-2.5 flex justify-between items-center bg-white">
             <div className="flex flex-col">
-              <span className="text-sm font-black text-pink-600 tracking-tight">DONARA POS</span>
+              <span className="text-sm font-black text-pink-600 tracking-tight">DONARA</span>
               <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
                 ● Toko Buka ({todayStock?.remaining_stock ?? 0} Sisa)
               </span>
@@ -244,7 +244,7 @@ export default function PosDashboardPage() {
                     onClick={() => setShowAdminPanelMobile(!showAdminPanelMobile)}
                     className="text-xs font-bold text-gray-600 flex items-center justify-between w-full"
                   >
-                    <span className="flex items-center gap-1">⚙️ {showAdminPanelMobile ? "Sembunyikan" : "Atur"} Kapasitas Adonan Awal</span>
+                    <span className="flex items-center gap-1">⚙️ {showAdminPanelMobile ? "Sembunyikan" : "Atur"} Stock Awal Donat Hari ini </span>
                     <span className="text-pink-600 font-black">{showAdminPanelMobile ? "▲" : "▼"}</span>
                   </button>
                 </div>
@@ -254,7 +254,7 @@ export default function PosDashboardPage() {
                     <span className="text-lg">⚙️</span>
                     <div>
                       <h3 className="text-xs font-black uppercase tracking-wider text-gray-700">Panel Manajemen Stok</h3>
-                      <p className="text-[11px] text-gray-400">Atur kapasitas ketersediaan adonan donat hari ini</p>
+                      <p className="text-[11px] text-gray-400">Atur kapasitas ketersediaan donat hari ini</p>
                     </div>
                   </div>
                   <form onSubmit={handleUpdateStockFromPanel} className="flex gap-2 items-center w-full xl:w-auto">

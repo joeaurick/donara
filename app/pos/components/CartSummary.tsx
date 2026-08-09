@@ -212,7 +212,7 @@ const { error: stockUpdateError } = await supabase
         </head>
         <body>
           <div class="center">
-            <span style="font-size: 14px; font-weight: bold; display: block; letter-spacing: 1px;">DONARA POS</span>
+            <span style="font-size: 14px; font-weight: bold; display: block; letter-spacing: 1px;">DONARA</span>
             <span style="font-size: 10px; display: block; margin-top: 2px;">${receiptData.date}</span>
           </div>
           <div class="line"></div>

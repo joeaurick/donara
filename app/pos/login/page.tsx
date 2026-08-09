@@ -81,7 +81,7 @@ if (!loginId.includes("@")) {
           </div>
 
           <h1 className="text-3xl font-black tracking-tight text-gray-900 sm:text-4xl">
-            DONARA POS
+            DONARA
           </h1>
 
           <p className="mt-2 text-sm font-medium text-gray-500">
@@ -103,9 +103,16 @@ if (!loginId.includes("@")) {
 
               <input
   type="text"
+  autoComplete="username"
   placeholder="Email atau Username"
   value={loginId}
   onChange={(e) => setLoginId(e.target.value)}
+  onKeyDown={(e) => {
+    if (e.key === "Enter") {
+      login();
+    }
+  }}
+  className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 pl-11 text-sm text-gray-800 outline-none transition-all duration-200 focus:border-pink-500 focus:ring-4 focus:ring-pink-100 placeholder:text-gray-400"
 />
             </div>
           </div>

@@ -71,7 +71,7 @@ export default function PosSidebar() {
 
           <div className="min-w-0">
             <h1 className="text-lg font-black tracking-tight text-gray-900">
-              DONARA POS
+              CUSTOM POS
             </h1>
 
             <p className="text-xs font-medium text-gray-400">
@@ -163,7 +163,7 @@ export default function PosSidebar() {
         </button>
 
         <div className="mt-4 text-center text-[10px] font-medium text-gray-400">
-          Donara POS • v1.0
+          CUSTOM POS • v1.0
         </div>
       </div>
     </aside>

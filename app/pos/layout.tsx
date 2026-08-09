@@ -82,8 +82,8 @@ export default function PosLayout({
           <main className="relative flex-1 overflow-auto pb-20 lg:pb-0">
             {/* Header Mobile */}
             <div className="sticky top-0 z-[40] flex items-center justify-between border-b bg-white px-4 py-3 shadow-xs lg:hidden">
-              <span className="text-md font-black tracking-tight text-pink-600">
-                DONARA POS {storeClosed ? "(Tutup)" : ""}
+              <span className="text-md font-black tracking-tight">
+                CUSTOM POS {storeClosed ? "(Tutup)" : ""}
               </span>
 
               <button
@@ -110,37 +110,53 @@ export default function PosLayout({
                 }
               `}
             >
-              <div className="flex flex-col gap-1.5">
-                <span className="mb-2 px-2 text-[10px] font-black uppercase tracking-wider text-gray-400">
-                  Menu Navigasi
-                </span>
+              <div className="flex h-full flex-col">
+  {/* MENU UTAMA */}
+  <div className="flex flex-col gap-1.5">
+    <span className="mb-2 px-2 text-[10px] font-black uppercase tracking-wider text-gray-400">
+      Menu Navigasi
+    </span>
 
-                {menuItems.map((item) => {
-                  const isActive =
-                    pathname === item.href;
+    {menuItems.map((item) => {
+      const isActive = pathname === item.href;
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() =>
-                        setIsMenuOpen(false)
-                      }
-                      className={`flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold transition-all ${
-                        isActive
-                          ? "border border-pink-100 bg-pink-50 text-pink-600"
-                          : "text-gray-500 hover:bg-gray-50"
-                      }`}
-                    >
-                      <span className="text-sm">
-                        {item.icon}
-                      </span>
+      return (
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={() => setIsMenuOpen(false)}
+          className={`flex items-center gap-3 rounded-xl px-4 py-3 text-xs font-bold transition-all ${
+            isActive
+              ? "border border-pink-100 bg-pink-50 text-pink-600"
+              : "text-gray-500 hover:bg-gray-50"
+          }`}
+        >
+          <span className="text-sm">{item.icon}</span>
+          {item.name}
+        </Link>
+      );
+    })}
+  </div>
 
-                      {item.name}
-                    </Link>
-                  );
-                })}
-              </div>
+  {/* DORONG KE BAWAH */}
+  <div className="mt-auto border-t pt-4 space-y-3">
+    <Link
+      href="/admin"
+      onClick={() => setIsMenuOpen(false)}
+      className="flex items-center justify-center gap-2 rounded-2xl border border-pink-200 bg-pink-50 px-4 py-3 text-xs font-black text-pink-600 transition hover:bg-pink-100"
+    >
+      🏢 Menu Admin
+    </Link>
+
+    <Link
+      href="/pos/login"
+      onClick={() => setIsMenuOpen(false)}
+      className="flex items-center justify-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-xs font-black text-red-500 transition hover:bg-red-100"
+    >
+      🚪 Logout
+    </Link>
+  </div>
+</div>
             </div>
 
             {/* Overlay Mobile */}
