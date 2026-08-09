@@ -21,6 +21,7 @@ import DashboardHeader from "../components/DashboardHeader";
 import PackagePickerModal from "../components/PackagePickerModal";
 import usePackagePicker from "../hooks/usePackagePicker";
 import { useRouter } from "next/navigation";
+import PendingOrdersModal from "../components/PendingOrdersModal";
 
 export default function PosDashboardPage() {
   const [products, setProducts] = useState<any[]>([]);
@@ -355,6 +356,8 @@ export default function PosDashboardPage() {
         />
 
       </main>
+
+      <PendingOrdersModal />
     </>
   );
 }

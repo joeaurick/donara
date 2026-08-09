@@ -5,6 +5,7 @@ import {
   useContext,
   useMemo,
   useState,
+  useEffect,
   ReactNode,
 } from "react";
 
@@ -224,6 +225,44 @@ export function CartProvider({
     setCart([]);
     setTax(0);
   }
+
+  // ⬇️ TAMBAHKAN INI
+useEffect(() => {
+  const handler = (event: Event) => {
+    const customEvent = event as CustomEvent;
+    const order = customEvent.detail;
+
+    if (!order?.pending_order_items) return;
+
+    // kosongkan keranjang dulu
+    clear();
+
+    // masukkan kembali item ke keranjang
+    order.pending_order_items.forEach((item: any) => {
+      for (let i = 0; i < item.qty; i++) {
+        addToCart({
+          id: item.product_id,
+          name: item.product_name,
+          price: item.price,
+          image: "",
+          isPackage: false,
+          promo_code: item.promo_code ?? null,
+        });
+      }
+    });
+  };
+
+  window.addEventListener(
+    "resume-pending-order",
+    handler as EventListener
+  );
+
+  return () =>
+    window.removeEventListener(
+      "resume-pending-order",
+      handler as EventListener
+    );
+}, []);
 
   const subtotal = useMemo(() => {
     return cart.reduce(

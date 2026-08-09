@@ -5,6 +5,7 @@ import { useCart } from "../context/CartContext";
 import { supabase } from "@/lib/supabase/client";
 import { createTransaction } from "@/lib/supabase/transactions";
 import { getNextInvoice } from "@/lib/supabase/invoice";
+import { savePendingOrder } from "@/lib/supabase/pending-orders";
 
 interface CartSummaryProps {
   onPaymentSuccess?: () => void;
@@ -60,6 +61,30 @@ const pajak = tax;
     clear();
   } catch (e) {
     console.error("Gagal mereset state keranjang:", e);
+  }
+}
+
+async function handleSaveOrder() {
+  try {
+    const order = await savePendingOrder(
+      cart,
+      subtotal
+    );
+
+    forceClearCart();
+
+    alert(
+      `📝 Pesanan ${order.order_number} berhasil disimpan.`
+    );
+  } catch (err: any) {
+    console.error(
+      "SAVE ORDER ERROR:",
+      err
+    );
+
+    alert(
+      `Gagal menyimpan pesanan sementara:\n${err?.message || err}`
+    );
   }
 }
 
@@ -212,7 +237,7 @@ const { error: stockUpdateError } = await supabase
         </head>
         <body>
           <div class="center">
-            <span style="font-size: 14px; font-weight: bold; display: block; letter-spacing: 1px;">DONARA</span>
+            <span style="font-size: 14px; font-weight: bold; display: block; letter-spacing: 1px;">DONARA POS</span>
             <span style="font-size: 10px; display: block; margin-top: 2px;">${receiptData.date}</span>
           </div>
           <div class="line"></div>
@@ -298,6 +323,15 @@ const { error: stockUpdateError } = await supabase
       >
         Proses Pembayaran
       </button>
+
+      <button
+  type="button"
+  onClick={handleSaveOrder}
+  disabled={cart.length === 0}
+  className="mt-3 w-full rounded-2xl border border-gray-200 bg-white py-3 px-6 text-center text-sm font-black tracking-wide text-gray-700 transition-all hover:bg-gray-50 disabled:bg-gray-100 disabled:text-gray-400"
+>
+  📝 Simpan Pesanan
+</button>
 
       {isModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">

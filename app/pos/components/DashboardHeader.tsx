@@ -145,6 +145,18 @@ export default function DashboardHeader({
             )}
 
             <button
+  type="button"
+  onClick={() =>
+    window.dispatchEvent(
+      new Event("open-pending-orders")
+    )
+  }
+  className="rounded-xl border border-pink-200 bg-pink-50 px-4 py-2 text-sm font-bold text-pink-700 hover:bg-pink-100 transition-all"
+>
+  📋 Pesanan
+</button>
+
+            <button
               onClick={logout}
               className="rounded-xl bg-gray-900 px-4 py-2 text-sm font-bold text-white hover:bg-black"
             >
