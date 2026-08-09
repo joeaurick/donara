@@ -29,6 +29,9 @@ export default function FilterPeriode({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const startDate = searchParams.get("start") || "";
+  const endDate = searchParams.get("end") || "";
+
   const handleFilterChange = (
     key: string,
     value: string
@@ -37,45 +40,121 @@ export default function FilterPeriode({
       searchParams.toString()
     );
 
-    params.set(key, value);
+    if (value) {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
 
-    router.push(`?${params.toString()}`);
+    router.push(`/pos/history?${params.toString()}`);
+  };
+
+  const resetFilter = () => {
+    router.push(
+      `/pos/history?month=${currentMonth}&year=${currentYear}`
+    );
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-sm">
-      <span className="text-[11px] font-black uppercase tracking-wider text-gray-500">
-        Periode
-      </span>
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      {/* BULAN */}
+      <div className="space-y-2">
+        <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+          Bulan
+        </label>
 
-      <select
-        defaultValue={currentMonth}
-        onChange={(e) =>
-          handleFilterChange("month", e.target.value)
-        }
-        className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-700 outline-none transition focus:border-pink-500 focus:bg-white"
-      >
-        {daftarBulan.map((bulan) => (
-          <option
-            key={bulan.value}
-            value={bulan.value}
-          >
-            {bulan.label}
-          </option>
-        ))}
-      </select>
+        <select
+          value={currentMonth}
+          onChange={(e) =>
+            handleFilterChange(
+              "month",
+              e.target.value
+            )
+          }
+          className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+        >
+          {daftarBulan.map((bulan) => (
+            <option
+              key={bulan.value}
+              value={bulan.value}
+            >
+              {bulan.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <select
-        defaultValue={currentYear}
-        onChange={(e) =>
-          handleFilterChange("year", e.target.value)
-        }
-        className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-700 outline-none transition focus:border-pink-500 focus:bg-white"
-      >
-        <option value="2025">2025</option>
-        <option value="2026">2026</option>
-        <option value="2027">2027</option>
-      </select>
+      {/* TAHUN */}
+      <div className="space-y-2">
+        <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+          Tahun
+        </label>
+
+        <select
+          value={currentYear}
+          onChange={(e) =>
+            handleFilterChange(
+              "year",
+              e.target.value
+            )
+          }
+          className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+        >
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028</option>
+        </select>
+      </div>
+
+      {/* DARI TANGGAL */}
+      <div className="space-y-2">
+        <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+          Dari Tanggal
+        </label>
+
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) =>
+            handleFilterChange(
+              "start",
+              e.target.value
+            )
+          }
+          className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+        />
+      </div>
+
+      {/* SAMPAI TANGGAL */}
+      <div className="space-y-2">
+        <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+          Sampai Tanggal
+        </label>
+
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) =>
+            handleFilterChange(
+              "end",
+              e.target.value
+            )
+          }
+          className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+        />
+      </div>
+
+      {/* RESET */}
+      <div className="md:col-span-2 xl:col-span-4 flex justify-end pt-1">
+        <button
+          type="button"
+          onClick={resetFilter}
+          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+        >
+          ↺ Reset Filter
+        </button>
+      </div>
     </div>
   );
 }

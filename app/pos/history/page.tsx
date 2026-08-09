@@ -64,7 +64,7 @@ export default async function PosHistoryPage({
 
   if (error) {
     return (
-      <main className="space-y-6 p-6">
+      <main className="mx-auto flex max-w-7xl flex-col gap-6 p-4 md:p-6 lg:p-8">
         <h1 className="text-3xl font-black text-pink-600">
           Riwayat Transaksi
         </h1>
@@ -102,22 +102,48 @@ export default async function PosHistoryPage({
   return (
     <main className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-pink-600">
-            Riwayat Transaksi
-          </h1>
+      <div className="overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-sm">
+  <div className="h-2 bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400" />
 
-          <p className="mt-1 text-sm text-gray-500">
-            Daftar seluruh transaksi yang telah diproses.
+  <div className="flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between lg:p-8">
+    <div>
+      <div className="inline-flex items-center gap-2 rounded-full border border-pink-100 bg-pink-50 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-pink-600">
+        📜 Transaction History
+      </div>
+
+      <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+        Riwayat Transaksi
+      </h1>
+
+      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 md:text-base">
+        Daftar seluruh transaksi yang telah diproses pada periode yang dipilih.
+      </p>
+    </div>
+
+    <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="mb-3 flex items-center gap-2">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-600 shadow-sm">
+          🗓️
+        </span>
+
+        <div>
+          <h2 className="text-sm font-black text-slate-900">
+            Filter Periode
+          </h2>
+
+          <p className="text-xs text-slate-500">
+            Pilih bulan dan tahun transaksi.
           </p>
         </div>
-
-        <FilterPeriode
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-        />
       </div>
+
+      <FilterPeriode
+        currentMonth={currentMonth}
+        currentYear={currentYear}
+      />
+    </div>
+  </div>
+</div>
 
       {/* Empty state */}
       {transactions?.length === 0 ? (
@@ -142,7 +168,7 @@ export default async function PosHistoryPage({
               </div>
 
               {/* Table */}
-              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+              <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-left">
                     <thead className="border-b border-gray-200 bg-gray-50 text-[11px] font-black uppercase tracking-wider text-gray-500">
@@ -171,7 +197,7 @@ export default async function PosHistoryPage({
                         return (
                           <tr
                             key={trx.id}
-                            className="transition-colors hover:bg-gray-50/60"
+                            className="transition-colors hover:bg-slate-50/70"
                           >
                             <td className="p-4">
                               <Link
