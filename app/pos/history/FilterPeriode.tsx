@@ -29,8 +29,11 @@ export default function FilterPeriode({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const startDate = searchParams.get("start") || "";
-  const endDate = searchParams.get("end") || "";
+  const startDate =
+  searchParams.get("startDate") || "";
+
+const endDate =
+  searchParams.get("endDate") || "";
 
   const handleFilterChange = (
     key: string,
@@ -118,7 +121,7 @@ export default function FilterPeriode({
           value={startDate}
           onChange={(e) =>
             handleFilterChange(
-              "start",
+              "startDate",
               e.target.value
             )
           }
@@ -137,7 +140,7 @@ export default function FilterPeriode({
           value={endDate}
           onChange={(e) =>
             handleFilterChange(
-              "end",
+              "endDate",
               e.target.value
             )
           }

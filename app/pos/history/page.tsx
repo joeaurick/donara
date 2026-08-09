@@ -8,6 +8,8 @@ interface Props {
   searchParams: Promise<{
     month?: string;
     year?: string;
+    startDate?: string;
+    endDate?: string;
   }>;
 }
 
@@ -27,16 +29,27 @@ export default async function PosHistoryPage({
     params.year ||
     String(currentDate.getFullYear());
 
-  // Awal bulan (WIB → UTC)
-  const start = new Date(
-    `${currentYear}-${currentMonth}-01T00:00:00`
-  );
+  const startDateParam = params.startDate;
+  const endDateParam = params.endDate;
 
-  const startDate = new Date(
-    start.getTime() - 7 * 60 * 60 * 1000
+ let startDate: string;
+let endDate: string;
+
+// Jika memilih tanggal spesifik
+if (startDateParam && endDateParam) {
+  startDate = new Date(
+    `${startDateParam}T00:00:00+07:00`
   ).toISOString();
 
-  // Akhir bulan
+  endDate = new Date(
+    `${endDateParam}T23:59:59+07:00`
+  ).toISOString();
+} else {
+  // Default filter per bulan
+  const start = new Date(
+    `${currentYear}-${currentMonth}-01T00:00:00+07:00`
+  );
+
   const nextMonth =
     Number(currentMonth) === 12
       ? "01"
@@ -48,12 +61,14 @@ export default async function PosHistoryPage({
       : currentYear;
 
   const end = new Date(
-    `${nextYear}-${nextMonth}-01T00:00:00`
+    `${nextYear}-${nextMonth}-01T00:00:00+07:00`
   );
 
-  const endDate = new Date(
-    end.getTime() - 7 * 60 * 60 * 1000
-  ).toISOString();
+  startDate = start.toISOString();
+  endDate = end.toISOString();
+}
+
+  
 
   const { data: transactions, error } = await supabase
     .from("transactions")
