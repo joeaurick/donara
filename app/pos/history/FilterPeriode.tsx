@@ -59,10 +59,11 @@ const endDate =
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {/* BULAN */}
-      <div className="space-y-2">
-        <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+  <div className="space-y-3">
+    {/* Bulan & Tahun */}
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
           Bulan
         </label>
 
@@ -74,7 +75,7 @@ const endDate =
               e.target.value
             )
           }
-          className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
         >
           {daftarBulan.map((bulan) => (
             <option
@@ -87,9 +88,8 @@ const endDate =
         </select>
       </div>
 
-      {/* TAHUN */}
-      <div className="space-y-2">
-        <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
           Tahun
         </label>
 
@@ -101,7 +101,7 @@ const endDate =
               e.target.value
             )
           }
-          className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
         >
           <option value="2025">2025</option>
           <option value="2026">2026</option>
@@ -109,11 +109,13 @@ const endDate =
           <option value="2028">2028</option>
         </select>
       </div>
+    </div>
 
-      {/* DARI TANGGAL */}
-      <div className="space-y-2">
-        <label className="text-xs font-black uppercase tracking-wider text-slate-500">
-          Dari Tanggal
+    {/* Rentang Tanggal */}
+    <div className="grid grid-cols-2 gap-3">
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+          Dari
         </label>
 
         <input
@@ -121,18 +123,17 @@ const endDate =
           value={startDate}
           onChange={(e) =>
             handleFilterChange(
-              "startDate",
+              "start",
               e.target.value
             )
           }
-          className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
         />
       </div>
 
-      {/* SAMPAI TANGGAL */}
-      <div className="space-y-2">
-        <label className="text-xs font-black uppercase tracking-wider text-slate-500">
-          Sampai Tanggal
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+          Sampai
         </label>
 
         <input
@@ -140,24 +141,25 @@ const endDate =
           value={endDate}
           onChange={(e) =>
             handleFilterChange(
-              "endDate",
+              "end",
               e.target.value
             )
           }
-          className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 outline-none transition-all focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
         />
       </div>
-
-      {/* RESET */}
-      <div className="md:col-span-2 xl:col-span-4 flex justify-end pt-1">
-        <button
-          type="button"
-          onClick={resetFilter}
-          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 transition-all hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
-        >
-          ↺ Reset Filter
-        </button>
-      </div>
     </div>
-  );
+
+    {/* Reset */}
+    <div className="pt-1">
+      <button
+        type="button"
+        onClick={resetFilter}
+        className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+      >
+        ↺ Reset Filter
+      </button>
+    </div>
+  </div>
+);
 }

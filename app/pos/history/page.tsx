@@ -117,47 +117,44 @@ if (startDateParam && endDateParam) {
   return (
     <main className="space-y-6 p-6">
       {/* Header */}
-      <div className="overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-sm">
-  <div className="h-2 bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400" />
+      {/* Header Ringkas */}
+<div className="rounded-3xl border border-pink-100 bg-white p-4 shadow-sm">
+  <div className="inline-flex items-center gap-2 rounded-full border border-pink-100 bg-pink-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-pink-600">
+    <span>📜</span>
+    <span>Transaction History</span>
+  </div>
 
-  <div className="flex flex-col gap-5 p-6 lg:flex-row lg:items-center lg:justify-between lg:p-8">
+  <h1 className="mt-3 text-2xl font-black tracking-tight text-slate-900">
+    Riwayat Transaksi
+  </h1>
+
+  <p className="mt-2 text-sm leading-5 text-slate-500">
+    Pantau seluruh transaksi yang telah diproses berdasarkan periode yang dipilih.
+  </p>
+</div>
+
+{/* Filter Terpisah */}
+<div className="rounded-3xl border border-slate-200 bg-slate-50 p-4 shadow-sm">
+  <div className="mb-3 flex items-center gap-3">
+    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-600 shadow-sm">
+      🗓️
+    </span>
+
     <div>
-      <div className="inline-flex items-center gap-2 rounded-full border border-pink-100 bg-pink-50 px-3 py-1 text-xs font-black uppercase tracking-[0.2em] text-pink-600">
-        📜 Transaction History
-      </div>
+      <h2 className="text-sm font-black text-slate-900">
+        Filter Periode
+      </h2>
 
-      <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
-        Riwayat Transaksi
-      </h1>
-
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500 md:text-base">
-        Daftar seluruh transaksi yang telah diproses pada periode yang dipilih.
+      <p className="text-xs text-slate-500">
+        Pilih bulan atau rentang tanggal transaksi.
       </p>
     </div>
-
-    <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-600 shadow-sm">
-          🗓️
-        </span>
-
-        <div>
-          <h2 className="text-sm font-black text-slate-900">
-            Filter Periode
-          </h2>
-
-          <p className="text-xs text-slate-500">
-            Pilih bulan dan tahun transaksi.
-          </p>
-        </div>
-      </div>
-
-      <FilterPeriode
-        currentMonth={currentMonth}
-        currentYear={currentYear}
-      />
-    </div>
   </div>
+
+  <FilterPeriode
+    currentMonth={currentMonth}
+    currentYear={currentYear}
+  />
 </div>
 
       {/* Empty state */}
@@ -166,7 +163,7 @@ if (startDateParam && endDateParam) {
           Tidak ada transaksi pada periode ini.
         </div>
       ) : (
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-5">
           {Object.keys(groupedTransactions).map((dateLabel) => (
             <section key={dateLabel} className="space-y-3">
               {/* Group header */}
@@ -184,14 +181,14 @@ if (startDateParam && endDateParam) {
 
               {/* Table */}
               <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left">
+                <div className="overflow-hidden">
+  <table className="w-full table-fixed border-collapse text-left">
                     <thead className="border-b border-gray-200 bg-gray-50 text-[11px] font-black uppercase tracking-wider text-gray-500">
                       <tr>
-                        <th className="p-4">Invoice</th>
-                        <th className="p-4">Jam</th>
-                        <th className="p-4 text-center">Metode</th>
-                        <th className="p-4 text-right">Total</th>
+                        <th className="w-[34%] px-3 py-3">Invoice</th>
+<th className="w-[18%] px-2 py-3 text-center">Jam</th>
+<th className="w-[24%] px-2 py-3 text-center">Metode</th>
+<th className="w-[24%] px-3 py-3 text-right">Total</th>
                       </tr>
                     </thead>
 
@@ -214,16 +211,16 @@ if (startDateParam && endDateParam) {
                             key={trx.id}
                             className="transition-colors hover:bg-slate-50/70"
                           >
-                            <td className="p-4">
-                              <Link
-                                href={`/pos/history/${trx.id}`}
-                                className="font-bold text-pink-600 hover:underline"
-                              >
-                                {trx.invoice}
-                              </Link>
-                            </td>
+                            <td className="px-3 py-3 align-top">
+  <Link
+    href={`/pos/history/${trx.id}`}
+    className="block break-all text-xs font-black leading-4 text-pink-600 hover:underline md:text-sm"
+  >
+    {trx.invoice}
+  </Link>
+</td>
 
-                            <td className="p-4 font-mono text-gray-500">
+                            <td className="px-2 py-3 text-center font-mono text-[11px] text-gray-500 md:text-xs">
                               {timeString}
                             </td>
 
@@ -239,7 +236,7 @@ if (startDateParam && endDateParam) {
                               )}
                             </td>
 
-                            <td className="p-4 text-right text-sm font-black text-gray-900">
+                            <td className="px-3 py-3 text-right text-xs font-black text-gray-900 md:text-sm">
                               Rp {Number(trx.total).toLocaleString("id-ID")}
                             </td>
                           </tr>

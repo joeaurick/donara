@@ -26,6 +26,27 @@ export default function ReportPage() {
   const [stock, setStock] = useState<any>(null);
   const [hourlySales, setHourlySales] = useState<any[]>([]);
   const [paymentSummary, setPaymentSummary] = useState<any[]>([]);
+  const cashTotal = paymentSummary
+  .filter(
+    (item) =>
+      item.payment_method?.toUpperCase() === "CASH"
+  )
+  .reduce(
+    (sum, item) =>
+      sum + Number(item.total || 0),
+    0
+  );
+
+const qrisTotal = paymentSummary
+  .filter(
+    (item) =>
+      item.payment_method?.toUpperCase() === "QRIS"
+  )
+  .reduce(
+    (sum, item) =>
+      sum + Number(item.total || 0),
+    0
+  );
 
   const [period, setPeriod] = useState<
     "today" | "week" | "month"
@@ -80,34 +101,39 @@ export default function ReportPage() {
   return (
     <main className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-pink-600">
-            Laporan Omzet
-          </h1>
+      <div className="rounded-[28px] border border-pink-100 bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 p-6 text-white shadow-xl md:p-8">
+  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+    <div>
+      <p className="text-xs font-black uppercase tracking-[0.22em] text-pink-100">
+        📊 Dashboard Laporan
+      </p>
 
-          <p className="mt-1 text-sm text-gray-500">
-            Pantau performa penjualan Donara secara real-time.
-          </p>
-        </div>
+      <h1 className="mt-2 text-3xl font-black tracking-tight md:text-4xl">
+        Laporan Omzet Donara
+      </h1>
 
-        {/* Tombol Export */}
-        <div className="flex flex-wrap gap-3">
-          <button
-            onClick={() => exportReportPdf(report, products)}
-            className="rounded-xl bg-red-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-red-700"
-          >
-            Export PDF
-          </button>
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-pink-50 md:text-base">
+        Pantau performa penjualan, metode pembayaran, dan produk terlaris secara real-time dalam satu dashboard yang responsif.
+      </p>
+    </div>
 
-          <button
-            onClick={() => exportReportExcel(report, products)}
-            className="rounded-xl bg-green-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-green-700"
-          >
-            Export Excel
-          </button>
-        </div>
-      </div>
+    <div className="flex flex-wrap gap-3">
+      <button
+        onClick={() => exportReportPdf(report, products)}
+        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-black text-white backdrop-blur transition hover:bg-white/25"
+      >
+        📄 Export PDF
+      </button>
+
+      <button
+        onClick={() => exportReportExcel(report, products)}
+        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-400"
+      >
+        📊 Export Excel
+      </button>
+    </div>
+  </div>
+</div>
 
       {/* Filter */}
       <div className="flex flex-wrap gap-3">
@@ -137,16 +163,26 @@ export default function ReportPage() {
       ) : (
         <>
           {/* Statistik */}
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-              <p className="text-sm font-medium text-gray-500">
-                Omzet
-              </p>
+<div className="grid grid-cols-2 gap-4 xl:grid-cols-6">
+            <div className="col-span-2 rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 via-white to-rose-50 p-6 shadow-sm">
+  <div className="flex items-center justify-between">
+    <p className="text-xs font-black uppercase tracking-wider text-pink-600">
+      💰 Total Omzet
+    </p>
 
-              <h2 className="mt-3 text-3xl font-black text-pink-600">
-                Rp {report?.omzet?.toLocaleString("id-ID") || 0}
-              </h2>
-            </div>
+    <span className="rounded-full bg-pink-100 px-2 py-1 text-[10px] font-black text-pink-600">
+      LIVE
+    </span>
+  </div>
+
+  <h2 className="mt-4 text-3xl font-black tracking-tight text-pink-600 md:text-4xl">
+    Rp {report?.omzet?.toLocaleString("id-ID") || 0}
+  </h2>
+
+  <p className="mt-2 text-xs text-slate-500">
+    Total penjualan pada periode yang dipilih.
+  </p>
+</div>
 
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
@@ -157,6 +193,38 @@ export default function ReportPage() {
                 {report?.transaksi || 0}
               </h2>
             </div>
+
+            <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">
+  <div className="flex items-center justify-between">
+    <p className="text-xs font-black uppercase tracking-wider text-emerald-700">
+      💵 Cash
+    </p>
+
+    <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-black text-emerald-700">
+      CASH
+    </span>
+  </div>
+
+  <h2 className="mt-3 text-xl font-black text-emerald-700 md:text-2xl">
+    Rp {cashTotal.toLocaleString("id-ID")}
+  </h2>
+</div>
+
+<div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
+  <div className="flex items-center justify-between">
+    <p className="text-xs font-black uppercase tracking-wider text-blue-700">
+      📱 QRIS
+    </p>
+
+    <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-black text-blue-700">
+      QRIS
+    </span>
+  </div>
+
+  <h2 className="mt-3 text-xl font-black text-blue-700 md:text-2xl">
+    Rp {qrisTotal.toLocaleString("id-ID")}
+  </h2>
+</div>
 
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-gray-500">

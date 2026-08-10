@@ -154,29 +154,31 @@ export async function getPaymentSummary(
   if (error) throw error;
 
   const summary = {
-    Cash: 0,
+    CASH: 0,
     QRIS: 0,
-    Transfer: 0,
+    TRANSFER: 0,
   };
 
   data.forEach((trx) => {
-    if (trx.payment_method in summary) {
-      summary[trx.payment_method as keyof typeof summary] += Number(trx.total);
+    const method = (trx.payment_method || "CASH").toUpperCase();
+
+    if (method in summary) {
+      summary[method as keyof typeof summary] += Number(trx.total);
     }
   });
 
   return [
     {
-      name: "Cash",
-      total: summary.Cash,
+      payment_method: "CASH",
+      total: summary.CASH,
     },
     {
-      name: "QRIS",
+      payment_method: "QRIS",
       total: summary.QRIS,
     },
     {
-      name: "Transfer",
-      total: summary.Transfer,
+      payment_method: "TRANSFER",
+      total: summary.TRANSFER,
     },
   ];
 }
