@@ -170,22 +170,23 @@ const [r, p, s, h, pay] = await Promise.all([
 
     // Ambil transaksi hari ini
     const { data: trxData } = await supabase
-      .from("transactions")
-      .select(
-        `
-        payment_method,
-        total,
-        transaction_items(qty)
-      `
-      )
-      .order("created_at", { ascending: true });
+  .from("transactions")
+  .select(
+    `
+    payment_method,
+    total,
+    transaction_items(qty)
+  `
+  )
+  .order("created_at", { ascending: true });
 
     const detailLines = (trxData || []).map(
   (trx: any) => {
-    const porsi =
+    // Hitung total pcs dari qty
+    const pcs =
       trx.transaction_items?.reduce(
         (sum: number, item: any) =>
-          sum + Number(item.qty),
+          sum + Number(item.qty || 0),
         0
       ) || 0;
 
@@ -193,7 +194,6 @@ const [r, p, s, h, pay] = await Promise.all([
       trx.payment_method || "CASH"
     ).toUpperCase();
 
-    // Label agar mudah dibedakan
     const label =
       method === "QRIS"
         ? "[QRIS]"
@@ -201,9 +201,9 @@ const [r, p, s, h, pay] = await Promise.all([
         ? "[TRANSFER]"
         : "[CASH]";
 
-    return `• ${label} ${porsi} porsi - Rp ${Number(
-  trx.total
-).toLocaleString("id-ID")}`;
+    return `• ${label} ${pcs} pcs - Rp ${Number(
+      trx.total
+    ).toLocaleString("id-ID")}`;
   }
 );
 
