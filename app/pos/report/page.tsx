@@ -168,17 +168,43 @@ const [r, p, s, h, pay] = await Promise.all([
 
     const omzet = report?.omzet || 0;
 
-    // Ambil transaksi hari ini
-    const { data: trxData } = await supabase
+    // Samakan periode dengan dashboard report
+const now = new Date();
+
+const start = new Date(now);
+const end = new Date(now);
+
+if (period === "today") {
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+} else if (period === "week") {
+  start.setDate(start.getDate() - 6);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+} else {
+  start.setDate(start.getDate() - 29);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+}
+
+const { data: trxData, error } = await supabase
   .from("transactions")
   .select(
     `
     payment_method,
     total,
+    created_at,
     transaction_items(qty)
   `
   )
+  .gte("created_at", start.toISOString())
+  .lte("created_at", end.toISOString())
   .order("created_at", { ascending: true });
+
+if (error) {
+  console.error(error);
+  return;
+}
 
     const detailLines = (trxData || []).map(
   (trx: any) => {
