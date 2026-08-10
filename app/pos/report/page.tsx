@@ -17,12 +17,15 @@ import { exportReportPdf } from "@/lib/exportPdf";
 
 import { supabase } from "@/lib/supabase/client";
 
+import { useSearchParams } from "next/navigation";
+
 type ReportType = {
   omzet: number;
   transaksi: number;
 } | null;
 
 export default function ReportPage() {
+  const searchParams = useSearchParams();
   const [report, setReport] = useState<ReportType>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [stock, setStock] = useState<any>(null);
@@ -146,10 +149,11 @@ const [r, p, s, h, pay] = await Promise.all([
       <button
   onClick={async () => {
   // Ambil tanggal dari URL
-  const params = new URLSearchParams(window.location.search);
+  const startDateParam =
+  searchParams.get("startDate");
 
-  const startDateParam = params.get("startDate");
-  const endDateParam = params.get("endDate");
+const endDateParam =
+  searchParams.get("endDate");
 
   const start = new Date();
   const end = new Date();
