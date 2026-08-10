@@ -17,7 +17,6 @@ import { exportReportPdf } from "@/lib/exportPdf";
 
 import { supabase } from "@/lib/supabase/client";
 
-import { useSearchParams } from "next/navigation";
 
 type ReportType = {
   omzet: number;
@@ -25,7 +24,6 @@ type ReportType = {
 } | null;
 
 export default function ReportPage() {
-  const searchParams = useSearchParams();
   const [report, setReport] = useState<ReportType>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [stock, setStock] = useState<any>(null);
@@ -148,12 +146,14 @@ const [r, p, s, h, pay] = await Promise.all([
 
       <button
   onClick={async () => {
-  // Ambil tanggal dari URL
-  const startDateParam =
-  searchParams.get("startDate");
+  // Ambil query dari URL saat tombol diklik
+const params = new URLSearchParams(window.location.search);
+
+const startDateParam =
+  params.get("startDate");
 
 const endDateParam =
-  searchParams.get("endDate");
+  params.get("endDate");
 
   const start = new Date();
   const end = new Date();
