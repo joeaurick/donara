@@ -155,6 +155,10 @@ const startDateParam =
 const endDateParam =
   params.get("endDate");
 
+console.log("URL =", window.location.href);
+console.log("startDate =", startDateParam);
+console.log("endDate =", endDateParam);
+
   const start = new Date();
   const end = new Date();
 
