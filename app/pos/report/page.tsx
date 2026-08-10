@@ -222,14 +222,40 @@ const [r, p, s, h, pay] = await Promise.all([
     ).toLocaleString("id-ID")}`;
   });
 
-  const text = `
+  // Format tanggal yang dipilih user
+const tanggalLaporan =
+  startDateParam && endDateParam
+    ? startDateParam === endDateParam
+      ? new Date(
+          `${startDateParam}T00:00:00`
+        ).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : `${new Date(
+          `${startDateParam}T00:00:00`
+        ).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })} s/d ${new Date(
+          `${endDateParam}T00:00:00`
+        ).toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })}`
+    : start.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+const text = `
 *LAPORAN PENJUALAN DONARA*
 
-*Tanggal:* ${start.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  })}
+*Tanggal:* ${tanggalLaporan}
 
 ------------------------------
 
