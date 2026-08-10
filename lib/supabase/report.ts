@@ -257,3 +257,29 @@ export async function getPaymentSummary(
     },
   ];
 }
+
+export async function getTransactionSummaryForWhatsapp(
+  filter: ReportFilter = {}
+) {
+  const { start, end } = getDateRange(filter);
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("payment_method,total,transaction_items(qty)")
+    .gte("created_at", start)
+    .lte("created_at", end)
+    .order("created_at");
+
+  if (error) throw error;
+
+  return (data || []).map((trx: any) => ({
+    paymentMethod: trx.payment_method || "CASH",
+    total: Number(trx.total),
+    porsi:
+      trx.transaction_items?.reduce(
+        (sum: number, item: any) =>
+          sum + Number(item.qty),
+        0
+      ) || 0,
+  }));
+}

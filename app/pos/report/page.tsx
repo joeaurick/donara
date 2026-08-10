@@ -15,6 +15,8 @@ import PaymentChart from "../components/PaymentChart";
 import { exportReportExcel } from "@/lib/exportExcel";
 import { exportReportPdf } from "@/lib/exportPdf";
 
+import { supabase } from "@/lib/supabase/client";
+
 type ReportType = {
   omzet: number;
   transaksi: number;
@@ -140,6 +142,114 @@ const [r, p, s, h, pay] = await Promise.all([
       >
         📊 Export Excel
       </button>
+
+      <button
+  onClick={async () => {
+    const cash =
+      paymentSummary.find(
+        (p) => p.payment_method === "CASH"
+      )?.total || 0;
+
+    const qris =
+      paymentSummary.find(
+        (p) => p.payment_method === "QRIS"
+      )?.total || 0;
+
+    const transfer =
+      paymentSummary.find(
+        (p) => p.payment_method === "TRANSFER"
+      )?.total || 0;
+
+    const totalDonut = stock
+      ? stock.opening_stock - stock.remaining_stock
+      : 0;
+
+    const totalPorsi = report?.transaksi || 0;
+
+    const omzet = report?.omzet || 0;
+
+    // Ambil transaksi hari ini
+    const { data: trxData } = await supabase
+      .from("transactions")
+      .select(
+        `
+        payment_method,
+        total,
+        transaction_items(qty)
+      `
+      )
+      .order("created_at", { ascending: true });
+
+    const detailLines = (trxData || []).map(
+  (trx: any) => {
+    const porsi =
+      trx.transaction_items?.reduce(
+        (sum: number, item: any) =>
+          sum + Number(item.qty),
+        0
+      ) || 0;
+
+    const method = (
+      trx.payment_method || "CASH"
+    ).toUpperCase();
+
+    // Label agar mudah dibedakan
+    const label =
+      method === "QRIS"
+        ? "[QRIS]"
+        : method === "TRANSFER"
+        ? "[TRANSFER]"
+        : "[CASH]";
+
+    return `• ${label} ${porsi} porsi - Rp ${Number(
+  trx.total
+).toLocaleString("id-ID")}`;
+  }
+);
+
+    const text = `
+*LAPORAN PENJUALAN DONARA*
+
+*Tanggal:* ${new Date().toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    })}
+
+------------------------------
+
+*RINGKASAN*
+- Total Donat : ${totalDonut} pcs
+- Total Porsi : ${totalPorsi} porsi
+- Total Omzet : Rp ${omzet.toLocaleString("id-ID")}
+
+------------------------------
+
+*PEMBAYARAN*
+- Cash    : Rp ${cash.toLocaleString("id-ID")}
+- QRIS    : Rp ${qris.toLocaleString("id-ID")}
+- Transfer: Rp ${transfer.toLocaleString("id-ID")}
+
+------------------------------
+
+*DETAIL TRANSAKSI*
+
+${detailLines.join("\n")}
+
+------------------------------
+
+Terima kasih.
+`;
+
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
+      "_blank"
+    );
+  }}
+  className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
+>
+  Kirim WhatsApp
+</button>
     </div>
   </div>
 </div>
