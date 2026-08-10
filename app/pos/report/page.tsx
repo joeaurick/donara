@@ -52,19 +52,28 @@ const qrisTotal = paymentSummary
     "today" | "week" | "month"
   >("today");
 
+  const [startDate, setStartDate] = useState("");
+const [endDate, setEndDate] = useState("");
+
   const [isLoading, setIsLoading] = useState(false);
 
   async function loadData() {
     setIsLoading(true);
 
     try {
-      const [r, p, s, h, pay] = await Promise.all([
-        getTodayReport(period),
-        getTopProducts(period),
-        getTodayStock(),
-        getHourlySales(period),
-        getPaymentSummary(),
-      ]);
+      const filter = {
+  period,
+  startDate,
+  endDate,
+};
+
+const [r, p, s, h, pay] = await Promise.all([
+  getTodayReport(filter),
+  getTopProducts(filter),
+  getTodayStock(),
+  getHourlySales(filter),
+  getPaymentSummary(filter),
+]);
 
       console.log("REPORT =", r);
       console.log("PRODUCT =", p);
@@ -85,8 +94,8 @@ const qrisTotal = paymentSummary
   }
 
   useEffect(() => {
-    loadData();
-  }, [period]);
+  loadData();
+}, [period, startDate, endDate]);
 
   if (!report && !isLoading) {
     return (
@@ -136,25 +145,63 @@ const qrisTotal = paymentSummary
 </div>
 
       {/* Filter */}
-      <div className="flex flex-wrap gap-3">
-        {(["today", "week", "month"] as const).map((p) => (
-          <button
-            key={p}
-            onClick={() => setPeriod(p)}
-            className={`rounded-xl px-4 py-2 text-sm font-bold transition ${
-              period === p
-                ? "bg-pink-600 text-white shadow-md"
-                : "border border-gray-200 bg-white text-gray-600 hover:bg-gray-50"
-            }`}
-          >
-            {p === "today"
-              ? "Hari Ini"
-              : p === "week"
-              ? "7 Hari"
-              : "30 Hari"}
-          </button>
-        ))}
+<div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    {/* Quick Filter */}
+    <div className="flex flex-wrap gap-2">
+      {(["today", "week", "month"] as const).map((p) => (
+        <button
+          key={p}
+          onClick={() => {
+            setPeriod(p);
+            setStartDate("");
+            setEndDate("");
+          }}
+          className={`rounded-2xl px-4 py-2 text-sm font-bold transition ${
+            period === p && !startDate && !endDate
+              ? "bg-pink-600 text-white shadow-md"
+              : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+          }`}
+        >
+          {p === "today"
+            ? "Hari Ini"
+            : p === "week"
+            ? "7 Hari"
+            : "30 Hari"}
+        </button>
+      ))}
+    </div>
+
+    {/* Date Range */}
+    <div className="grid grid-cols-2 gap-3 lg:w-auto">
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+          Dari
+        </label>
+
+        <input
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+        />
       </div>
+
+      <div className="space-y-1">
+        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+          Sampai
+        </label>
+
+        <input
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+        />
+      </div>
+    </div>
+  </div>
+</div>
 
       {isLoading ? (
         <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-500">

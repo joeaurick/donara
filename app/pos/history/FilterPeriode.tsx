@@ -36,21 +36,31 @@ const endDate =
   searchParams.get("endDate") || "";
 
   const handleFilterChange = (
-    key: string,
-    value: string
-  ) => {
-    const params = new URLSearchParams(
-      searchParams.toString()
-    );
+  key: string,
+  value: string
+) => {
+  const params = new URLSearchParams(
+    searchParams.toString()
+  );
 
-    if (value) {
-      params.set(key, value);
-    } else {
-      params.delete(key);
+  if (value) {
+    params.set(key, value);
+
+    // Jika memilih tanggal manual,
+    // hapus filter bulan & tahun
+    if (
+      key === "startDate" ||
+      key === "endDate"
+    ) {
+      params.delete("month");
+      params.delete("year");
     }
+  } else {
+    params.delete(key);
+  }
 
-    router.push(`/pos/history?${params.toString()}`);
-  };
+  router.push(`/pos/history?${params.toString()}`);
+};
 
   const resetFilter = () => {
     router.push(
@@ -123,7 +133,7 @@ const endDate =
           value={startDate}
           onChange={(e) =>
             handleFilterChange(
-              "start",
+              "startDate",
               e.target.value
             )
           }
@@ -141,7 +151,7 @@ const endDate =
           value={endDate}
           onChange={(e) =>
             handleFilterChange(
-              "end",
+              "endDate",
               e.target.value
             )
           }
