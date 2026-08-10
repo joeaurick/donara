@@ -8,6 +8,10 @@ import { Search, Plus, Pencil, Trash2, Star, GripVertical} from "lucide-react";
 import {
   DndContext,
   closestCenter,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
 } from "@dnd-kit/core";
 
 import {
@@ -36,14 +40,15 @@ function SortableProductCard({
   onDelete: (id: number) => void;
 }) {
   const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({
-    id: product.id,
-  });
+  attributes,
+  listeners,
+  setNodeRef,
+  transform,
+  transition,
+  isDragging,
+} = useSortable({
+  id: product.id,
+});
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -52,17 +57,21 @@ function SortableProductCard({
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
-      className="rounded-3xl border border-pink-100 bg-white p-4 shadow-sm"
-    >
+  ref={setNodeRef}
+  style={style}
+  className={`rounded-3xl border border-pink-100 bg-white p-4 shadow-sm transition-all ${
+    isDragging
+      ? "scale-[1.02] shadow-2xl ring-2 ring-pink-300 z-50"
+      : ""
+  }`}
+>
       <div className="flex items-start gap-4">
         {/* Drag Handle */}
         <button
           type="button"
           {...attributes}
           {...listeners}
-          className="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-gray-100 text-gray-400 active:cursor-grabbing"
+          className="mt-1 flex h-10 w-10 touch-none items-center justify-center rounded-xl bg-gray-100 text-gray-500 shadow-sm transition active:scale-95 active:cursor-grabbing"
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -118,6 +127,21 @@ export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 6,
+    },
+  }),
+
+  useSensor(TouchSensor, {
+    activationConstraint: {
+      delay: 120,
+      tolerance: 8,
+    },
+  })
+);
 
   useEffect(() => {
     loadProducts();
@@ -323,6 +347,7 @@ export default function AdminProductsPage() {
 
       {/* Mobile */}
 <DndContext
+  sensors={sensors}
   collisionDetection={closestCenter}
   onDragEnd={handleDragEnd}
 >
