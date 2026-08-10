@@ -145,85 +145,56 @@ const [r, p, s, h, pay] = await Promise.all([
 
       <button
   onClick={async () => {
-    const cash =
-      paymentSummary.find(
-        (p) => p.payment_method === "CASH"
-      )?.total || 0;
+  // Ambil tanggal dari URL
+  const params = new URLSearchParams(window.location.search);
 
-    const qris =
-      paymentSummary.find(
-        (p) => p.payment_method === "QRIS"
-      )?.total || 0;
+  const startDateParam = params.get("startDate");
+  const endDateParam = params.get("endDate");
 
-    const transfer =
-      paymentSummary.find(
-        (p) => p.payment_method === "TRANSFER"
-      )?.total || 0;
+  const start = new Date();
+  const end = new Date();
 
-    const totalDonut = stock
-      ? stock.opening_stock - stock.remaining_stock
-      : 0;
+  if (startDateParam && endDateParam) {
+    start.setTime(
+      new Date(`${startDateParam}T00:00:00+07:00`).getTime()
+    );
 
-    const totalPorsi = report?.transaksi || 0;
-
-    const omzet = report?.omzet || 0;
-
-    // Samakan periode dengan dashboard report// Gunakan tanggal yang benar-benar dipilih user
-const params = new URLSearchParams(window.location.search);
-
-const startDateParam = params.get("startDate");
-const endDateParam = params.get("endDate");
-
-const start = new Date();
-const end = new Date();
-
-if (startDateParam && endDateParam) {
-  // Filter berdasarkan tanggal spesifik
-  start.setTime(
-    new Date(`${startDateParam}T00:00:00+07:00`).getTime()
-  );
-
-  end.setTime(
-    new Date(`${endDateParam}T23:59:59+07:00`).getTime()
-  );
-} else {
-  // Fallback ke tombol Hari Ini / 7 Hari / 30 Hari
-  if (period === "today") {
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
-  } else if (period === "week") {
-    start.setDate(start.getDate() - 6);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+    end.setTime(
+      new Date(`${endDateParam}T23:59:59+07:00`).getTime()
+    );
   } else {
-    start.setDate(start.getDate() - 29);
     start.setHours(0, 0, 0, 0);
     end.setHours(23, 59, 59, 999);
   }
-}
 
-const { data: trxData, error } = await supabase
-  .from("transactions")
-  .select(
+  // Ambil transaksi sesuai tanggal yang dipilih
+  const { data: trxData, error } = await supabase
+    .from("transactions")
+    .select(
+      `
+      payment_method,
+      total,
+      created_at,
+      transaction_items(qty)
     `
-    payment_method,
-    total,
-    created_at,
-    transaction_items(qty)
-  `
-  )
-  .gte("created_at", start.toISOString())
-  .lte("created_at", end.toISOString())
-  .order("created_at", { ascending: true });
+    )
+    .gte("created_at", start.toISOString())
+    .lte("created_at", end.toISOString())
+    .order("created_at", { ascending: true });
 
-if (error) {
-  console.error(error);
-  return;
-}
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-    const detailLines = (trxData || []).map(
-  (trx: any) => {
-    // Hitung total pcs dari qty
+  // Hitung ulang dari data yang sudah difilter
+  let cash = 0;
+  let qris = 0;
+  let transfer = 0;
+  let totalOmzet = 0;
+  let totalPcs = 0;
+
+  const detailLines = (trxData || []).map((trx: any) => {
     const pcs =
       trx.transaction_items?.reduce(
         (sum: number, item: any) =>
@@ -231,42 +202,47 @@ if (error) {
         0
       ) || 0;
 
+    totalPcs += pcs;
+    totalOmzet += Number(trx.total);
+
     const method = (
       trx.payment_method || "CASH"
     ).toUpperCase();
 
-    const label =
-      method === "QRIS"
-        ? "[QRIS]"
-        : method === "TRANSFER"
-        ? "[TRANSFER]"
-        : "[CASH]";
+    if (method === "QRIS") {
+      qris += Number(trx.total);
+    } else if (method === "TRANSFER") {
+      transfer += Number(trx.total);
+    } else {
+      cash += Number(trx.total);
+    }
 
-    return `• ${label} ${pcs} pcs - Rp ${Number(
+    return `• [${method}] ${pcs} pcs - Rp ${Number(
       trx.total
     ).toLocaleString("id-ID")}`;
-  }
-);
+  });
 
-    const text = `
+  const text = `
 *LAPORAN PENJUALAN DONARA*
 
-*Tanggal:* ${new Date().toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })}
+*Tanggal:* ${start.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })}
 
 ------------------------------
 
 *RINGKASAN*
-- Total Donat : ${totalDonut} pcs
-- Total Porsi : ${totalPorsi} porsi
-- Total Omzet : Rp ${omzet.toLocaleString("id-ID")}
+
+- Total Donat : ${totalPcs} pcs
+- Total Transaksi : ${trxData?.length || 0}
+- Total Omzet : Rp ${totalOmzet.toLocaleString("id-ID")}
 
 ------------------------------
 
 *PEMBAYARAN*
+
 - Cash    : Rp ${cash.toLocaleString("id-ID")}
 - QRIS    : Rp ${qris.toLocaleString("id-ID")}
 - Transfer: Rp ${transfer.toLocaleString("id-ID")}
@@ -282,11 +258,11 @@ ${detailLines.join("\n")}
 Terima kasih.
 `;
 
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(text)}`,
-      "_blank"
-    );
-  }}
+  window.open(
+    `https://wa.me/?text=${encodeURIComponent(text)}`,
+    "_blank"
+  );
+}}
   className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
 >
   Kirim WhatsApp
