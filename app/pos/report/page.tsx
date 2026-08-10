@@ -168,23 +168,38 @@ const [r, p, s, h, pay] = await Promise.all([
 
     const omzet = report?.omzet || 0;
 
-    // Samakan periode dengan dashboard report
-const now = new Date();
+    // Samakan periode dengan dashboard report// Gunakan tanggal yang benar-benar dipilih user
+const params = new URLSearchParams(window.location.search);
 
-const start = new Date(now);
-const end = new Date(now);
+const startDateParam = params.get("startDate");
+const endDateParam = params.get("endDate");
 
-if (period === "today") {
-  start.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
-} else if (period === "week") {
-  start.setDate(start.getDate() - 6);
-  start.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
+const start = new Date();
+const end = new Date();
+
+if (startDateParam && endDateParam) {
+  // Filter berdasarkan tanggal spesifik
+  start.setTime(
+    new Date(`${startDateParam}T00:00:00+07:00`).getTime()
+  );
+
+  end.setTime(
+    new Date(`${endDateParam}T23:59:59+07:00`).getTime()
+  );
 } else {
-  start.setDate(start.getDate() - 29);
-  start.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
+  // Fallback ke tombol Hari Ini / 7 Hari / 30 Hari
+  if (period === "today") {
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+  } else if (period === "week") {
+    start.setDate(start.getDate() - 6);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+  } else {
+    start.setDate(start.getDate() - 29);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(23, 59, 59, 999);
+  }
 }
 
 const { data: trxData, error } = await supabase
