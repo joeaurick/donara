@@ -154,17 +154,39 @@ const endDateParam = endDate;
   const end = new Date();
 
   if (startDateParam && endDateParam) {
-    start.setTime(
-      new Date(`${startDateParam}T00:00:00+07:00`).getTime()
-    );
+  // Hari operasional:
+  // 05:00 pagi → 02:00 dini hari berikutnya
 
-    end.setTime(
-      new Date(`${endDateParam}T23:59:59+07:00`).getTime()
-    );
-  } else {
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+  start.setTime(
+    new Date(
+      `${startDateParam}T05:00:00+07:00`
+    ).getTime()
+  );
+
+  end.setTime(
+    new Date(
+      `${endDateParam}T02:00:59+07:00`
+    ).getTime()
+  );
+
+  // Tambahkan 1 hari karena tutup lewat tengah malam
+  end.setDate(end.getDate() + 1);
+} else {
+  // Fallback hari operasional aktif
+  const now = new Date();
+
+  // Jika sekarang masih sebelum jam 02:00,
+  // anggap masih milik hari kemarin
+  if (now.getHours() < 2) {
+    start.setDate(start.getDate() - 1);
+    end.setDate(end.getDate() - 1);
   }
+
+  start.setHours(5, 0, 0, 0);
+
+  end.setDate(end.getDate() + 1);
+  end.setHours(2, 0, 59, 999);
+}
 
   // Ambil transaksi sesuai tanggal yang dipilih
   const { data: trxData, error } = await supabase

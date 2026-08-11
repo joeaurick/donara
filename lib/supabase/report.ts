@@ -7,18 +7,26 @@ export type ReportFilter = {
 };
 
 function getDateRange(filter: ReportFilter = {}) {
-  // Jika menggunakan filter tanggal manual
-  if (filter.startDate && filter.endDate) {
-    return {
-      start: new Date(
-        `${filter.startDate}T00:00:00+07:00`
-      ).toISOString(),
-      end: new Date(
-        `${filter.endDate}T23:59:59+07:00`
-      ).toISOString(),
-      isToday: false,
-    };
-  }
+// Jika menggunakan filter tanggal manual
+// Hari operasional: 05:00 → 02:00 besok
+if (filter.startDate && filter.endDate) {
+  const start = new Date(
+    `${filter.startDate}T05:00:00+07:00`
+  );
+
+  const end = new Date(
+    `${filter.endDate}T02:00:59+07:00`
+  );
+
+  // Tambahkan 1 hari karena jam tutup lewat tengah malam
+  end.setDate(end.getDate() + 1);
+
+  return {
+    start: start.toISOString(),
+    end: end.toISOString(),
+    isToday: false,
+  };
+}
 
   const period = filter.period || "today";
 
@@ -28,10 +36,32 @@ function getDateRange(filter: ReportFilter = {}) {
   const end = new Date(now);
 
   switch (period) {
-    case "today":
-      start.setHours(0, 0, 0, 0);
-      end.setHours(23, 59, 59, 999);
-      break;
+    case "today": {
+  // Hari operasional aktif:
+  // 05:00 pagi → 02:00 dini hari berikutnya
+
+  const businessDate = new Date(now);
+
+  // Jika sekarang masih sebelum jam 02:00,
+  // anggap masih milik hari kemarin
+  if (now.getHours() < 2) {
+    businessDate.setDate(
+      businessDate.getDate() - 1
+    );
+  }
+
+  start.setTime(businessDate.getTime());
+  end.setTime(businessDate.getTime());
+
+  // Mulai jam 05:00
+  start.setHours(5, 0, 0, 0);
+
+  // Selesai jam 02:00 besok
+  end.setDate(end.getDate() + 1);
+  end.setHours(2, 0, 59, 999);
+
+  break;
+}
 
     case "week":
       start.setDate(start.getDate() - 6);
@@ -265,21 +295,22 @@ export async function getTransactionSummaryForWhatsapp(
 
   const { data, error } = await supabase
     .from("transactions")
-    .select("payment_method,total,transaction_items(qty)")
+    .select(
+      `
+      id,
+      payment_method,
+      total,
+      created_at,
+      transaction_items(
+        qty
+      )
+    `
+    )
     .gte("created_at", start)
     .lte("created_at", end)
-    .order("created_at");
+    .order("created_at", { ascending: true });
 
   if (error) throw error;
 
-  return (data || []).map((trx: any) => ({
-    paymentMethod: trx.payment_method || "CASH",
-    total: Number(trx.total),
-    porsi:
-      trx.transaction_items?.reduce(
-        (sum: number, item: any) =>
-          sum + Number(item.qty),
-        0
-      ) || 0,
-  }));
+  return data || [];
 }
