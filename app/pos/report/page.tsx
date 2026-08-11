@@ -146,18 +146,9 @@ const [r, p, s, h, pay] = await Promise.all([
 
       <button
   onClick={async () => {
-  // Ambil query dari URL saat tombol diklik
-const params = new URLSearchParams(window.location.search);
-
-const startDateParam =
-  params.get("startDate");
-
-const endDateParam =
-  params.get("endDate");
-
-console.log("URL =", window.location.href);
-console.log("startDate =", startDateParam);
-console.log("endDate =", endDateParam);
+  // Gunakan state filter report yang sedang aktif
+const startDateParam = startDate;
+const endDateParam = endDate;
 
   const start = new Date();
   const end = new Date();
