@@ -199,47 +199,38 @@ export default function PosLayout({
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-100 bg-slate-50/80 p-4">
-        <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg">
-              🟢
-            </div>
-
-            <div>
-              <p className="text-xs font-black uppercase tracking-wider text-slate-400">
-                Status Toko
-              </p>
-
-              <p className="text-sm font-bold text-emerald-600">
-                {storeClosed ? "Tutup" : "Operasional"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <Link
-          href="/admin"
-          onClick={() => setIsMenuOpen(false)}
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-pink-200 bg-white px-4 py-3 text-sm font-black text-pink-600 shadow-sm transition hover:bg-pink-50 active:scale-[0.98]"
-        >
-          <span className="text-base">🏪</span>
-          Menu Admin
-        </Link>
-
-        <Link
-  href="/pos/login"
-  onClick={() => setIsMenuOpen(false)}
-  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-red-500 to-rose-500 px-4 py-3 text-sm font-black text-white shadow-lg shadow-red-500/20 transition hover:from-red-600 hover:to-rose-600 active:scale-[0.98]"
->
-  <span className="text-base">🚪</span>
-  Logout
-</Link>
-
-        <div className="mt-4 text-center text-[10px] font-medium text-slate-400">
-          CUSTOMPOS • v1.0
-        </div>
+<div className="border-t border-slate-100 bg-slate-50/80 p-4 pb-28">
+  <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="flex items-center gap-3">
+      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-lg">
+        🟢
       </div>
+
+      <div>
+        <p className="text-xs font-black uppercase tracking-wider text-slate-400">
+          Status Toko
+        </p>
+
+        <p className="text-sm font-bold text-emerald-600">
+          {storeClosed ? "Tutup" : "Operasional"}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <Link
+    href="/admin"
+    onClick={() => setIsMenuOpen(false)}
+    className="mb-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-pink-200 bg-white px-4 py-3 text-sm font-black text-pink-600 shadow-sm transition hover:bg-pink-50 active:scale-[0.98]"
+  >
+    <span className="text-base">🏪</span>
+    Menu Admin
+  </Link>
+
+  <div className="mt-4 text-center text-[10px] font-medium text-slate-400">
+    CUSTOMPOS • v1.0
+  </div>
+</div>
     </div>
   </div>
 </>
