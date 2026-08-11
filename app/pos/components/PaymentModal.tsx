@@ -28,6 +28,7 @@ export default function PaymentModal({
   const [paid, setPaid] = useState(0);
   const [loading, setLoading] = useState(false);
 
+
   useEffect(() => {
     if (!open) return;
 
@@ -65,7 +66,7 @@ const change =
 
     console.log("Invoice:", invoice);
     
-alert(`subtotal=${subtotal} | discount=${discount} | total=${total}`);
+
     const trx = await createTransaction({
       invoice,
       paymentMethod: method,
@@ -111,9 +112,9 @@ if (totalQty > 0) {
 
     clear();
 
-    onClose();
+onClose();
 
-    alert("Pembayaran berhasil");
+alert("Pembayaran berhasil");
   } catch (err: any) {
     console.error("ERROR PAYMENT");
     console.error(err);
@@ -292,36 +293,31 @@ if (totalQty > 0) {
 
           </div>
 
-          {/* FOOTER */}
-
+                         {/* FOOTER */}
           <div className="shrink-0 border-t bg-white p-5">
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                className="flex-1 rounded-2xl border py-4 font-bold"
+              >
+                Batal
+              </button>
 
-  <div className="flex gap-3">
-
-    <button
-      onClick={onClose}
-      className="flex-1 rounded-2xl border py-4 font-bold"
-    >
-      Batal
-    </button>
-
-    <button
-  onClick={handlePayment}
-  disabled={
-    loading ||
-    cart.length === 0 ||
-    (method === "Cash" && paid < total)
-  }
-  className="flex-[2] rounded-2xl bg-pink-600 py-4 text-lg font-black text-white disabled:bg-gray-300"
->
-      {loading
-  ? "Menyimpan..."
-  : `Bayar Rp ${total.toLocaleString("id-ID")}`}
-    </button>
-
-  </div>
-
-</div>
+              <button
+                onClick={handlePayment}
+                disabled={
+                  loading ||
+                  cart.length === 0 ||
+                  (method === "Cash" && paid < total)
+                }
+                className="flex-[2] rounded-2xl bg-pink-600 py-4 text-lg font-black text-white disabled:bg-gray-300"
+              >
+                {loading
+                  ? "Menyimpan..."
+                  : `Bayar Rp ${total.toLocaleString("id-ID")}`}
+              </button>
+            </div>
+          </div>
 
         </div>
 

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase/client";
 import { createTransaction } from "@/lib/supabase/transactions";
 import { getNextInvoice } from "@/lib/supabase/invoice";
 import { savePendingOrder } from "@/lib/supabase/pending-orders";
+import QrisProofModal from "./QrisProofModal";
 
 interface CartSummaryProps {
   onPaymentSuccess?: () => void;
@@ -28,6 +29,12 @@ const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
 const [isSuccess, setIsSuccess] = useState<boolean>(false);
 const [receiptData, setReceiptData] = useState<any>(null);
+
+const [showQrisProof, setShowQrisProof] =
+  useState(false);
+
+const [lastTransactionId, setLastTransactionId] =
+  useState("");
 
 const diskon = discount;
 const pajak = tax;
@@ -95,17 +102,27 @@ async function handleProcessPayment() {
   try {
    const invoice = await getNextInvoice();
 
-await createTransaction({
+
+const trx = await createTransaction({
   invoice,
   paymentMethod: paymentMethod,
   subtotal,
   discount: diskon,
   tax: pajak,
   total,
-  paid: paymentMethod === "CASH" ? nominalPaid : total,
-  change: paymentMethod === "CASH" ? kembalian : 0,
+  paid:
+    paymentMethod === "CASH"
+      ? nominalPaid
+      : total,
+  change:
+    paymentMethod === "CASH"
+      ? kembalian
+      : 0,
   items: cart,
 });
+
+console.log("TRANSAKSI BERHASIL", trx);
+
 
 console.log("Transaksi berhasil disimpan.");
 
@@ -152,7 +169,16 @@ console.log("Transaksi berhasil disimpan.");
 });
 
 forceClearCart();
-setIsSuccess(true);// Ini biasanya memicu munculnya modal/pop-up struk
+
+if (
+  paymentMethod === "QRIS" &&
+  trx?.id
+) {
+  setLastTransactionId(trx.id);
+  setShowQrisProof(true);
+}
+
+setIsSuccess(true);
 
     const { data: stockData, error: stockFetchError } = await supabase
       .from("daily_stock")
@@ -409,6 +435,15 @@ const { error: stockUpdateError } = await supabase
             )}
           </div>
         </div>
+      )}
+          {showQrisProof && (
+        <QrisProofModal
+          transactionId={lastTransactionId}
+          onClose={() => {
+            setShowQrisProof(false);
+            setLastTransactionId("");
+          }}
+        />
       )}
     </div>
   );
