@@ -239,16 +239,23 @@ if (startDateParam && endDateParam) {
         📱 QRIS
       </span>
 
-      {trx.qris_proof_url && (
-        <a
-          href={trx.qris_proof_url}
-          target="_blank"
-          rel="noreferrer"
-          className="text-[10px] font-bold text-blue-600 hover:underline"
-        >
-          📷 Bukti
-        </a>
-      )}
+      {trx.qris_proof_url ? (
+  <a
+    href={trx.qris_proof_url}
+    target="_blank"
+    rel="noreferrer"
+    className="text-[10px] font-bold text-blue-600 hover:underline"
+  >
+    📷 Lihat Bukti
+  </a>
+) : (
+  <Link
+    href={`/pos/history/${trx.id}/upload-qris`}
+    className="text-[10px] font-bold text-orange-600 hover:underline"
+  >
+    ⬆️ Upload Bukti
+  </Link>
+)}
     </>
   ) : (
     <span className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">
