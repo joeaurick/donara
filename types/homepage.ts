@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 
 export interface HomepageForm {
   hero_description: string;
+  hero_image_url: string;
 
   about_title: string;
   about_description: string;
