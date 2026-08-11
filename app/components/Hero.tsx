@@ -8,6 +8,9 @@ export default async function Hero() {
   const seo = await getSeoSettings();
   const business = await getBusinessProfile();
   const homepage = await getHomepageContent();
+  const heroImage =
+  homepage?.hero_image_url ||
+  "/images/hero/donat-gula-halus.png";
 
   const whatsappNumber = business?.phone ?? "";
 
@@ -98,16 +101,25 @@ export default async function Hero() {
         <div className="relative flex w-full flex-1 justify-center">
           <div className="absolute h-64 w-64 rounded-full bg-gradient-to-br from-pink-200/50 to-orange-200/40 blur-3xl sm:h-80 sm:w-80 lg:h-[420px] lg:w-[420px]" />
 
-          <div className="relative rounded-[2rem] bg-white/70 p-3 shadow-2xl ring-1 ring-pink-100 backdrop-blur sm:rounded-[2.5rem] sm:p-4">
-            <Image
-              src="/images/hero/donat-gula-halus.png"
-              alt={business?.business_name || "Donara"}
-              width={650}
-              height={650}
-              priority
-              className="relative z-10 h-auto w-full max-w-[240px] drop-shadow-2xl transition-transform duration-500 hover:scale-[1.03] sm:max-w-[320px] md:max-w-[380px] lg:max-w-[520px]"
-            />
-          </div>
+          <div className="relative w-full max-w-3xl">
+  <div className="relative flex w-full flex-1 justify-center">
+  <div className="relative w-full max-w-3xl">
+    <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-pink-200/40 to-orange-200/30 blur-3xl" />
+
+    <div className="relative overflow-hidden rounded-[2rem] bg-white/70 p-3 shadow-2xl ring-1 ring-pink-100 backdrop-blur sm:p-4">
+      <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[1.5rem]">
+        <Image
+          src={heroImage}
+          alt={business?.business_name || "Donara"}
+          fill
+          priority
+          className="object-cover object-center transition-transform duration-500 hover:scale-105"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+</div>
         </div>
       </div>
     </section>
