@@ -71,11 +71,18 @@ if (startDateParam && endDateParam) {
   
 
   const { data: transactions, error } = await supabase
-    .from("transactions")
-    .select("*")
-    .gte("created_at", startDate)
-    .lt("created_at", endDate)
-    .order("created_at", { ascending: false });
+  .from("transactions")
+  .select(`
+    id,
+    invoice,
+    total,
+    payment_method,
+    qris_proof_url,
+    created_at
+  `)
+  .gte("created_at", startDate)
+  .lt("created_at", endDate)
+  .order("created_at", { ascending: false });
 
   if (error) {
     return (
@@ -225,15 +232,30 @@ if (startDateParam && endDateParam) {
                             </td>
 
                             <td className="p-4 text-center">
-                              {method === "QRIS" ? (
-                                <span className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-black text-blue-700">
-                                  📱 QRIS
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">
-                                  💵 CASH
-                                </span>
-                              )}
+                              <div className="flex flex-col items-center gap-1">
+  {method === "QRIS" ? (
+    <>
+      <span className="inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-black text-blue-700">
+        📱 QRIS
+      </span>
+
+      {trx.qris_proof_url && (
+        <a
+          href={trx.qris_proof_url}
+          target="_blank"
+          rel="noreferrer"
+          className="text-[10px] font-bold text-blue-600 hover:underline"
+        >
+          📷 Bukti
+        </a>
+      )}
+    </>
+  ) : (
+    <span className="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-700">
+      💵 CASH
+    </span>
+  )}
+</div>
                             </td>
 
                             <td className="px-3 py-3 text-right text-xs font-black text-gray-900 md:text-sm">
