@@ -1,65 +1,71 @@
-export default function SidebarHeader() {
+"use client";
+
+import { X } from "lucide-react";
+
+type Props = {
+  onClose?: () => void;
+};
+
+export default function SidebarHeader({
+  onClose,
+}: Props) {
   return (
-    <div className="space-y-5">
-      {/* ================= BRAND ================= */}
-      <div className="flex items-center gap-3">
-        {/* Brand Icon */}
-        
+    <div className="relative overflow-hidden rounded-[24px] bg-gradient-to-br from-[#281711] via-[#43261b] to-[#2d1a15] px-4 py-4 text-white shadow-[0_12px_30px_rgba(60,30,20,0.22)]">
+      {/* DECORATION */}
+      <div className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-pink-500/20" />
 
-        {/* Brand Text */}
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-black tracking-[-0.04em] text-slate-900">
-              DONARA
-            </h1>
+      <div className="pointer-events-none absolute right-4 top-3 h-16 w-16 rounded-full bg-orange-400/10" />
 
-            <span className="rounded-full bg-pink-100 px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-pink-600">
-              CMS
-            </span>
+      <div className="pointer-events-none absolute -bottom-10 left-10 h-24 w-24 rounded-full bg-orange-400/10" />
+
+      {/* HEADER */}
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          {/* LOGO */}
+          <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-400 via-pink-500 to-pink-700 text-xl font-black shadow-lg shadow-pink-950/30">
+            ◉
+
+            <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full bg-orange-300" />
           </div>
 
-          <p className="mt-0.5 text-[10px] font-bold uppercase tracking-[0.18em] text-pink-500">
-            Donut Management
-          </p>
-        </div>
-      </div>
+          {/* BRAND */}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h1 className="truncate text-lg font-black tracking-wide">
+                DONARA
+              </h1>
 
-      {/* ================= ADMIN PROFILE ================= */}
-      <div className="group relative overflow-hidden rounded-[22px] border border-pink-100 bg-gradient-to-br from-white via-pink-50/40 to-orange-50/40 p-3.5 shadow-sm transition-all duration-200 hover:border-pink-200 hover:shadow-md">
-        {/* Decorative background */}
-        <div className="pointer-events-none absolute -right-6 -top-8 h-20 w-20 rounded-full bg-pink-100/60 blur-2xl" />
-
-        <div className="relative flex items-center gap-3">
-          {/* Avatar */}
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 text-lg shadow-md shadow-pink-500/20">
-            👤
-
-            {/* Online indicator */}
-            <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500" />
-          </div>
-
-          {/* User info */}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-black text-slate-900">
-              Administrator
-            </p>
-
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-emerald-600">
-                ●
-              </span>
-
-              <span className="text-[10px] font-semibold text-slate-400">
-                Online & siap mengelola
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[7px] font-black uppercase tracking-wider text-pink-100">
+                CMS
               </span>
             </div>
-          </div>
 
-          {/* Status badge */}
-          <div className="rounded-full bg-emerald-50 px-2 py-1 text-[8px] font-black uppercase tracking-wider text-emerald-600">
-            Aktif
+            <p className="mt-0.5 text-[8px] font-semibold uppercase tracking-[0.18em] text-white/70">
+              Donut Management
+            </p>
           </div>
         </div>
+
+        {/* CLOSE MOBILE ONLY */}
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20 active:scale-95 md:hidden"
+            aria-label="Tutup menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {/* STATUS */}
+      <div className="relative mt-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1.5 backdrop-blur-md">
+        <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+
+        <span className="text-[9px] font-medium text-white/90">
+          Admin Panel Aktif
+        </span>
       </div>
     </div>
   );
