@@ -342,17 +342,7 @@ export default function PosLayout({
                   {/* =================================
                       LOGOUT
                   ================================== */}
-                  <Link
-                    href="/pos/login"
-                    onClick={() => setIsMenuOpen(false)}
-                    className="flex min-h-[78px] w-full items-center justify-center gap-5 rounded-[25px] bg-gradient-to-r from-[#3a2118] via-[#4b2b20] to-[#321b15] px-6 text-[25px] font-bold text-white shadow-lg transition hover:brightness-110 active:scale-[0.98]"
-                  >
-                    <span className="text-4xl font-light">
-                      ⇥
-                    </span>
-
-                    Keluar dari POS
-                  </Link>
+                  
 
                   {/* Version */}
                   <div className="flex items-center justify-center gap-3 py-9 text-[15px] font-medium tracking-wide text-gray-500">
