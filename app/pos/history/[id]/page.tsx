@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import PrintReceiptButton from "@/app/pos/components/PrintReceiptButton";
+import VoidTransactionButton from "@/app/pos/components/VoidTransactionButton";
 
 type Props = {
   params: Promise<{
@@ -42,10 +43,19 @@ export default async function TransactionDetail({
           </p>
         </div>
 
-        <PrintReceiptButton
-          transaction={trx}
-          items={items ?? []}
-        />
+        <div className="flex flex-wrap gap-3">
+          <PrintReceiptButton
+            transaction={trx}
+            items={items ?? []}
+          />
+
+          {trx.status !== "VOID" && (
+            <VoidTransactionButton
+              transactionId={trx.id}
+              invoice={trx.invoice}
+            />
+          )}
+        </div>
       </div>
 
       {/* Card */}
@@ -72,6 +82,53 @@ export default async function TransactionDetail({
             </p>
           </div>
 
+          <div>
+            <p className="text-sm font-medium text-gray-500">
+              Status
+            </p>
+
+            <p
+              className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-black ${
+                trx.status === "VOID"
+                  ? "bg-red-100 text-red-600"
+                  : "bg-emerald-100 text-emerald-600"
+              }`}
+            >
+              {trx.status}
+            </p>
+          </div>
+
+          {trx.status === "VOID" && (
+            <>
+              <div>
+                <p className="text-sm font-medium text-gray-500">
+                  Waktu Void
+                </p>
+
+                <p className="mt-1 text-gray-900">
+                  {trx.voided_at
+                    ? new Date(
+                        trx.voided_at
+                      ).toLocaleString("id-ID", {
+                        timeZone: "Asia/Jakarta",
+                        hour12: false,
+                      })
+                    : "-"}
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <p className="text-sm font-medium text-gray-500">
+                  Alasan Void
+                </p>
+
+                <p className="mt-1 font-medium text-red-600">
+                  {trx.void_reason || "-"}
+                </p>
+              </div>
+            </>
+          )}
+
           <div className="md:col-span-2">
             <p className="text-sm font-medium text-gray-500">
               Tanggal Transaksi
@@ -94,16 +151,30 @@ export default async function TransactionDetail({
           <table className="mb-8 w-full border-collapse">
             <thead>
               <tr className="border-b border-gray-200 text-sm font-black uppercase tracking-wider text-gray-500">
-                <th className="py-3 text-left">Produk</th>
-                <th className="py-3 text-center">Qty</th>
-                <th className="py-3 text-right">Harga</th>
-                <th className="py-3 text-right">Subtotal</th>
+                <th className="py-3 text-left">
+                  Produk
+                </th>
+
+                <th className="py-3 text-center">
+                  Qty
+                </th>
+
+                <th className="py-3 text-right">
+                  Harga
+                </th>
+
+                <th className="py-3 text-right">
+                  Subtotal
+                </th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
               {items?.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/60">
+                <tr
+                  key={item.id}
+                  className="hover:bg-gray-50/60"
+                >
                   <td className="py-4 font-medium text-gray-900">
                     {item.product_name}
                   </td>
@@ -113,11 +184,17 @@ export default async function TransactionDetail({
                   </td>
 
                   <td className="text-right">
-                    Rp {Number(item.price).toLocaleString("id-ID")}
+                    Rp{" "}
+                    {Number(
+                      item.price
+                    ).toLocaleString("id-ID")}
                   </td>
 
                   <td className="text-right font-black text-gray-900">
-                    Rp {Number(item.subtotal).toLocaleString("id-ID")}
+                    Rp{" "}
+                    {Number(
+                      item.subtotal
+                    ).toLocaleString("id-ID")}
                   </td>
                 </tr>
               ))}
@@ -126,47 +203,88 @@ export default async function TransactionDetail({
         </div>
 
         {/* Summary */}
-        <div className="ml-auto max-w-sm space-y-3 rounded-xl bg-gray-50 p-5 border border-gray-100">
+        <div className="ml-auto max-w-sm space-y-3 rounded-xl border border-gray-100 bg-gray-50 p-5">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Subtotal</span>
+            <span className="text-gray-500">
+              Subtotal
+            </span>
+
             <span className="font-semibold text-gray-900">
-              Rp {Number(trx.subtotal).toLocaleString("id-ID")}
+              Rp{" "}
+              {Number(
+                trx.subtotal
+              ).toLocaleString("id-ID")}
             </span>
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Diskon</span>
+            <span className="text-gray-500">
+              Diskon
+            </span>
+
             <span className="font-semibold text-gray-900">
-              Rp {Number(trx.discount).toLocaleString("id-ID")}
+              Rp{" "}
+              {Number(
+                trx.discount
+              ).toLocaleString("id-ID")}
             </span>
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Pajak</span>
+            <span className="text-gray-500">
+              Pajak
+            </span>
+
             <span className="font-semibold text-gray-900">
-              Rp {Number(trx.tax).toLocaleString("id-ID")}
+              Rp{" "}
+              {Number(
+                trx.tax
+              ).toLocaleString("id-ID")}
             </span>
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Bayar</span>
+            <span className="text-gray-500">
+              Bayar
+            </span>
+
             <span className="font-semibold text-gray-900">
-              Rp {Number(trx.paid).toLocaleString("id-ID")}
+              Rp{" "}
+              {Number(
+                trx.paid
+              ).toLocaleString("id-ID")}
             </span>
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Kembali</span>
+            <span className="text-gray-500">
+              Kembali
+            </span>
+
             <span className="font-semibold text-gray-900">
-              Rp {Number(trx.change).toLocaleString("id-ID")}
+              Rp{" "}
+              {Number(
+                trx.change
+              ).toLocaleString("id-ID")}
             </span>
           </div>
 
           <div className="flex justify-between border-t border-gray-200 pt-4 text-lg font-black">
-            <span className="text-gray-900">Total</span>
+            <span className="text-gray-900">
+              Total
+            </span>
 
-            <span className="text-pink-600">
-              Rp {Number(trx.total).toLocaleString("id-ID")}
+            <span
+              className={
+                trx.status === "VOID"
+                  ? "text-red-600"
+                  : "text-pink-600"
+              }
+            >
+              Rp{" "}
+              {Number(
+                trx.total
+              ).toLocaleString("id-ID")}
             </span>
           </div>
         </div>

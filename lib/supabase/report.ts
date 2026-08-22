@@ -7,26 +7,26 @@ export type ReportFilter = {
 };
 
 function getDateRange(filter: ReportFilter = {}) {
-// Jika menggunakan filter tanggal manual
-// Hari operasional: 05:00 → 02:00 besok
-if (filter.startDate && filter.endDate) {
-  const start = new Date(
-    `${filter.startDate}T05:00:00+07:00`
-  );
+  // Jika menggunakan filter tanggal manual
+  // Hari operasional: 05:00 → 02:00 besok
+  if (filter.startDate && filter.endDate) {
+    const start = new Date(
+      `${filter.startDate}T05:00:00+07:00`
+    );
 
-  const end = new Date(
-    `${filter.endDate}T02:00:59+07:00`
-  );
+    const end = new Date(
+      `${filter.endDate}T02:00:59+07:00`
+    );
 
-  // Tambahkan 1 hari karena jam tutup lewat tengah malam
-  end.setDate(end.getDate() + 1);
+    // Tambahkan 1 hari karena jam tutup lewat tengah malam
+    end.setDate(end.getDate() + 1);
 
-  return {
-    start: start.toISOString(),
-    end: end.toISOString(),
-    isToday: false,
-  };
-}
+    return {
+      start: start.toISOString(),
+      end: end.toISOString(),
+      isToday: false,
+    };
+  }
 
   const period = filter.period || "today";
 
@@ -37,31 +37,31 @@ if (filter.startDate && filter.endDate) {
 
   switch (period) {
     case "today": {
-  // Hari operasional aktif:
-  // 05:00 pagi → 02:00 dini hari berikutnya
+      // Hari operasional aktif:
+      // 05:00 pagi → 02:00 dini hari berikutnya
 
-  const businessDate = new Date(now);
+      const businessDate = new Date(now);
 
-  // Jika sekarang masih sebelum jam 02:00,
-  // anggap masih milik hari kemarin
-  if (now.getHours() < 2) {
-    businessDate.setDate(
-      businessDate.getDate() - 1
-    );
-  }
+      // Jika sekarang masih sebelum jam 02:00,
+      // anggap masih milik hari kemarin
+      if (now.getHours() < 2) {
+        businessDate.setDate(
+          businessDate.getDate() - 1
+        );
+      }
 
-  start.setTime(businessDate.getTime());
-  end.setTime(businessDate.getTime());
+      start.setTime(businessDate.getTime());
+      end.setTime(businessDate.getTime());
 
-  // Mulai jam 05:00
-  start.setHours(5, 0, 0, 0);
+      // Mulai jam 05:00
+      start.setHours(5, 0, 0, 0);
 
-  // Selesai jam 02:00 besok
-  end.setDate(end.getDate() + 1);
-  end.setHours(2, 0, 59, 999);
+      // Selesai jam 02:00 besok
+      end.setDate(end.getDate() + 1);
+      end.setHours(2, 0, 59, 999);
 
-  break;
-}
+      break;
+    }
 
     case "week":
       start.setDate(start.getDate() - 6);
@@ -94,6 +94,7 @@ export async function getTodayReport(
   const { data, error } = await supabase
     .from("transactions")
     .select("id,total")
+    .eq("status", "COMPLETED")
     .gte("created_at", start)
     .lte("created_at", end);
 
@@ -124,7 +125,8 @@ export async function getTopProducts(
       qty,
       product_name,
       transaction:transactions!transaction_id(
-        created_at
+        created_at,
+        status
       )
     `);
 
@@ -137,6 +139,11 @@ export async function getTopProducts(
 
   data.forEach((item: any) => {
     if (!item.transaction) return;
+
+    // Jangan hitung item dari transaksi VOID
+    if (item.transaction.status !== "COMPLETED") {
+      return;
+    }
 
     const created = new Date(
       item.transaction.created_at
@@ -186,6 +193,7 @@ export async function getHourlySales(
   const { data, error } = await supabase
     .from("transactions")
     .select("created_at,total")
+    .eq("status", "COMPLETED")
     .gte("created_at", start)
     .lte("created_at", end)
     .order("created_at");
@@ -249,6 +257,7 @@ export async function getPaymentSummary(
   const { data, error } = await supabase
     .from("transactions")
     .select("payment_method,total")
+    .eq("status", "COMPLETED")
     .gte("created_at", start)
     .lte("created_at", end);
 
@@ -288,6 +297,9 @@ export async function getPaymentSummary(
   ];
 }
 
+/* =========================
+   SUMMARY WHATSAPP
+========================= */
 export async function getTransactionSummaryForWhatsapp(
   filter: ReportFilter = {}
 ) {
@@ -306,6 +318,7 @@ export async function getTransactionSummaryForWhatsapp(
       )
     `
     )
+    .eq("status", "COMPLETED")
     .gte("created_at", start)
     .lte("created_at", end)
     .order("created_at", { ascending: true });
