@@ -2,27 +2,33 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import {
+  BarChart3,
+  ClipboardList,
+  LayoutDashboard,
+  Settings,
+} from "lucide-react";
 
 const menus = [
   {
-    title: "Dashboard",
-    href: "/pos/dashboard",
-    icon: "🏠",
+    title: "Kasir",
+    href: "/pos",
+    icon: LayoutDashboard,
   },
   {
-    title: "History",
+    title: "Riwayat",
     href: "/pos/history",
-    icon: "🧾",
+    icon: ClipboardList,
   },
   {
     title: "Laporan",
     href: "/pos/report",
-    icon: "📊",
+    icon: BarChart3,
   },
   {
     title: "Menu",
     href: "/pos/settings",
-    icon: "⚙️",
+    icon: Settings,
   },
 ];
 
@@ -30,53 +36,67 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 backdrop-blur-xl shadow-[0_-8px_24px_rgba(15,23,42,0.08)] xl:hidden">
-      <div className="mx-auto flex h-16 max-w-lg items-center justify-around px-2 pb-safe">
-        {menus.map((menu) => {
-          const active =
-            pathname === menu.href ||
-            pathname.startsWith(menu.href + "/");
+    <div className="fixed inset-x-0 bottom-0 z-40 px-3 pb-3 xl:hidden">
+      <div className="mx-auto max-w-lg rounded-[28px] border border-orange-100 bg-[#fffaf5]/95 p-2 shadow-[0_-4px_30px_rgba(120,53,15,0.10)] backdrop-blur-xl">
+        <div className="flex items-center justify-around">
+          {menus.map((menu) => {
+            const active =
+              menu.href === "/pos"
+                ? pathname === "/pos" ||
+                  pathname === "/pos/dashboard"
+                : pathname === menu.href ||
+                  pathname.startsWith(menu.href + "/");
 
-          return (
-            <Link
-              key={menu.href}
-              href={menu.href}
-              className="flex flex-1 items-center justify-center"
-            >
-              <div
-                className={
-                  active
-                    ? "flex min-w-[72px] flex-col items-center justify-center gap-1 rounded-2xl bg-gradient-to-b from-pink-50 to-white px-3 py-2 text-pink-600 shadow-sm ring-1 ring-pink-100 transition-all duration-200"
-                    : "flex min-w-[72px] flex-col items-center justify-center gap-1 rounded-2xl px-3 py-2 text-slate-500 transition-all duration-200 hover:text-pink-500"
-                }
+            const Icon = menu.icon;
+
+            return (
+              <Link
+                key={menu.href}
+                href={menu.href}
+                className="flex flex-1 items-center justify-center"
               >
-                <span
-                  className={
+                <div
+                  className={`relative flex w-full max-w-[82px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-all duration-200 ${
                     active
-                      ? "text-lg scale-110 transition-all duration-200"
-                      : "text-lg transition-all duration-200"
-                  }
+                      ? "text-[#2d1b16]"
+                      : "text-stone-400"
+                  }`}
                 >
-                  {menu.icon}
-                </span>
+                  {active && (
+                    <span className="absolute inset-0 rounded-2xl bg-white shadow-sm ring-1 ring-pink-100" />
+                  )}
 
-                <span
-                  className={
-                    active
-                      ? "text-[10px] font-bold tracking-wide text-pink-600"
-                      : "text-[10px] font-bold tracking-wide text-slate-500"
-                  }
-                >
-                  {menu.title}
-                </span>
+                  <span
+                    className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
+                      active
+                        ? "bg-gradient-to-br from-pink-500 to-rose-500 text-white shadow-lg shadow-pink-200/70"
+                        : "text-stone-400"
+                    }`}
+                  >
+                    <Icon
+                      size={19}
+                      strokeWidth={active ? 2.6 : 2.2}
+                    />
+                  </span>
 
-                {active && (
-                  <span className="h-1 w-6 rounded-full bg-gradient-to-r from-pink-500 to-rose-500" />
-                )}
-              </div>
-            </Link>
-          );
-        })}
+                  <span
+                    className={`relative z-10 text-[9px] font-black tracking-wide transition-colors ${
+                      active
+                        ? "text-[#2d1b16]"
+                        : "text-stone-400"
+                    }`}
+                  >
+                    {menu.title}
+                  </span>
+
+                  {active && (
+                    <span className="relative z-10 h-1 w-4 rounded-full bg-gradient-to-r from-pink-500 to-orange-400" />
+                  )}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
