@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import {
   getTodayReport,
   getTopProducts,
@@ -9,9 +10,7 @@ import {
   getTransactionSummaryForWhatsapp,
 } from "@/lib/supabase/report";
 
-import {
-  getStockReport,
-} from "@/lib/supabase/daily-stock";
+import { getStockReport } from "@/lib/supabase/daily-stock";
 
 import SalesChart from "../components/SalesChart";
 import PaymentChart from "../components/PaymentChart";
@@ -33,39 +32,33 @@ type StockType = {
 } | null;
 
 export default function ReportPage() {
-  const [report, setReport] =
-    useState<ReportType>(null);
+  const [report, setReport] = useState<ReportType>(null);
 
-  const [products, setProducts] =
-    useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
 
-  const [stock, setStock] =
-    useState<StockType>(null);
+  const [stock, setStock] = useState<StockType>(null);
 
-  const [hourlySales, setHourlySales] =
-    useState<any[]>([]);
+  const [hourlySales, setHourlySales] = useState<any[]>([]);
 
-  const [paymentSummary, setPaymentSummary] =
-    useState<any[]>([]);
+  const [paymentSummary, setPaymentSummary] = useState<any[]>([]);
 
   const [period, setPeriod] = useState<
     "today" | "week" | "month"
   >("today");
 
-  const [startDate, setStartDate] =
-    useState("");
+  const [startDate, setStartDate] = useState("");
 
-  const [endDate, setEndDate] =
-    useState("");
+  const [endDate, setEndDate] = useState("");
 
-  const [isLoading, setIsLoading] =
-    useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
+  // =========================
+  // TOTAL CASH
+  // =========================
   const cashTotal = paymentSummary
     .filter(
       (item) =>
-        item.payment_method?.toUpperCase() ===
-        "CASH"
+        item.payment_method?.toUpperCase() === "CASH"
     )
     .reduce(
       (sum, item) =>
@@ -73,11 +66,13 @@ export default function ReportPage() {
       0
     );
 
+  // =========================
+  // TOTAL QRIS
+  // =========================
   const qrisTotal = paymentSummary
     .filter(
       (item) =>
-        item.payment_method?.toUpperCase() ===
-        "QRIS"
+        item.payment_method?.toUpperCase() === "QRIS"
     )
     .reduce(
       (sum, item) =>
@@ -85,6 +80,9 @@ export default function ReportPage() {
       0
     );
 
+  // =========================
+  // LOAD DATA
+  // =========================
   async function loadData() {
     setIsLoading(true);
 
@@ -125,20 +123,110 @@ export default function ReportPage() {
     }
   }
 
+  // =========================
+  // LOAD SAAT FILTER BERUBAH
+  // =========================
   useEffect(() => {
     loadData();
   }, [period, startDate, endDate]);
 
-  if (!report && !isLoading) {
-    return (
-      <main className="p-6">
-        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center text-sm font-medium text-gray-400">
-          Data laporan tidak ditemukan.
-        </div>
-      </main>
-    );
+  // =========================
+  // FORMAT RUPIAH
+  // =========================
+  function formatRupiah(value: number) {
+    return `Rp ${Number(value || 0).toLocaleString(
+      "id-ID"
+    )}`;
   }
 
+  // =========================
+  // FORMAT TANGGAL LAPORAN
+  // =========================
+  function formatReportDate() {
+    // Filter tanggal manual
+    if (startDate && endDate) {
+      const formattedStart = new Date(
+        `${startDate}T00:00:00`
+      ).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+      const formattedEnd = new Date(
+        `${endDate}T00:00:00`
+      ).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+      if (startDate === endDate) {
+        return formattedStart;
+      }
+
+      return `${formattedStart} s/d ${formattedEnd}`;
+    }
+
+    const today = new Date();
+
+    // Hari ini
+    if (period === "today") {
+      return today.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+
+    // 7 hari
+    if (period === "week") {
+      const start = new Date(today);
+
+      start.setDate(today.getDate() - 6);
+
+      const formattedStart =
+        start.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+
+      const formattedEnd =
+        today.toLocaleDateString("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        });
+
+      return `${formattedStart} s/d ${formattedEnd}`;
+    }
+
+    // 30 hari
+    const start = new Date(today);
+
+    start.setDate(today.getDate() - 29);
+
+    const formattedStart =
+      start.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+    const formattedEnd =
+      today.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+
+    return `${formattedStart} s/d ${formattedEnd}`;
+  }
+
+  // =========================
+  // KIRIM LAPORAN WHATSAPP
+  // =========================
   async function handleWhatsappReport() {
     try {
       const filter = {
@@ -148,7 +236,7 @@ export default function ReportPage() {
       };
 
       // =========================
-      // AMBIL TRANSAKSI
+      // AMBIL DATA TRANSAKSI
       // =========================
       const trxData =
         await getTransactionSummaryForWhatsapp(
@@ -156,8 +244,7 @@ export default function ReportPage() {
         );
 
       // =========================
-      // AMBIL STOK BERDASARKAN
-      // PERIODE YANG DIPILIH
+      // AMBIL DATA STOK
       // =========================
       const stockData =
         await getStockReport(filter);
@@ -179,15 +266,18 @@ export default function ReportPage() {
       );
 
       // =========================
-      // HITUNG PEMBAYARAN
+      // TOTAL PEMBAYARAN
       // =========================
       let cash = 0;
       let qris = 0;
       let transfer = 0;
       let totalOmzet = 0;
 
+      // =========================
+      // DETAIL TRANSAKSI
+      // =========================
       const detailLines = trxData.map(
-        (trx: any) => {
+        (trx: any, index: number) => {
           const pcs =
             trx.transaction_items?.reduce(
               (
@@ -211,66 +301,40 @@ export default function ReportPage() {
 
           if (method === "QRIS") {
             qris += total;
-          } else if (
-            method === "TRANSFER"
-          ) {
+          } else if (method === "TRANSFER") {
             transfer += total;
           } else {
             cash += total;
           }
 
-          return `• [${method}] ${pcs} pcs - Rp ${total.toLocaleString(
-            "id-ID"
+          return `${index + 1}. ${method} - ${pcs} pcs - ${formatRupiah(
+            total
           )}`;
         }
       );
 
       // =========================
-      // FORMAT TANGGAL
+      // TANGGAL LAPORAN
       // =========================
       const tanggalLaporan =
-        startDate && endDate
-          ? startDate === endDate
-            ? new Date(
-                `${startDate}T00:00:00`
-              ).toLocaleDateString(
-                "id-ID",
-                {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }
-              )
-            : `${new Date(
-                `${startDate}T00:00:00`
-              ).toLocaleDateString(
-                "id-ID",
-                {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }
-              )} s/d ${new Date(
-                `${endDate}T00:00:00`
-              ).toLocaleDateString(
-                "id-ID",
-                {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                }
-              )}`
-          : new Date().toLocaleDateString(
-              "id-ID",
-              {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              }
-            );
+        formatReportDate();
 
       // =========================
-      // LAPORAN WHATSAPP
+      // DETAIL TRANSAKSI KOSONG
+      // =========================
+      const transactionDetail =
+        detailLines.length > 0
+          ? detailLines.join("\n")
+          : "Belum ada transaksi.";
+
+      // =========================
+      // PESAN WHATSAPP
+      //
+      // PENTING:
+      // Jangan gunakan karakter \
+      // sebelum * atau -
+      // karena akan membuat
+      // format WhatsApp rusak.
       // =========================
       const text = `*LAPORAN PENJUALAN DONARA*
 
@@ -280,45 +344,39 @@ export default function ReportPage() {
 
 *RINGKASAN*
 
-- Stok Donat Awal : ${openingStock} pcs
-- Donat Terjual : ${soldStock} pcs
-- Total Transaksi : ${trxData.length}
-- Total Omzet : Rp ${totalOmzet.toLocaleString(
-        "id-ID"
-      )}
-- Donat Dimakan Sendiri : ${selfConsumed} pcs
-- Sisa Donat : ${remainingStock} pcs
+- Stok Donat Awal: ${openingStock} pcs
+- Donat Terjual: ${soldStock} pcs
+- Total Transaksi: ${trxData.length}
+- Total Omzet: ${formatRupiah(totalOmzet)}
+- Donat Dimakan Sendiri: ${selfConsumed} pcs
+- Sisa Donat: ${remainingStock} pcs
 
 ------------------------------
 
 *PEMBAYARAN*
 
-- Cash     : Rp ${cash.toLocaleString(
-        "id-ID"
-      )}
-- QRIS     : Rp ${qris.toLocaleString(
-        "id-ID"
-      )}
-- Transfer : Rp ${transfer.toLocaleString(
-        "id-ID"
-      )}
+- Cash: ${formatRupiah(cash)}
+- QRIS: ${formatRupiah(qris)}
+- Transfer: ${formatRupiah(transfer)}
 
 ------------------------------
 
 *DETAIL TRANSAKSI*
 
-${detailLines.join("\n")}
+${transactionDetail}
 
 ------------------------------
 
-Terima kasih.
-`;
+Terima kasih.`;
+
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
+        text
+      )}`;
 
       window.open(
-        `https://wa.me/?text=${encodeURIComponent(
-          text
-        )}`,
-        "_blank"
+        whatsappUrl,
+        "_blank",
+        "noopener,noreferrer"
       );
     } catch (error) {
       console.error(
@@ -332,9 +390,24 @@ Terima kasih.
     }
   }
 
+  // =========================
+  // EMPTY STATE
+  // =========================
+  if (!report && !isLoading) {
+    return (
+      <main className="p-6">
+        <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-12 text-center text-sm font-medium text-gray-400">
+          Data laporan tidak ditemukan.
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="space-y-6 p-6">
-      {/* Header */}
+      {/* =========================
+          HEADER
+      ========================= */}
       <div className="rounded-[28px] border border-pink-100 bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 p-6 text-white shadow-xl md:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -389,10 +462,11 @@ Terima kasih.
         </div>
       </div>
 
-      {/* Filter */}
+      {/* =========================
+          FILTER
+      ========================= */}
       <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-          {/* Quick Filter */}
           <div className="flex flex-wrap gap-2">
             {(
               [
@@ -425,7 +499,6 @@ Terima kasih.
             ))}
           </div>
 
-          {/* Date Range */}
           <div className="grid grid-cols-2 gap-3 lg:w-auto">
             <div className="space-y-1">
               <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
@@ -464,15 +537,19 @@ Terima kasih.
         </div>
       </div>
 
+      {/* =========================
+          LOADING
+      ========================= */}
       {isLoading ? (
         <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-500">
           Memperbarui data...
         </div>
       ) : (
         <>
-          {/* Statistik */}
+          {/* =========================
+              STATISTIK
+          ========================= */}
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-6">
-            {/* Total Omzet */}
             <div className="col-span-2 rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 via-white to-rose-50 p-6 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-black uppercase tracking-wider text-pink-600">
@@ -497,7 +574,6 @@ Terima kasih.
               </p>
             </div>
 
-            {/* Transaksi */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
                 Transaksi
@@ -508,7 +584,6 @@ Terima kasih.
               </h2>
             </div>
 
-            {/* Cash */}
             <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-black uppercase tracking-wider text-emerald-700">
@@ -528,7 +603,6 @@ Terima kasih.
               </h2>
             </div>
 
-            {/* QRIS */}
             <div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-black uppercase tracking-wider text-blue-700">
@@ -548,7 +622,6 @@ Terima kasih.
               </h2>
             </div>
 
-            {/* Donat Terjual */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
                 Donat Terjual
@@ -559,7 +632,6 @@ Terima kasih.
               </h2>
             </div>
 
-            {/* Sisa Donat */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
                 Sisa Donat
@@ -571,7 +643,9 @@ Terima kasih.
             </div>
           </div>
 
-          {/* Produk Terlaris */}
+          {/* =========================
+              PRODUK TERLARIS
+          ========================= */}
           <section className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-xl font-black text-gray-900">
@@ -616,7 +690,9 @@ Terima kasih.
             )}
           </section>
 
-          {/* Chart */}
+          {/* =========================
+              CHART
+          ========================= */}
           <div className="grid gap-6 xl:grid-cols-2">
             <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
               <h2 className="mb-4 text-lg font-black text-gray-900">
