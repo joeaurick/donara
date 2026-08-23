@@ -112,6 +112,54 @@ export async function getTodayReport(
 }
 
 /* =========================
+   TOTAL DONAT TERJUAL
+========================= */
+export async function getSoldDonuts(
+  filter: ReportFilter = {}
+) {
+  const { start, end } = getDateRange(filter);
+
+  const { data, error } = await supabase
+    .from("transaction_items")
+    .select(`
+      qty,
+      transaction:transactions!transaction_id(
+        created_at,
+        status
+      )
+    `);
+
+  if (error) throw error;
+
+  return (data ?? []).reduce((total, item: any) => {
+    const transaction = item.transaction;
+
+    if (!transaction) {
+      return total;
+    }
+
+    // Hanya hitung transaksi COMPLETED
+    if (transaction.status !== "COMPLETED") {
+      return total;
+    }
+
+    const createdAt = new Date(
+      transaction.created_at
+    );
+
+    // Hanya hitung transaksi dalam periode laporan
+    if (
+      createdAt < new Date(start) ||
+      createdAt > new Date(end)
+    ) {
+      return total;
+    }
+
+    return total + Number(item.qty || 0);
+  }, 0);
+}
+
+/* =========================
    PRODUK TERLARIS
 ========================= */
 export async function getTopProducts(

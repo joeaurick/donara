@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import NumericKeypad from "@/app/components/ui/NumericKeypad";
+import { voidTransaction } from "@/lib/supabase/void-transaction";
 
 type VoidTransactionButtonProps = {
-  transactionId: number;
+  transactionId: string;
   invoice: string;
 };
 
@@ -34,6 +34,7 @@ export default function VoidTransactionButton({
   async function handleVoid() {
     if (!pin.trim()) {
       alert("Masukkan PIN terlebih dahulu.");
+      setIsKeypadOpen(true);
       return;
     }
 
@@ -45,66 +46,43 @@ export default function VoidTransactionButton({
     setIsLoading(true);
 
     try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
+      const result = await voidTransaction({
+        transactionId,
+        pin,
+        reason,
+      });
 
-      if (userError || !user) {
-        throw new Error(
-          "User tidak ditemukan. Silakan login kembali."
-        );
-      }
-
-      const { data: isPinValid, error: pinError } =
-        await supabase.rpc("verify_void_pin", {
-          p_user_id: user.id,
-          p_pin: pin,
-        });
-
-      if (pinError) {
-        throw pinError;
-      }
-
-      if (!isPinValid) {
-        alert("PIN salah.");
-        setPin("");
-        setIsKeypadOpen(true);
-        return;
-      }
-
-      const { error: voidError } = await supabase
-        .from("transactions")
-        .update({
-          status: "VOID",
-          voided_at: new Date().toISOString(),
-          voided_by: user.id,
-          void_reason: reason.trim(),
-        })
-        .eq("id", transactionId)
-        .eq("status", "COMPLETED");
-
-      if (voidError) {
-        throw voidError;
-      }
-
-      alert(`Transaksi ${invoice} berhasil di-VOID.`);
+      alert(
+        `Transaksi ${invoice} berhasil di-VOID. ` +
+          `${result.returnedQty} pcs dikembalikan ke stok.`
+      );
 
       setIsOpen(false);
       setIsKeypadOpen(false);
       setPin("");
       setReason("");
 
+      window.dispatchEvent(
+        new Event("stock-updated")
+      );
+
       router.refresh();
     } catch (error) {
       console.error("VOID TRANSACTION ERROR:", error);
 
-      alert(
-        "Gagal melakukan void: " +
-          (error instanceof Error
-            ? error.message
-            : "Terjadi kesalahan")
-      );
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Terjadi kesalahan";
+
+      if (message === "PIN salah.") {
+        alert(message);
+        setPin("");
+        setIsKeypadOpen(true);
+        return;
+      }
+
+      alert("Gagal melakukan void: " + message);
     } finally {
       setIsLoading(false);
     }
@@ -139,7 +117,9 @@ export default function VoidTransactionButton({
             </div>
 
             <div className="rounded-xl border border-red-100 bg-red-50 p-3 text-xs font-medium leading-5 text-red-600">
-              Tindakan ini akan mengubah status transaksi menjadi VOID.
+              Tindakan ini akan mengubah status transaksi menjadi VOID
+              dan mengembalikan jumlah produk yang sebelumnya mengurangi
+              stok.
             </div>
 
             <div className="mt-5">

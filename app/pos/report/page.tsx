@@ -6,8 +6,12 @@ import {
   getTopProducts,
   getHourlySales,
   getPaymentSummary,
+  getTransactionSummaryForWhatsapp,
 } from "@/lib/supabase/report";
-import { getTodayStock } from "@/lib/supabase/daily-stock";
+
+import {
+  getStockReport,
+} from "@/lib/supabase/daily-stock";
 
 import SalesChart from "../components/SalesChart";
 import PaymentChart from "../components/PaymentChart";
@@ -15,68 +19,90 @@ import PaymentChart from "../components/PaymentChart";
 import { exportReportExcel } from "@/lib/exportExcel";
 import { exportReportPdf } from "@/lib/exportPdf";
 
-import { supabase } from "@/lib/supabase/client";
-
-
 type ReportType = {
   omzet: number;
   transaksi: number;
 } | null;
 
-export default function ReportPage() {
-  const [report, setReport] = useState<ReportType>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  const [stock, setStock] = useState<any>(null);
-  const [hourlySales, setHourlySales] = useState<any[]>([]);
-  const [paymentSummary, setPaymentSummary] = useState<any[]>([]);
-  const cashTotal = paymentSummary
-  .filter(
-    (item) =>
-      item.payment_method?.toUpperCase() === "CASH"
-  )
-  .reduce(
-    (sum, item) =>
-      sum + Number(item.total || 0),
-    0
-  );
+type StockType = {
+  opening_stock: number;
+  remaining_stock: number;
+  self_consumed: number;
+  sold_stock: number;
+  total_days: number;
+} | null;
 
-const qrisTotal = paymentSummary
-  .filter(
-    (item) =>
-      item.payment_method?.toUpperCase() === "QRIS"
-  )
-  .reduce(
-    (sum, item) =>
-      sum + Number(item.total || 0),
-    0
-  );
+export default function ReportPage() {
+  const [report, setReport] =
+    useState<ReportType>(null);
+
+  const [products, setProducts] =
+    useState<any[]>([]);
+
+  const [stock, setStock] =
+    useState<StockType>(null);
+
+  const [hourlySales, setHourlySales] =
+    useState<any[]>([]);
+
+  const [paymentSummary, setPaymentSummary] =
+    useState<any[]>([]);
 
   const [period, setPeriod] = useState<
     "today" | "week" | "month"
   >("today");
 
-  const [startDate, setStartDate] = useState("");
-const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] =
+    useState("");
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [endDate, setEndDate] =
+    useState("");
+
+  const [isLoading, setIsLoading] =
+    useState(false);
+
+  const cashTotal = paymentSummary
+    .filter(
+      (item) =>
+        item.payment_method?.toUpperCase() ===
+        "CASH"
+    )
+    .reduce(
+      (sum, item) =>
+        sum + Number(item.total || 0),
+      0
+    );
+
+  const qrisTotal = paymentSummary
+    .filter(
+      (item) =>
+        item.payment_method?.toUpperCase() ===
+        "QRIS"
+    )
+    .reduce(
+      (sum, item) =>
+        sum + Number(item.total || 0),
+      0
+    );
 
   async function loadData() {
     setIsLoading(true);
 
     try {
       const filter = {
-  period,
-  startDate,
-  endDate,
-};
+        period,
+        startDate,
+        endDate,
+      };
 
-const [r, p, s, h, pay] = await Promise.all([
-  getTodayReport(filter),
-  getTopProducts(filter),
-  getTodayStock(),
-  getHourlySales(filter),
-  getPaymentSummary(filter),
-]);
+      const [r, p, s, h, pay] =
+        await Promise.all([
+          getTodayReport(filter),
+          getTopProducts(filter),
+          getStockReport(filter),
+          getHourlySales(filter),
+          getPaymentSummary(filter),
+        ]);
 
       console.log("REPORT =", r);
       console.log("PRODUCT =", p);
@@ -90,15 +116,18 @@ const [r, p, s, h, pay] = await Promise.all([
       setHourlySales(h);
       setPaymentSummary(pay);
     } catch (error) {
-      console.error("Gagal memuat data:", error);
+      console.error(
+        "Gagal memuat data:",
+        error
+      );
     } finally {
       setIsLoading(false);
     }
   }
 
   useEffect(() => {
-  loadData();
-}, [period, startDate, endDate]);
+    loadData();
+  }, [period, startDate, endDate]);
 
   if (!report && !isLoading) {
     return (
@@ -110,171 +139,140 @@ const [r, p, s, h, pay] = await Promise.all([
     );
   }
 
-  return (
-    <main className="space-y-6 p-6">
-      {/* Header */}
-      <div className="rounded-[28px] border border-pink-100 bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 p-6 text-white shadow-xl md:p-8">
-  <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-    <div>
-      <p className="text-xs font-black uppercase tracking-[0.22em] text-pink-100">
-        📊 Dashboard Laporan
-      </p>
+  async function handleWhatsappReport() {
+    try {
+      const filter = {
+        period,
+        startDate,
+        endDate,
+      };
 
-      <h1 className="mt-2 text-3xl font-black tracking-tight md:text-4xl">
-        Laporan Omzet Donara
-      </h1>
+      // =========================
+      // AMBIL TRANSAKSI
+      // =========================
+      const trxData =
+        await getTransactionSummaryForWhatsapp(
+          filter
+        );
 
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-pink-50 md:text-base">
-        Pantau performa penjualan, metode pembayaran, dan produk terlaris secara real-time dalam satu dashboard yang responsif.
-      </p>
-    </div>
+      // =========================
+      // AMBIL STOK BERDASARKAN
+      // PERIODE YANG DIPILIH
+      // =========================
+      const stockData =
+        await getStockReport(filter);
 
-    <div className="flex flex-wrap gap-3">
-      <button
-        onClick={() => exportReportPdf(report, products)}
-        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-black text-white backdrop-blur transition hover:bg-white/25"
-      >
-        📄 Export PDF
-      </button>
+      const openingStock = Number(
+        stockData?.opening_stock || 0
+      );
 
-      <button
-        onClick={() => exportReportExcel(report, products)}
-        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-400"
-      >
-        📊 Export Excel
-      </button>
+      const remainingStock = Number(
+        stockData?.remaining_stock || 0
+      );
 
-      <button
-  onClick={async () => {
-  // Gunakan state filter report yang sedang aktif
-const startDateParam = startDate;
-const endDateParam = endDate;
+      const selfConsumed = Number(
+        stockData?.self_consumed || 0
+      );
 
-  const start = new Date();
-  const end = new Date();
+      const soldStock = Number(
+        stockData?.sold_stock || 0
+      );
 
-  if (startDateParam && endDateParam) {
-  // Hari operasional:
-  // 05:00 pagi → 02:00 dini hari berikutnya
+      // =========================
+      // HITUNG PEMBAYARAN
+      // =========================
+      let cash = 0;
+      let qris = 0;
+      let transfer = 0;
+      let totalOmzet = 0;
 
-  start.setTime(
-    new Date(
-      `${startDateParam}T05:00:00+07:00`
-    ).getTime()
-  );
+      const detailLines = trxData.map(
+        (trx: any) => {
+          const pcs =
+            trx.transaction_items?.reduce(
+              (
+                sum: number,
+                item: any
+              ) =>
+                sum +
+                Number(item.qty || 0),
+              0
+            ) || 0;
 
-  end.setTime(
-    new Date(
-      `${endDateParam}T02:00:59+07:00`
-    ).getTime()
-  );
+          const total = Number(
+            trx.total || 0
+          );
 
-  // Tambahkan 1 hari karena tutup lewat tengah malam
-  end.setDate(end.getDate() + 1);
-} else {
-  // Fallback hari operasional aktif
-  const now = new Date();
+          totalOmzet += total;
 
-  // Jika sekarang masih sebelum jam 02:00,
-  // anggap masih milik hari kemarin
-  if (now.getHours() < 2) {
-    start.setDate(start.getDate() - 1);
-    end.setDate(end.getDate() - 1);
-  }
+          const method = (
+            trx.payment_method || "CASH"
+          ).toUpperCase();
 
-  start.setHours(5, 0, 0, 0);
+          if (method === "QRIS") {
+            qris += total;
+          } else if (
+            method === "TRANSFER"
+          ) {
+            transfer += total;
+          } else {
+            cash += total;
+          }
 
-  end.setDate(end.getDate() + 1);
-  end.setHours(2, 0, 59, 999);
-}
+          return `• [${method}] ${pcs} pcs - Rp ${total.toLocaleString(
+            "id-ID"
+          )}`;
+        }
+      );
 
-  // Ambil transaksi sesuai tanggal yang dipilih
-  const { data: trxData, error } = await supabase
-    .from("transactions")
-    .select(
-      `
-      payment_method,
-      total,
-      created_at,
-      transaction_items(qty)
-    `
-    )
-    .gte("created_at", start.toISOString())
-    .lte("created_at", end.toISOString())
-    .order("created_at", { ascending: true });
+      // =========================
+      // FORMAT TANGGAL
+      // =========================
+      const tanggalLaporan =
+        startDate && endDate
+          ? startDate === endDate
+            ? new Date(
+                `${startDate}T00:00:00`
+              ).toLocaleDateString(
+                "id-ID",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }
+              )
+            : `${new Date(
+                `${startDate}T00:00:00`
+              ).toLocaleDateString(
+                "id-ID",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }
+              )} s/d ${new Date(
+                `${endDate}T00:00:00`
+              ).toLocaleDateString(
+                "id-ID",
+                {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }
+              )}`
+          : new Date().toLocaleDateString(
+              "id-ID",
+              {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }
+            );
 
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  // Hitung ulang dari data yang sudah difilter
-  let cash = 0;
-  let qris = 0;
-  let transfer = 0;
-  let totalOmzet = 0;
-  let totalPcs = 0;
-
-  const detailLines = (trxData || []).map((trx: any) => {
-    const pcs =
-      trx.transaction_items?.reduce(
-        (sum: number, item: any) =>
-          sum + Number(item.qty || 0),
-        0
-      ) || 0;
-
-    totalPcs += pcs;
-    totalOmzet += Number(trx.total);
-
-    const method = (
-      trx.payment_method || "CASH"
-    ).toUpperCase();
-
-    if (method === "QRIS") {
-      qris += Number(trx.total);
-    } else if (method === "TRANSFER") {
-      transfer += Number(trx.total);
-    } else {
-      cash += Number(trx.total);
-    }
-
-    return `• [${method}] ${pcs} pcs - Rp ${Number(
-      trx.total
-    ).toLocaleString("id-ID")}`;
-  });
-
-  // Format tanggal yang dipilih user
-const tanggalLaporan =
-  startDateParam && endDateParam
-    ? startDateParam === endDateParam
-      ? new Date(
-          `${startDateParam}T00:00:00`
-        ).toLocaleDateString("id-ID", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })
-      : `${new Date(
-          `${startDateParam}T00:00:00`
-        ).toLocaleDateString("id-ID", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })} s/d ${new Date(
-          `${endDateParam}T00:00:00`
-        ).toLocaleDateString("id-ID", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        })}`
-    : start.toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      });
-
-const text = `
-*LAPORAN PENJUALAN DONARA*
+      // =========================
+      // LAPORAN WHATSAPP
+      // =========================
+      const text = `*LAPORAN PENJUALAN DONARA*
 
 *Tanggal:* ${tanggalLaporan}
 
@@ -282,17 +280,28 @@ const text = `
 
 *RINGKASAN*
 
-- Total Donat : ${totalPcs} pcs
-- Total Transaksi : ${trxData?.length || 0}
-- Total Omzet : Rp ${totalOmzet.toLocaleString("id-ID")}
+- Stok Donat Awal : ${openingStock} pcs
+- Donat Terjual : ${soldStock} pcs
+- Total Transaksi : ${trxData.length}
+- Total Omzet : Rp ${totalOmzet.toLocaleString(
+        "id-ID"
+      )}
+- Donat Dimakan Sendiri : ${selfConsumed} pcs
+- Sisa Donat : ${remainingStock} pcs
 
 ------------------------------
 
 *PEMBAYARAN*
 
-- Cash    : Rp ${cash.toLocaleString("id-ID")}
-- QRIS    : Rp ${qris.toLocaleString("id-ID")}
-- Transfer: Rp ${transfer.toLocaleString("id-ID")}
+- Cash     : Rp ${cash.toLocaleString(
+        "id-ID"
+      )}
+- QRIS     : Rp ${qris.toLocaleString(
+        "id-ID"
+      )}
+- Transfer : Rp ${transfer.toLocaleString(
+        "id-ID"
+      )}
 
 ------------------------------
 
@@ -305,77 +314,155 @@ ${detailLines.join("\n")}
 Terima kasih.
 `;
 
-  window.open(
-    `https://wa.me/?text=${encodeURIComponent(text)}`,
-    "_blank"
-  );
-}}
-  className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
->
-  Kirim WhatsApp
-</button>
-    </div>
-  </div>
-</div>
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(
+          text
+        )}`,
+        "_blank"
+      );
+    } catch (error) {
+      console.error(
+        "Gagal membuat laporan WhatsApp:",
+        error
+      );
+
+      alert(
+        "Gagal membuat laporan WhatsApp."
+      );
+    }
+  }
+
+  return (
+    <main className="space-y-6 p-6">
+      {/* Header */}
+      <div className="rounded-[28px] border border-pink-100 bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 p-6 text-white shadow-xl md:p-8">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-pink-100">
+              📊 Dashboard Laporan
+            </p>
+
+            <h1 className="mt-2 text-3xl font-black tracking-tight md:text-4xl">
+              Laporan Omzet Donara
+            </h1>
+
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-pink-50 md:text-base">
+              Pantau performa penjualan,
+              metode pembayaran, dan produk
+              terlaris secara real-time dalam
+              satu dashboard yang responsif.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
+            <button
+              onClick={() =>
+                exportReportPdf(
+                  report,
+                  products
+                )
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/15 px-4 py-3 text-sm font-black text-white backdrop-blur transition hover:bg-white/25"
+            >
+              📄 Export PDF
+            </button>
+
+            <button
+              onClick={() =>
+                exportReportExcel(
+                  report,
+                  products
+                )
+              }
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-black text-white transition hover:bg-emerald-400"
+            >
+              📊 Export Excel
+            </button>
+
+            <button
+              onClick={handleWhatsappReport}
+              className="rounded-xl bg-emerald-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
+            >
+              Kirim WhatsApp
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Filter */}
-<div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-  <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-    {/* Quick Filter */}
-    <div className="flex flex-wrap gap-2">
-      {(["today", "week", "month"] as const).map((p) => (
-        <button
-          key={p}
-          onClick={() => {
-            setPeriod(p);
-            setStartDate("");
-            setEndDate("");
-          }}
-          className={`rounded-2xl px-4 py-2 text-sm font-bold transition ${
-            period === p && !startDate && !endDate
-              ? "bg-pink-600 text-white shadow-md"
-              : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
-          }`}
-        >
-          {p === "today"
-            ? "Hari Ini"
-            : p === "week"
-            ? "7 Hari"
-            : "30 Hari"}
-        </button>
-      ))}
-    </div>
+      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          {/* Quick Filter */}
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                "today",
+                "week",
+                "month",
+              ] as const
+            ).map((p) => (
+              <button
+                key={p}
+                onClick={() => {
+                  setPeriod(p);
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                className={`rounded-2xl px-4 py-2 text-sm font-bold transition ${
+                  period === p &&
+                  !startDate &&
+                  !endDate
+                    ? "bg-pink-600 text-white shadow-md"
+                    : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {p === "today"
+                  ? "Hari Ini"
+                  : p === "week"
+                  ? "7 Hari"
+                  : "30 Hari"}
+              </button>
+            ))}
+          </div>
 
-    {/* Date Range */}
-    <div className="grid grid-cols-2 gap-3 lg:w-auto">
-      <div className="space-y-1">
-        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-          Dari
-        </label>
+          {/* Date Range */}
+          <div className="grid grid-cols-2 gap-3 lg:w-auto">
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                Dari
+              </label>
 
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
-        />
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) =>
+                  setStartDate(
+                    e.target.value
+                  )
+                }
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                Sampai
+              </label>
+
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) =>
+                  setEndDate(
+                    e.target.value
+                  )
+                }
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
+              />
+            </div>
+          </div>
+        </div>
       </div>
-
-      <div className="space-y-1">
-        <label className="text-[10px] font-black uppercase tracking-wider text-slate-500">
-          Sampai
-        </label>
-
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none focus:border-pink-400 focus:ring-2 focus:ring-pink-100"
-        />
-      </div>
-    </div>
-  </div>
-</div>
 
       {isLoading ? (
         <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-gray-500">
@@ -384,27 +471,33 @@ Terima kasih.
       ) : (
         <>
           {/* Statistik */}
-<div className="grid grid-cols-2 gap-4 xl:grid-cols-6">
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-6">
+            {/* Total Omzet */}
             <div className="col-span-2 rounded-3xl border border-pink-100 bg-gradient-to-br from-pink-50 via-white to-rose-50 p-6 shadow-sm">
-  <div className="flex items-center justify-between">
-    <p className="text-xs font-black uppercase tracking-wider text-pink-600">
-      💰 Total Omzet
-    </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-black uppercase tracking-wider text-pink-600">
+                  💰 Total Omzet
+                </p>
 
-    <span className="rounded-full bg-pink-100 px-2 py-1 text-[10px] font-black text-pink-600">
-      LIVE
-    </span>
-  </div>
+                <span className="rounded-full bg-pink-100 px-2 py-1 text-[10px] font-black text-pink-600">
+                  LIVE
+                </span>
+              </div>
 
-  <h2 className="mt-4 text-3xl font-black tracking-tight text-pink-600 md:text-4xl">
-    Rp {report?.omzet?.toLocaleString("id-ID") || 0}
-  </h2>
+              <h2 className="mt-4 text-3xl font-black tracking-tight text-pink-600 md:text-4xl">
+                Rp{" "}
+                {report?.omzet?.toLocaleString(
+                  "id-ID"
+                ) || 0}
+              </h2>
 
-  <p className="mt-2 text-xs text-slate-500">
-    Total penjualan pada periode yang dipilih.
-  </p>
-</div>
+              <p className="mt-2 text-xs text-slate-500">
+                Total penjualan pada periode
+                yang dipilih.
+              </p>
+            </div>
 
+            {/* Transaksi */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
                 Transaksi
@@ -415,50 +508,58 @@ Terima kasih.
               </h2>
             </div>
 
+            {/* Cash */}
             <div className="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-5 shadow-sm">
-  <div className="flex items-center justify-between">
-    <p className="text-xs font-black uppercase tracking-wider text-emerald-700">
-      💵 Cash
-    </p>
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-black uppercase tracking-wider text-emerald-700">
+                  💵 Cash
+                </p>
 
-    <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-black text-emerald-700">
-      CASH
-    </span>
-  </div>
+                <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-black text-emerald-700">
+                  CASH
+                </span>
+              </div>
 
-  <h2 className="mt-3 text-xl font-black text-emerald-700 md:text-2xl">
-    Rp {cashTotal.toLocaleString("id-ID")}
-  </h2>
-</div>
+              <h2 className="mt-3 text-xl font-black text-emerald-700 md:text-2xl">
+                Rp{" "}
+                {cashTotal.toLocaleString(
+                  "id-ID"
+                )}
+              </h2>
+            </div>
 
-<div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
-  <div className="flex items-center justify-between">
-    <p className="text-xs font-black uppercase tracking-wider text-blue-700">
-      📱 QRIS
-    </p>
+            {/* QRIS */}
+            <div className="rounded-3xl border border-blue-100 bg-gradient-to-br from-blue-50 to-white p-5 shadow-sm">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-black uppercase tracking-wider text-blue-700">
+                  📱 QRIS
+                </p>
 
-    <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-black text-blue-700">
-      QRIS
-    </span>
-  </div>
+                <span className="rounded-full bg-blue-100 px-2 py-1 text-[10px] font-black text-blue-700">
+                  QRIS
+                </span>
+              </div>
 
-  <h2 className="mt-3 text-xl font-black text-blue-700 md:text-2xl">
-    Rp {qrisTotal.toLocaleString("id-ID")}
-  </h2>
-</div>
+              <h2 className="mt-3 text-xl font-black text-blue-700 md:text-2xl">
+                Rp{" "}
+                {qrisTotal.toLocaleString(
+                  "id-ID"
+                )}
+              </h2>
+            </div>
 
+            {/* Donat Terjual */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
                 Donat Terjual
               </p>
 
               <h2 className="mt-3 text-3xl font-black text-green-600">
-                {stock
-                  ? stock.opening_stock - stock.remaining_stock
-                  : 0}
+                {stock?.sold_stock || 0}
               </h2>
             </div>
 
+            {/* Sisa Donat */}
             <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
               <p className="text-sm font-medium text-gray-500">
                 Sisa Donat
@@ -478,36 +579,39 @@ Terima kasih.
               </h2>
 
               <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
-                Top Selling
+                TOP SELLING
               </span>
             </div>
 
             {products.length === 0 ? (
               <p className="text-sm text-gray-500">
-                Belum ada penjualan pada periode ini.
+                Belum ada penjualan pada
+                periode ini.
               </p>
             ) : (
               <div className="space-y-3">
-                {products.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between rounded-xl border border-gray-100 p-4 hover:bg-gray-50"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-50 text-sm font-black text-pink-600">
-                        #{index + 1}
+                {products.map(
+                  (item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-xl border border-gray-100 p-4 hover:bg-gray-50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-50 text-sm font-black text-pink-600">
+                          #{index + 1}
+                        </div>
+
+                        <span className="font-semibold text-gray-800">
+                          {item.name}
+                        </span>
                       </div>
 
-                      <span className="font-semibold text-gray-800">
-                        {item.name}
+                      <span className="rounded-full border border-pink-200 bg-pink-50 px-3 py-1 text-sm font-black text-pink-600">
+                        {item.qty} pcs
                       </span>
                     </div>
-
-                    <span className="rounded-full border border-pink-200 bg-pink-50 px-3 py-1 text-sm font-black text-pink-600">
-                      {item.qty} pcs
-                    </span>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             )}
           </section>
@@ -519,7 +623,9 @@ Terima kasih.
                 Penjualan per Jam
               </h2>
 
-              <SalesChart data={hourlySales} />
+              <SalesChart
+                data={hourlySales}
+              />
             </div>
 
             <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
@@ -527,7 +633,9 @@ Terima kasih.
                 Metode Pembayaran
               </h2>
 
-              <PaymentChart data={paymentSummary} />
+              <PaymentChart
+                data={paymentSummary}
+              />
             </div>
           </div>
         </>
