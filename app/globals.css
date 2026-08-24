@@ -218,17 +218,28 @@ input[type="number"] {
    REDUCE MOTION
 ======================================== */
 
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
+
+
+/* ========================================
+   POS REMINDER ANIMATION
+======================================== */
+
+@keyframes reminder-marquee {
+  from {
+    transform: translateX(0);
   }
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+  to {
+    transform: translateX(-50%);
   }
+}
+
+.animate-reminder-marquee {
+  animation: reminder-marquee 18s linear infinite;
+  will-change: transform;
+}
+
+/* Hover untuk berhenti sementara */
+.animate-reminder-marquee:hover {
+  animation-play-state: paused;
 }

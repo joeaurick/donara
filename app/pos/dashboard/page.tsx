@@ -26,6 +26,8 @@ import usePackagePicker from "../hooks/usePackagePicker";
 
 import PendingOrdersModal from "../components/PendingOrdersModal";
 
+import PosReminderTicker from "../components/PosReminderTicker";
+
 export default function PosDashboardPage() {
   // =========================
   // PRODUCTS
@@ -570,6 +572,11 @@ export default function PosDashboardPage() {
             HEADER POS
         ========================= */}
         <div className="shrink-0 border-b border-gray-200 bg-white">
+
+           {/* =========================
+      REMINDER BERJALAN
+  ========================= */}
+  <PosReminderTicker />
 
           {/* MOBILE HEADER */}
           <div className="flex items-center justify-between px-4 py-2.5 xl:hidden">

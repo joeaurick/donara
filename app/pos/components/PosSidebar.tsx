@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   BarChart3,
+  Bell,
   ChevronLeft,
   ChevronRight,
   CircleDot,
@@ -37,6 +38,12 @@ const menus = [
     subtitle: "Penjualan toko",
     href: "/pos/report",
     icon: BarChart3,
+  },
+  {
+    title: "Reminder",
+    subtitle: "Catatan & pengingat stok",
+    href: "/pos/reminder",
+    icon: Bell,
   },
   {
     title: "Pengaturan",
