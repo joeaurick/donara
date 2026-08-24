@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  BellRing,
   ClipboardList,
   LayoutDashboard,
   Settings,
@@ -26,6 +27,11 @@ const menus = [
     icon: BarChart3,
   },
   {
+    title: "Reminder",
+    href: "/pos/reminder",
+    icon: BellRing,
+  },
+  {
     title: "Menu",
     href: "/pos/settings",
     icon: Settings,
@@ -45,7 +51,9 @@ export default function MobileBottomNav() {
                 ? pathname === "/pos" ||
                   pathname === "/pos/dashboard"
                 : pathname === menu.href ||
-                  pathname.startsWith(menu.href + "/");
+                  pathname.startsWith(
+                    menu.href + "/"
+                  );
 
             const Icon = menu.icon;
 
@@ -56,16 +64,18 @@ export default function MobileBottomNav() {
                 className="flex flex-1 items-center justify-center"
               >
                 <div
-                  className={`relative flex w-full max-w-[82px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-all duration-200 ${
+                  className={`relative flex w-full max-w-[82px] flex-col items-center justify-center gap-1 rounded-2xl px-1 py-2 transition-all duration-200 ${
                     active
                       ? "text-[#2d1b16]"
                       : "text-stone-400"
                   }`}
                 >
+                  {/* ACTIVE BACKGROUND */}
                   {active && (
                     <span className="absolute inset-0 rounded-2xl bg-white shadow-sm ring-1 ring-pink-100" />
                   )}
 
+                  {/* ICON */}
                   <span
                     className={`relative z-10 flex h-9 w-9 items-center justify-center rounded-xl transition-all duration-200 ${
                       active
@@ -74,13 +84,16 @@ export default function MobileBottomNav() {
                     }`}
                   >
                     <Icon
-                      size={19}
-                      strokeWidth={active ? 2.6 : 2.2}
+                      size={18}
+                      strokeWidth={
+                        active ? 2.6 : 2.2
+                      }
                     />
                   </span>
 
+                  {/* TITLE */}
                   <span
-                    className={`relative z-10 text-[9px] font-black tracking-wide transition-colors ${
+                    className={`relative z-10 text-[8px] font-black tracking-wide transition-colors sm:text-[9px] ${
                       active
                         ? "text-[#2d1b16]"
                         : "text-stone-400"
@@ -89,6 +102,7 @@ export default function MobileBottomNav() {
                     {menu.title}
                   </span>
 
+                  {/* ACTIVE INDICATOR */}
                   {active && (
                     <span className="relative z-10 h-1 w-4 rounded-full bg-gradient-to-r from-pink-500 to-orange-400" />
                   )}
