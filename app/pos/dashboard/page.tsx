@@ -525,44 +525,60 @@ export default function PosDashboardPage() {
   // =========================
   if (isLoading) {
     return (
-      <div className="flex h-dvh items-center justify-center bg-gray-100">
-        <p className="animate-pulse font-semibold text-gray-500">
-          Memuat POS Donara...
-        </p>
+      <div className="flex h-dvh items-center justify-center bg-gradient-to-b from-[#fff8f7] via-[#fffdfc] to-white">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-pulse rounded-2xl bg-gradient-to-br from-pink-500 to-orange-400 shadow-[0_12px_30px_rgba(236,72,153,0.22)]" />
+
+          <p className="text-sm font-black tracking-tight text-[#2d1b16]">
+            Memuat POS Donara...
+          </p>
+
+          <p className="mt-1 text-[10px] font-medium text-[#a18f87]">
+            Menyiapkan data operasional hari ini
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-      <main className="flex h-dvh w-full flex-col overflow-hidden bg-gray-50 pb-[76px] select-none xl:pb-0">
+      <main className="flex h-dvh w-full flex-col overflow-hidden bg-gradient-to-b from-[#fff8f7] via-[#fffdfc] to-white pb-[76px] select-none xl:pb-0">
 
         {/* =========================
             TOKO TUTUP BANNER
         ========================= */}
         {cartDisabled && (
           isAdmin ? (
-            <div className="z-[110] shrink-0 bg-amber-500 px-4 py-2 text-center text-xs font-medium text-white">
+            <div className="z-[110] shrink-0 border-b border-orange-200 bg-gradient-to-r from-orange-500 to-[#ffb703] px-4 py-2 text-center text-xs font-bold text-white shadow-sm">
               ⚠️ Mode Admin — Status Toko{" "}
               <span className="font-black">
                 TUTUP
               </span>
             </div>
           ) : (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-              <div className="w-full max-w-sm rounded-3xl bg-white p-8 text-center shadow-2xl">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-red-50 text-3xl">
-                  🏪
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#2d1b16]/75 p-4 backdrop-blur-md">
+              <div className="w-full max-w-sm overflow-hidden rounded-[30px] border border-pink-100 bg-white shadow-[0_24px_80px_rgba(45,27,22,0.28)]">
+                <div className="p-8 text-center">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-50 to-orange-50 text-3xl shadow-sm">
+                    🏪
+                  </div>
+
+                  <h1 className="mt-5 text-2xl font-black tracking-tight text-[#2d1b16]">
+                    TOKO TUTUP
+                  </h1>
+
+                  <p className="mt-2 text-sm leading-relaxed text-[#8c7a72]">
+                    Operasional hari ini telah
+                    berakhir.
+                  </p>
                 </div>
 
-                <h1 className="mt-5 text-2xl font-black text-red-600">
-                  TOKO TUTUP
-                </h1>
-
-                <p className="mt-2 text-sm text-gray-500">
-                  Operasional hari ini telah
-                  berakhir.
-                </p>
+                <div className="border-t border-pink-100 bg-[#fffaf5] px-6 py-3 text-center">
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] text-pink-500">
+                    Donara POS
+                  </span>
+                </div>
               </div>
             </div>
           )
@@ -571,49 +587,104 @@ export default function PosDashboardPage() {
         {/* =========================
             HEADER POS
         ========================= */}
-        <div className="shrink-0 border-b border-gray-200 bg-white">
+        <div className="shrink-0 border-b border-pink-100 bg-white/85 backdrop-blur-xl">
 
-           {/* =========================
-      REMINDER BERJALAN
-  ========================= */}
-  <PosReminderTicker />
-
+          {/* =========================
+              REMINDER BERJALAN
+          ========================= */}
+          <PosReminderTicker />
+       
           {/* MOBILE HEADER */}
-          <div className="flex items-center justify-between px-4 py-2.5 xl:hidden">
-            <div>
-              <p className="text-sm font-black tracking-tight text-pink-600">
-                DONARA POS
-              </p>
+<div className="px-3 py-3 xl:hidden">
+  <div className="relative overflow-hidden rounded-[20px] border border-[#f3dfe4] bg-[#fffaf8] p-3 shadow-[0_8px_22px_rgba(45,27,22,0.06)]">
 
-              <p
-                className={`mt-0.5 text-[10px] font-semibold ${
-                  todayClosed
-                    ? "text-red-500"
-                    : "text-emerald-600"
-                }`}
-              >
-                {todayClosed
-                  ? "● Toko Tutup"
-                  : "● Toko Sedang Buka"}
-              </p>
-            </div>
+    {/* DECORATION */}
+    <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-pink-200/30 blur-2xl" />
 
-            <button
-              type="button"
-              onClick={() =>
-                setShowMobileMetrics(
-                  !showMobileMetrics
-                )
-              }
-              className="rounded-xl bg-gray-100 px-3 py-2 text-[11px] font-black text-gray-700 transition hover:bg-gray-200"
+    <div className="relative flex items-center justify-between gap-3">
+
+      {/* BRAND */}
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-[#ff5a83] to-[#ec1975] text-white shadow-[0_8px_18px_rgba(236,25,117,0.22)]">
+          <span className="text-sm">
+            🍩
+          </span>
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-[11px] font-black tracking-[0.04em] text-[#2d1b16]">
+            DONARA POS
+          </p>
+
+          <div className="mt-1 flex items-center gap-1.5">
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${
+                todayClosed
+                  ? "bg-red-500"
+                  : "bg-[#46cfa4]"
+              }`}
+            />
+
+            <p
+              className={`text-[8px] font-bold uppercase tracking-[0.1em] ${
+                todayClosed
+                  ? "text-red-500"
+                  : "text-[#9a8179]"
+              }`}
             >
-              {showMobileMetrics
-                ? "Tutup Menu"
-                : "Menu Admin"}
-            </button>
+              {todayClosed
+                ? "Toko Tutup"
+                : "Toko Sedang Buka"}
+            </p>
           </div>
+        </div>
+      </div>
 
-          {/* MOBILE DASHBOARD HEADER */}
+      {/* ADMIN BUTTON */}
+      <button
+        type="button"
+        onClick={() =>
+          setShowMobileMetrics(
+            !showMobileMetrics
+          )
+        }
+        className="
+          flex
+          shrink-0
+          items-center
+          gap-2
+          rounded-xl
+          border
+          border-pink-100
+          bg-gradient-to-r
+          from-[#fff0f4]
+          to-[#fff7f2]
+          px-3
+          py-2
+          text-[9px]
+          font-black
+          tracking-wide
+          text-[#d93668]
+          shadow-sm
+          transition
+          active:scale-95
+        "
+      >
+        <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-white text-[10px] shadow-sm">
+          ⚙
+        </span>
+
+        {showMobileMetrics
+          ? "Tutup"
+          : "Menu Admin"}
+      </button>
+    </div>
+  </div>
+</div>
+
+          {/* =========================
+              MOBILE DASHBOARD HEADER
+          ========================= */}
           <div
             className={`${
               showMobileMetrics
@@ -634,7 +705,9 @@ export default function PosDashboardPage() {
             />
           </div>
 
-          {/* DESKTOP DASHBOARD HEADER */}
+          {/* =========================
+              DESKTOP DASHBOARD HEADER
+          ========================= */}
           <div className="hidden xl:block">
             {showDesktopHeader ? (
               <div className="relative">
@@ -655,22 +728,22 @@ export default function PosDashboardPage() {
                   onClick={() =>
                     setShowDesktopHeader(false)
                   }
-                  className="absolute bottom-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-gray-200 bg-white px-4 py-1.5 text-[10px] font-bold text-gray-500 shadow-sm transition hover:bg-gray-50 hover:text-pink-600"
+                  className="absolute bottom-2 left-1/2 z-20 -translate-x-1/2 rounded-full border border-pink-100 bg-white px-4 py-1.5 text-[10px] font-bold text-[#8c7a72] shadow-sm transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
                 >
                   ▲ Sembunyikan Header
                 </button>
               </div>
             ) : (
-              <div className="flex h-11 items-center justify-between border-b border-gray-200 bg-white px-5">
+              <div className="flex h-12 items-center justify-between bg-white/80 px-5 backdrop-blur-xl">
                 <div className="flex items-center gap-3">
-                  <p className="text-sm font-black tracking-tight text-pink-600">
+                  <p className="text-sm font-black tracking-tight text-[#2d1b16]">
                     DONARA POS
                   </p>
 
-                  <div className="h-4 w-px bg-gray-200" />
+                  <div className="h-5 w-px bg-pink-100" />
 
                   <p
-                    className={`text-[10px] font-bold ${
+                    className={`text-[10px] font-black uppercase tracking-wide ${
                       todayClosed
                         ? "text-red-500"
                         : "text-emerald-600"
@@ -678,21 +751,21 @@ export default function PosDashboardPage() {
                   >
                     {todayClosed
                       ? "● Toko Tutup"
-                      : "● Toko Buka"}
+                      : "● POS Online"}
                   </p>
 
-                  <div className="h-4 w-px bg-gray-200" />
+                  <div className="h-5 w-px bg-pink-100" />
 
-                  <p className="text-[10px] font-semibold text-gray-400">
+                  <p className="text-[10px] font-semibold text-[#a18f87]">
                     Stok:{" "}
-                    <span className="font-black text-gray-700">
+                    <span className="font-black text-[#2d1b16]">
                       {remainingStock}
                     </span>
                   </p>
 
-                  <p className="text-[10px] font-semibold text-gray-400">
+                  <p className="text-[10px] font-semibold text-[#a18f87]">
                     Terjual:{" "}
-                    <span className="font-black text-gray-700">
+                    <span className="font-black text-[#2d1b16]">
                       {Math.max(
                         0,
                         openingStock -
@@ -708,7 +781,7 @@ export default function PosDashboardPage() {
                   onClick={() =>
                     setShowDesktopHeader(true)
                   }
-                  className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-[10px] font-black text-gray-600 transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
+                  className="rounded-xl border border-pink-100 bg-[#fff8f7] px-3.5 py-2 text-[10px] font-black text-[#8c7a72] transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600"
                 >
                   ▼ Tampilkan Header POS
                 </button>
@@ -722,9 +795,11 @@ export default function PosDashboardPage() {
         ========================= */}
         <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-4">
 
-          {/* LEFT AREA */}
+          {/* =========================
+              LEFT AREA
+          ========================= */}
           <section
-            className={`col-span-1 flex min-h-0 flex-col bg-gray-50 xl:col-span-3 ${
+            className={`col-span-1 flex min-h-0 flex-col xl:col-span-3 ${
               cartDisabled && !isAdmin
                 ? "pointer-events-none opacity-50"
                 : ""
@@ -736,10 +811,11 @@ export default function PosDashboardPage() {
             ========================= */}
             {isAdmin && (
               <div className="shrink-0 px-3 pt-3 xl:px-4 xl:pt-4">
+                <div className="overflow-hidden rounded-[24px] border border-pink-100 bg-white shadow-[0_10px_30px_rgba(45,27,22,0.06)]">
 
-                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-
-                  {/* MOBILE TOGGLE */}
+                  {/* =========================
+                      MOBILE TOGGLE
+                  ========================= */}
                   <button
                     type="button"
                     onClick={() =>
@@ -747,16 +823,22 @@ export default function PosDashboardPage() {
                         !showAdminPanelMobile
                       )
                     }
-                    className="flex w-full items-center justify-between px-4 py-3 xl:hidden"
+                    className="flex w-full items-center justify-between px-4 py-3.5 xl:hidden"
                   >
-                    <div className="text-left">
-                      <p className="text-xs font-black text-gray-800">
-                        Manajemen Stok
-                      </p>
+                    <div className="flex items-center gap-3 text-left">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-pink-50 text-base">
+                        ⚙️
+                      </div>
 
-                      <p className="mt-0.5 text-[10px] text-gray-400">
-                        Stok dan makan sendiri
-                      </p>
+                      <div>
+                        <p className="text-xs font-black text-[#2d1b16]">
+                          Manajemen Stok
+                        </p>
+
+                        <p className="mt-0.5 text-[9px] font-medium text-[#a18f87]">
+                          Stok dan makan sendiri
+                        </p>
+                      </div>
                     </div>
 
                     <span className="text-xs font-black text-pink-600">
@@ -766,7 +848,9 @@ export default function PosDashboardPage() {
                     </span>
                   </button>
 
-                  {/* DESKTOP STOCK TOGGLE */}
+                  {/* =========================
+                      DESKTOP STOCK TOGGLE
+                  ========================= */}
                   <button
                     type="button"
                     onClick={() =>
@@ -774,25 +858,25 @@ export default function PosDashboardPage() {
                         !showDesktopStockPanel
                       )
                     }
-                    className="hidden w-full items-center justify-between border-b border-gray-100 px-4 py-3 xl:flex"
+                    className="hidden w-full items-center justify-between border-b border-pink-100 px-5 py-4 xl:flex"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-pink-50 text-lg">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-50 to-orange-50 text-lg">
                         ⚙️
                       </div>
 
                       <div className="text-left">
-                        <p className="text-xs font-black uppercase tracking-wider text-gray-800">
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#2d1b16]">
                           Manajemen Stok
                         </p>
 
-                        <p className="mt-0.5 text-[10px] text-gray-400">
+                        <p className="mt-1 text-[10px] text-[#a18f87]">
                           Kelola stok donat hari ini
                         </p>
                       </div>
                     </div>
 
-                    <span className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-[10px] font-black text-gray-600 transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600">
+                    <span className="rounded-xl border border-pink-100 bg-[#fff8f7] px-3.5 py-2 text-[10px] font-black text-[#8c7a72] transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600">
                       {showDesktopStockPanel
                         ? "▲ Sembunyikan"
                         : "▼ Tampilkan"}
@@ -817,16 +901,18 @@ export default function PosDashboardPage() {
                     `}
                   >
 
-                    {/* TOP TOOLBAR */}
-                    <div className="flex flex-col gap-4 border-t border-gray-100 p-4 xl:flex-row xl:items-center xl:justify-between">
+                    {/* =========================
+                        TOP TOOLBAR
+                    ========================= */}
+                    <div className="flex flex-col gap-4 border-t border-pink-50 p-4 xl:flex-row xl:items-center xl:justify-between xl:px-5 xl:py-4">
 
                       {/* TITLE */}
                       <div className="hidden min-w-[180px] xl:block">
-                        <p className="text-xs font-black uppercase tracking-wider text-gray-800">
+                        <p className="text-xs font-black uppercase tracking-[0.12em] text-[#2d1b16]">
                           Pengaturan Hari Ini
                         </p>
 
-                        <p className="mt-0.5 text-[10px] text-gray-400">
+                        <p className="mt-1 text-[10px] text-[#a18f87]">
                           Atur stok dan catat donat
                           yang diambil.
                         </p>
@@ -842,8 +928,8 @@ export default function PosDashboardPage() {
                           }
                           className="flex items-center gap-2"
                         >
-                          <div className="flex min-w-0 flex-1 items-center rounded-xl border border-gray-200 bg-gray-50 sm:w-[180px]">
-                            <span className="shrink-0 px-3 text-[10px] font-bold uppercase text-gray-400">
+                          <div className="flex min-w-0 flex-1 items-center rounded-2xl border border-pink-100 bg-[#fffaf5] sm:w-[190px]">
+                            <span className="shrink-0 px-3 text-[10px] font-black uppercase tracking-wide text-[#a18f87]">
                               Stok
                             </span>
 
@@ -857,7 +943,7 @@ export default function PosDashboardPage() {
                                 )
                               }
                               placeholder="0"
-                              className="h-10 min-w-0 flex-1 bg-transparent px-2 text-center text-sm font-black text-gray-800 outline-none"
+                              className="h-10 min-w-0 flex-1 bg-transparent px-2 text-center text-sm font-black text-[#2d1b16] outline-none"
                             />
                           </div>
 
@@ -866,7 +952,7 @@ export default function PosDashboardPage() {
                             disabled={
                               isUpdatingStock
                             }
-                            className="h-10 shrink-0 rounded-xl bg-gray-900 px-4 text-xs font-bold text-white transition hover:bg-gray-800 disabled:opacity-60"
+                            className="h-10 shrink-0 rounded-2xl bg-[#2d1b16] px-4 text-xs font-black text-white shadow-[0_8px_18px_rgba(45,27,22,0.16)] transition hover:bg-[#432821] active:scale-[0.98] disabled:opacity-60"
                           >
                             {isUpdatingStock
                               ? "Menyimpan..."
@@ -874,7 +960,7 @@ export default function PosDashboardPage() {
                           </button>
                         </form>
 
-                        <div className="hidden h-8 w-px bg-gray-200 sm:block" />
+                        <div className="hidden h-8 w-px bg-pink-100 sm:block" />
 
                         {/* MAKAN SENDIRI */}
                         <button
@@ -888,7 +974,7 @@ export default function PosDashboardPage() {
                               true
                             )
                           }
-                          className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 text-xs font-black text-white shadow-sm transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+                          className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-400 to-[#ffb703] px-4 text-xs font-black text-white shadow-[0_8px_18px_rgba(255,183,3,0.18)] transition hover:brightness-[0.98] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-none disabled:bg-[#f3eee9] disabled:text-[#b9a79f] disabled:shadow-none"
                         >
                           <span>🍩</span>
 
@@ -899,29 +985,31 @@ export default function PosDashboardPage() {
                       </div>
                     </div>
 
-                    {/* STOCK SUMMARY */}
-                    <div className="grid grid-cols-3 gap-px border-t border-gray-100 bg-gray-100">
+                    {/* =========================
+                        STOCK SUMMARY
+                    ========================= */}
+                    <div className="grid grid-cols-3 gap-px border-t border-pink-100 bg-pink-50">
 
-                      <div className="bg-white px-3 py-3 text-center">
-                        <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                      <div className="bg-white px-3 py-3.5 text-center">
+                        <p className="text-[9px] font-black uppercase tracking-[0.12em] text-[#a18f87]">
                           Stok Awal
                         </p>
 
-                        <p className="mt-1 text-base font-black text-gray-800">
+                        <p className="mt-1 text-base font-black text-[#2d1b16]">
                           {openingStock}
                         </p>
 
-                        <p className="text-[9px] text-gray-400">
+                        <p className="text-[9px] text-[#b9a79f]">
                           pcs
                         </p>
                       </div>
 
-                      <div className="bg-white px-3 py-3 text-center">
-                        <p className="text-[9px] font-bold uppercase tracking-wider text-orange-400">
+                      <div className="bg-white px-3 py-3.5 text-center">
+                        <p className="text-[9px] font-black uppercase tracking-[0.12em] text-orange-400">
                           Dimakan
                         </p>
 
-                        <p className="mt-1 text-base font-black text-orange-600">
+                        <p className="mt-1 text-base font-black text-orange-500">
                           {selfConsumed}
                         </p>
 
@@ -930,16 +1018,16 @@ export default function PosDashboardPage() {
                         </p>
                       </div>
 
-                      <div className="bg-white px-3 py-3 text-center">
-                        <p className="text-[9px] font-bold uppercase tracking-wider text-emerald-400">
-                          Stok Tersedia
+                      <div className="bg-white px-3 py-3.5 text-center">
+                        <p className="text-[9px] font-black uppercase tracking-[0.12em] text-emerald-500">
+                          Tersedia
                         </p>
 
                         <p className="mt-1 text-base font-black text-emerald-600">
                           {remainingStock}
                         </p>
 
-                        <p className="text-[9px] text-emerald-300">
+                        <p className="text-[9px] text-emerald-400">
                           pcs
                         </p>
                       </div>
@@ -949,9 +1037,11 @@ export default function PosDashboardPage() {
               </div>
             )}
 
-            {/* SEARCH BAR */}
+            {/* =========================
+                SEARCH BAR
+            ========================= */}
             <div className="shrink-0 p-3 xl:p-4">
-              <div className="flex items-center gap-2 rounded-2xl border border-gray-200 bg-white p-1.5 shadow-sm">
+              <div className="flex items-center gap-2 rounded-[22px] border border-pink-100 bg-white p-1.5 shadow-[0_8px_24px_rgba(45,27,22,0.05)]">
 
                 <input
                   value={search}
@@ -961,20 +1051,22 @@ export default function PosDashboardPage() {
                     )
                   }
                   placeholder="Cari produk donat..."
-                  className="h-10 min-w-0 flex-1 rounded-xl bg-transparent px-3 text-xs font-medium text-gray-700 outline-none xl:text-sm"
+                  className="h-10 min-w-0 flex-1 rounded-2xl bg-[#fffaf5] px-4 text-xs font-medium text-[#5f5049] placeholder:text-[#b9a79f] outline-none transition focus:bg-pink-50 xl:text-sm"
                 />
 
                 <button
                   type="button"
                   onClick={loadProducts}
-                  className="h-10 shrink-0 rounded-xl border border-gray-200 bg-gray-50 px-4 text-xs font-bold text-gray-600 transition hover:bg-gray-100"
+                  className="h-10 shrink-0 rounded-2xl border border-pink-100 bg-[#fff8f7] px-4 text-xs font-black text-[#8c7a72] transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-600 active:scale-[0.98]"
                 >
                   Refresh
                 </button>
               </div>
             </div>
 
-            {/* PRODUCT GRID */}
+            {/* =========================
+                PRODUCT GRID
+            ========================= */}
             <div className="flex-1 overflow-y-auto px-3 pb-5 xl:px-4">
               <ProductGrid
                 products={filtered}
@@ -1005,8 +1097,10 @@ export default function PosDashboardPage() {
             </div>
           </section>
 
-          {/* DESKTOP CART */}
-          <aside className="col-span-1 hidden h-full flex-col overflow-hidden border-l border-gray-200 bg-white xl:flex">
+          {/* =========================
+              DESKTOP CART
+          ========================= */}
+          <aside className="col-span-1 hidden h-full flex-col overflow-hidden border-l border-pink-100 bg-white/85 shadow-[-10px_0_30px_rgba(45,27,22,0.04)] backdrop-blur-xl xl:flex">
             <CartPanel
               onPaymentSuccess={
                 checkTodayStock
@@ -1015,31 +1109,51 @@ export default function PosDashboardPage() {
           </aside>
         </div>
 
-        {/* MOBILE CART BUTTON */}
-        <div className="fixed bottom-0 left-0 right-0 z-[250] border-t border-gray-200 bg-white p-3 pb-safe shadow-[0_-8px_30px_rgba(0,0,0,0.06)] xl:hidden">
+        {/* =========================
+    MOBILE CART BUTTON
+========================= */}
+<div className="fixed inset-x-0 bottom-0 z-[250] border-t border-[#eaded7] bg-[#fffaf5]/95 px-3 pb-3 pt-2 backdrop-blur-xl xl:hidden">
+  <button
+    id="mobile-cart-button"
+    type="button"
+    onClick={openCart}
+    disabled={
+      cartDisabled && !isAdmin
+    }
+    className="group relative flex w-full items-center justify-center overflow-hidden rounded-[18px] bg-gradient-to-r from-[#ec0755] via-[#f00663] to-[#ec0755] px-4 py-3.5 text-white shadow-[0_10px_24px_rgba(236,7,85,0.28)] transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:from-gray-300 disabled:via-gray-300 disabled:to-gray-300 disabled:text-gray-500"
+  >
+    {/* GLOW */}
+    <span className="pointer-events-none absolute -left-8 top-0 h-full w-20 bg-white/10 blur-xl" />
 
-          <button
-            type="button"
-            onClick={openCart}
-            disabled={
-              cartDisabled && !isAdmin
-            }
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-pink-600 py-3.5 text-center text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-pink-600/20 transition active:scale-[0.98] disabled:bg-gray-200 disabled:text-gray-400"
-          >
-            <span>
-              Lihat Keranjang
-            </span>
+    {/* ICON */}
+    <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-[11px] font-black">
+      N
+    </span>
 
-            <span className="rounded-md bg-white/20 px-2 py-0.5">
-              {cart?.length ?? 0}
-            </span>
-          </button>
-        </div>
+    {/* TEXT */}
+    <span className="relative z-10 mx-3 text-[10px] font-black uppercase tracking-[0.16em]">
+      Lihat Keranjang
+    </span>
 
-        {/* MOBILE CART */}
+    {/* ITEM BADGE */}
+    <span className="relative z-10 flex min-w-[24px] items-center justify-center rounded-full bg-white/20 px-2 py-1 text-[10px] font-black shadow-sm">
+      {cart?.reduce(
+        (total, item) =>
+          total + item.qty,
+        0
+      ) ?? 0}
+    </span>
+  </button>
+</div>
+
+        {/* =========================
+            MOBILE CART
+        ========================= */}
         <MobileCartSheet />
 
-        {/* PACKAGE PICKER */}
+        {/* =========================
+            PACKAGE PICKER
+        ========================= */}
         <PackagePickerModal
           open={packagePicker.open}
           title={
@@ -1073,24 +1187,24 @@ export default function PosDashboardPage() {
           MODAL MAKAN SENDIRI
       ========================= */}
       {showConsumeModal && (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-[#2d1b16]/55 p-4 backdrop-blur-sm">
 
-          <div className="w-full max-w-sm overflow-hidden rounded-3xl bg-white shadow-2xl">
+          <div className="w-full max-w-sm overflow-hidden rounded-[30px] border border-pink-100 bg-white shadow-[0_24px_80px_rgba(45,27,22,0.28)]">
 
             {/* MODAL HEADER */}
-            <div className="border-b border-gray-100 px-6 py-5">
+            <div className="border-b border-pink-100 bg-gradient-to-r from-[#fff8f7] to-white px-6 py-5">
               <div className="flex items-center gap-3">
 
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-xl">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-100 to-[#fff3cf] text-xl shadow-sm">
                   🍩
                 </div>
 
                 <div>
-                  <h2 className="text-base font-black text-gray-900">
+                  <h2 className="text-base font-black text-[#2d1b16]">
                     Makan Sendiri
                   </h2>
 
-                  <p className="mt-0.5 text-xs text-gray-400">
+                  <p className="mt-0.5 text-xs text-[#a18f87]">
                     Catat donat yang diambil
                   </p>
                 </div>
@@ -1100,9 +1214,9 @@ export default function PosDashboardPage() {
             {/* MODAL CONTENT */}
             <div className="p-6">
 
-              <div className="rounded-2xl bg-gray-50 p-3 text-center">
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 text-center">
 
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                <p className="text-[10px] font-black uppercase tracking-[0.14em] text-emerald-500">
                   Stok Tersedia
                 </p>
 
@@ -1117,7 +1231,7 @@ export default function PosDashboardPage() {
 
               <div className="mt-5">
 
-                <label className="text-xs font-bold text-gray-600">
+                <label className="text-xs font-black text-[#5f5049]">
                   Jumlah yang dimakan
                 </label>
 
@@ -1138,10 +1252,10 @@ export default function PosDashboardPage() {
                     }
                   }}
                   placeholder="Masukkan jumlah"
-                  className="mt-2 h-12 w-full rounded-xl border border-gray-200 px-4 text-center text-lg font-black text-gray-800 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                  className="mt-2 h-12 w-full rounded-2xl border border-pink-100 bg-[#fffaf5] px-4 text-center text-lg font-black text-[#2d1b16] outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
                 />
 
-                <p className="mt-2 text-center text-[10px] text-gray-400">
+                <p className="mt-2 text-center text-[10px] leading-relaxed text-[#a18f87]">
                   Jumlah akan mengurangi stok
                   tersedia dan tercatat di
                   laporan.
@@ -1150,7 +1264,7 @@ export default function PosDashboardPage() {
             </div>
 
             {/* MODAL FOOTER */}
-            <div className="grid grid-cols-2 gap-3 border-t border-gray-100 p-4">
+            <div className="grid grid-cols-2 gap-3 border-t border-pink-100 bg-[#fffaf5] p-4">
 
               <button
                 type="button"
@@ -1159,7 +1273,7 @@ export default function PosDashboardPage() {
                   setShowConsumeModal(false);
                   setConsumeQty("");
                 }}
-                className="h-11 rounded-xl bg-gray-100 text-xs font-bold text-gray-700 transition hover:bg-gray-200 disabled:opacity-50"
+                className="h-11 rounded-2xl border border-pink-100 bg-white text-xs font-black text-[#8c7a72] transition hover:bg-pink-50 hover:text-pink-600 disabled:opacity-50"
               >
                 Batal
               </button>
@@ -1173,7 +1287,7 @@ export default function PosDashboardPage() {
                 onClick={
                   handleConsumeStock
                 }
-                className="h-11 rounded-xl bg-orange-500 text-xs font-black text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-50"
+                className="h-11 rounded-2xl bg-gradient-to-r from-orange-400 to-[#ffb703] text-xs font-black text-white shadow-[0_8px_18px_rgba(255,183,3,0.18)] transition hover:brightness-[0.98] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isConsuming
                   ? "Menyimpan..."
@@ -1184,6 +1298,9 @@ export default function PosDashboardPage() {
         </div>
       )}
 
+      {/* =========================
+          PENDING ORDERS
+      ========================= */}
       <PendingOrdersModal />
     </>
   );

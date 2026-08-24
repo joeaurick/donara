@@ -142,92 +142,112 @@ export default function PosLayout({
   return (
     <CartProvider>
       <MobileCartProvider>
-        <div className="flex min-h-screen bg-[#f8f7f5]">
+        <div className="relative flex h-dvh w-full overflow-hidden bg-[#f8f7f5]">
           {/* =========================
               SIDEBAR DESKTOP
           ========================== */}
-          <div className="hidden lg:block">
+          <div className="hidden h-full shrink-0 lg:block">
             <PosSidebar />
           </div>
 
           {/* =========================
               MAIN CONTENT
           ========================== */}
-          <main className="relative flex-1 overflow-auto pb-20 lg:pb-0">
+          <main className="relative min-w-0 flex-1 overflow-y-auto overflow-x-hidden bg-[#f8f7f5] pb-24 lg:pb-0">
             {/* =========================
-                HEADER MOBILE
+                MOBILE HEADER
             ========================== */}
-            <div className="sticky top-0 z-[40] flex items-center justify-between border-b border-[#eaded7] bg-[#fffaf5]/95 px-4 py-3 shadow-sm backdrop-blur-xl lg:hidden">
-              <div className="flex items-center gap-2.5">
-                {/* LOGO */}
-                <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#2d1b16] shadow-[0_8px_20px_rgba(45,27,22,0.18)]">
-                  <Image
-                    src="/images/logo/logo-new.png"
-                    alt="DONARA Logo"
-                    width={44}
-                    height={44}
-                    unoptimized
-                    className="h-full w-full object-contain p-1.5"
-                    priority
-                  />
-                </div>
+            <div className="sticky top-0 z-[40] lg:hidden">
+              <div className="border-b border-[#eaded7] bg-[#fffaf5]/95 px-4 py-3 shadow-[0_5px_18px_rgba(45,27,22,0.06)] backdrop-blur-xl">
+                <div className="flex items-center justify-between">
+                  {/* BRAND */}
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    {/* LOGO */}
+                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[14px] bg-[#2d1b16] shadow-[0_8px_18px_rgba(45,27,22,0.16)]">
+                      <div className="absolute -right-3 -top-3 h-7 w-7 rounded-full bg-[#ff5c86]/20 blur-md" />
 
-                <div>
-                  <p className="text-[16px] font-black tracking-tight text-[#2d1b16]">
-                    DONARA
-                  </p>
+                      <div className="absolute -bottom-3 -left-3 h-7 w-7 rounded-full bg-[#ffb703]/15 blur-md" />
 
-                  <div className="mt-0.5 flex items-center gap-1.5">
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        storeClosed
-                          ? "bg-red-500"
-                          : "bg-[#46e6b4]"
-                      }`}
-                    />
+                      <Image
+                        src="/images/logo/logo-new.png"
+                        alt="DONARA Logo"
+                        width={32}
+                        height={32}
+                        priority
+                        className="relative z-10 h-8 w-8 object-contain"
+                      />
+                    </div>
 
-                    <p
-                      className={`text-[8px] font-bold uppercase tracking-[0.12em] ${
-                        storeClosed
-                          ? "text-red-500"
-                          : "text-[#8c7a72]"
-                      }`}
-                    >
-                      {storeClosed
-                        ? "Toko Tutup"
-                        : "POS Online"}
-                    </p>
+                    {/* BRAND TEXT */}
+                    <div className="min-w-0">
+                      <p className="text-[15px] font-black tracking-tight text-[#2d1b16]">
+                        DONARA
+                      </p>
+
+                      <div className="mt-0.5 flex items-center gap-1.5">
+                        <span className="relative flex h-1.5 w-1.5">
+                          {!storeClosed && (
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#46e6b4] opacity-60" />
+                          )}
+
+                          <span
+                            className={`relative inline-flex h-1.5 w-1.5 rounded-full ${
+                              storeClosed
+                                ? "bg-red-500"
+                                : "bg-[#46e6b4]"
+                            }`}
+                          />
+                        </span>
+
+                        <span
+                          className={`text-[8px] font-bold uppercase tracking-[0.13em] ${
+                            storeClosed
+                              ? "text-red-500"
+                              : "text-[#8c7a72]"
+                          }`}
+                        >
+                          {storeClosed
+                            ? "Toko Tutup"
+                            : "POS Online"}
+                        </span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* MENU BUTTON */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setIsMenuOpen(!isMenuOpen)
+                    }
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] text-white shadow-[0_8px_18px_rgba(45,27,22,0.16)] transition-all active:scale-95 ${
+                      isMenuOpen
+                        ? "bg-[#ff5c86]"
+                        : "bg-[#2d1b16]"
+                    }`}
+                    aria-label="Buka menu"
+                  >
+                    {isMenuOpen ? (
+                      <X
+                        size={19}
+                        strokeWidth={2.7}
+                      />
+                    ) : (
+                      <span className="relative flex h-4 w-5 flex-col justify-between">
+                        <span className="h-[2px] w-full rounded-full bg-white" />
+
+                        <span className="h-[2px] w-3.5 self-end rounded-full bg-[#ffb703]" />
+
+                        <span className="h-[2px] w-full rounded-full bg-white" />
+                      </span>
+                    )}
+                  </button>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={() =>
-                  setIsMenuOpen(!isMenuOpen)
-                }
-                className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2d1b16] text-white shadow-[0_8px_20px_rgba(45,27,22,0.18)] transition active:scale-95"
-                aria-label="Buka menu"
-              >
-                {isMenuOpen ? (
-                  <X
-                    size={20}
-                    strokeWidth={2.8}
-                  />
-                ) : (
-                  <span className="relative flex h-4 w-5 flex-col justify-between">
-                    <span className="h-[2px] w-full rounded-full bg-white" />
-
-                    <span className="h-[2px] w-4 self-end rounded-full bg-[#ffb703]" />
-
-                    <span className="h-[2px] w-full rounded-full bg-white" />
-                  </span>
-                )}
-              </button>
             </div>
 
             {/* =========================
-                OVERLAY MOBILE
+                MOBILE OVERLAY
             ========================== */}
             {isMenuOpen && (
               <div
@@ -242,7 +262,7 @@ export default function PosLayout({
                 MOBILE SIDEBAR
             ========================== */}
             <aside
-              className={`fixed bottom-0 left-0 top-0 z-[200] flex h-dvh w-[86vw] max-w-[340px] flex-col overflow-hidden bg-[#2d1b16] shadow-[16px_0_50px_rgba(0,0,0,0.28)] transition-transform duration-300 ease-out lg:hidden ${
+              className={`fixed inset-y-0 left-0 z-[200] flex h-dvh w-[86vw] max-w-[340px] flex-col overflow-hidden bg-[#2d1b16] shadow-[18px_0_55px_rgba(0,0,0,0.30)] transition-transform duration-300 ease-out lg:hidden ${
                 isMenuOpen
                   ? "translate-x-0"
                   : "-translate-x-full"
@@ -254,36 +274,34 @@ export default function PosLayout({
               <div className="pointer-events-none absolute inset-0 overflow-hidden">
                 <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full border-[24px] border-pink-400/10" />
 
-                <div className="absolute -left-20 top-[38%] h-52 w-52 rounded-full bg-orange-400/5 blur-3xl" />
+                <div className="absolute -left-20 top-[36%] h-52 w-52 rounded-full bg-orange-400/5 blur-3xl" />
 
                 <div className="absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-pink-500/10 blur-3xl" />
 
-                <div className="absolute right-5 top-[190px] h-10 w-2 rotate-[25deg] rounded-full bg-[#ffb703]/20" />
+                <div className="absolute right-5 top-[175px] h-10 w-2 rotate-[25deg] rounded-full bg-[#ffb703]/20" />
 
-                <div className="absolute left-7 top-[360px] h-8 w-2 rotate-[45deg] rounded-full bg-[#ff6b93]/20" />
+                <div className="absolute left-7 top-[350px] h-8 w-2 rotate-[45deg] rounded-full bg-[#ff6b93]/20" />
               </div>
 
               {/* =========================
-                  MOBILE BRAND HEADER
+                  BRAND HEADER
               ========================== */}
               <div className="relative z-10 flex shrink-0 items-center gap-3 px-5 py-5">
-                {/* LOGO ASLI */}
                 <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-[16px] border border-white/10 bg-gradient-to-br from-[#4a2920] via-[#2d1b16] to-[#1d100d] shadow-[0_10px_25px_rgba(0,0,0,0.28)]">
-  <div className="absolute -right-3 -top-3 h-8 w-8 rounded-full bg-pink-500/20 blur-md" />
+                  <div className="absolute -right-3 -top-3 h-8 w-8 rounded-full bg-pink-500/20 blur-md" />
 
-  <div className="absolute -bottom-3 -left-3 h-8 w-8 rounded-full bg-orange-400/15 blur-md" />
+                  <div className="absolute -bottom-3 -left-3 h-8 w-8 rounded-full bg-orange-400/15 blur-md" />
 
-  <Image
-    src="/images/logo/logo-new.png"
-    alt="DONARA Logo"
-    width={32}
-    height={32}
-    className="relative z-10 object-contain"
-    priority
-  />
-</div>
+                  <Image
+                    src="/images/logo/logo-new.png"
+                    alt="DONARA Logo"
+                    width={34}
+                    height={34}
+                    priority
+                    className="relative z-10 h-[34px] w-[34px] object-contain"
+                  />
+                </div>
 
-                {/* BRAND */}
                 <div className="min-w-0 flex-1">
                   <h1 className="text-[19px] font-black tracking-tight text-white">
                     DONARA
@@ -318,7 +336,6 @@ export default function PosLayout({
                   </div>
                 </div>
 
-                {/* CLOSE BUTTON */}
                 <button
                   type="button"
                   onClick={() =>
@@ -337,11 +354,9 @@ export default function PosLayout({
               {/* =========================
                   RECEIPT CONTAINER
               ========================== */}
-              <div className="relative z-10 mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-t-[30px] bg-[#fffaf5] shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
-                {/* =========================
-                    RECEIPT HEADER
-                ========================== */}
-                <div className="relative px-4 pt-5">
+              <div className="relative z-10 mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[30px] bg-[#fffaf5] shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+                {/* RECEIPT HEADER */}
+                <div className="relative shrink-0 px-4 pt-5">
                   <div className="flex items-center gap-2">
                     <span className="h-px flex-1 bg-[#eaded7]" />
 
@@ -354,9 +369,9 @@ export default function PosLayout({
                 </div>
 
                 {/* =========================
-                    MENU NAVIGATION
+                    MENU
                 ========================== */}
-                <nav className="flex-1 overflow-y-auto px-3 py-4">
+                <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
                   <div className="space-y-2">
                     {menuItems.map((item) => {
                       const isActive =
@@ -389,7 +404,6 @@ export default function PosLayout({
                               : "text-[#5f5049] hover:bg-[#f7eee9]"
                           }`}
                         >
-                          {/* MENU NUMBER */}
                           <span
                             className={`w-5 shrink-0 text-[8px] font-black ${
                               isActive
@@ -400,7 +414,6 @@ export default function PosLayout({
                             {item.number}
                           </span>
 
-                          {/* ICON */}
                           <span
                             className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200 ${
                               isActive
@@ -416,7 +429,6 @@ export default function PosLayout({
                             />
                           </span>
 
-                          {/* TEXT */}
                           <span className="min-w-0 flex-1">
                             <span className="block text-[12px] font-black">
                               {item.name}
@@ -433,19 +445,16 @@ export default function PosLayout({
                             </span>
                           </span>
 
-                          {/* ACTIVE DOT */}
                           {isActive && (
                             <span className="h-2 w-2 shrink-0 rounded-full bg-white shadow-sm" />
                           )}
 
-                          {/* ARROW */}
                           {!isActive && (
                             <span className="shrink-0 text-base font-light text-[#b9a79f]">
                               ›
                             </span>
                           )}
 
-                          {/* HOVER LINE */}
                           {!isActive && (
                             <span
                               className={`absolute bottom-0 left-4 h-[2px] w-0 rounded-full transition-all duration-300 group-hover:w-[calc(100%-32px)] ${colors.line}`}
@@ -455,9 +464,7 @@ export default function PosLayout({
                       );
                     })}
 
-                    {/* =========================
-                        MENU ADMIN
-                    ========================== */}
+                    {/* ADMIN */}
                     <Link
                       href="/admin"
                       onClick={() =>
@@ -489,10 +496,8 @@ export default function PosLayout({
                   </div>
                 </nav>
 
-                {/* =========================
-                    RECEIPT FOOTER
-                ========================== */}
-                <div className="border-t border-dashed border-[#eaded7] px-3 py-3">
+                {/* RECEIPT FOOTER */}
+                <div className="shrink-0 border-t border-dashed border-[#eaded7] px-3 py-3">
                   <div className="flex items-center justify-center gap-2">
                     <span className="h-1.5 w-1.5 rounded-full bg-[#ff5c86]" />
 
@@ -515,7 +520,7 @@ export default function PosLayout({
             {/* =========================
                 PAGE CONTENT
             ========================== */}
-            <div className="p-4 md:p-6 lg:p-8">
+            <div className="min-h-full p-4 md:p-6 lg:p-8">
               {children}
             </div>
           </main>
