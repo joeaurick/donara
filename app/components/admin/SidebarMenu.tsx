@@ -11,65 +11,133 @@ import {
   MessageSquare,
   Package,
   Rocket,
+  Tags,
 } from "lucide-react";
 
 const menus = [
   {
+    title: "Mulai Penjualan",
+    subtitle: "Buka halaman kasir",
     href: "/pos/dashboard",
     icon: Rocket,
-    title: "Mulai Penjualan",
-    description: "Buka halaman kasir",
-    badge: "POS",
+    color: "pink",
+    number: "01",
   },
   {
+    title: "Dashboard",
+    subtitle: "Ringkasan bisnis",
     href: "/admin",
     icon: LayoutDashboard,
-    title: "Dashboard",
-    description: "Ringkasan bisnis",
+    color: "purple",
+    number: "02",
   },
   {
+    title: "Produk",
+    subtitle: "Kelola produk",
     href: "/admin/products",
     icon: Package,
-    title: "Produk",
-    description: "Kelola produk",
+    color: "blue",
+    number: "03",
   },
   {
+    title: "Kategori",
+    subtitle: "Kelola kategori produk",
+    href: "/admin/categories",
+    icon: Tags,
+    color: "yellow",
+    number: "04",
+  },
+  {
+    title: "Gallery",
+    subtitle: "Kelola gallery",
     href: "/admin/gallery",
     icon: Images,
-    title: "Gallery",
-    description: "Kelola gallery",
+    color: "green",
+    number: "05",
   },
   {
+    title: "Review",
+    subtitle: "Review pelanggan",
     href: "/admin/reviews",
     icon: MessageSquare,
-    title: "Review",
-    description: "Review pelanggan",
+    color: "pink",
+    number: "06",
   },
   {
+    title: "SEO",
+    subtitle: "Optimasi website",
     href: "/admin/seo",
     icon: Globe,
-    title: "SEO",
-    description: "Optimasi website",
+    color: "purple",
+    number: "07",
   },
   {
+    title: "Business",
+    subtitle: "Informasi bisnis",
     href: "/admin/business",
     icon: Building2,
-    title: "Business",
-    description: "Informasi bisnis",
+    color: "blue",
+    number: "08",
   },
   {
+    title: "Homepage",
+    subtitle: "Atur halaman utama",
     href: "/admin/homepage",
     icon: House,
-    title: "Homepage",
-    description: "Atur halaman utama",
+    color: "green",
+    number: "09",
   },
 ];
 
+const menuColors = {
+  pink: {
+    active: "bg-[#ff5c86] text-white",
+    icon: "bg-[#ffe1e9] text-[#ff4778]",
+    activeIcon: "bg-white/20 text-white",
+    number: "text-[#ff4778]",
+    line: "bg-[#ff5c86]",
+  },
+
+  purple: {
+    active: "bg-[#8b5cf6] text-white",
+    icon: "bg-[#eee7ff] text-[#7c3aed]",
+    activeIcon: "bg-white/20 text-white",
+    number: "text-[#8b5cf6]",
+    line: "bg-[#8b5cf6]",
+  },
+
+  blue: {
+    active: "bg-[#35a7ff] text-white",
+    icon: "bg-[#e2f3ff] text-[#1689df]",
+    activeIcon: "bg-white/20 text-white",
+    number: "text-[#1689df]",
+    line: "bg-[#35a7ff]",
+  },
+
+  yellow: {
+    active: "bg-[#ffb703] text-[#3d2a0b]",
+    icon: "bg-[#fff3cf] text-[#d99100]",
+    activeIcon: "bg-white/30 text-[#3d2a0b]",
+    number: "text-[#d99100]",
+    line: "bg-[#ffb703]",
+  },
+
+  green: {
+    active: "bg-[#2ec4a6] text-white",
+    icon: "bg-[#dcfff6] text-[#159b7d]",
+    activeIcon: "bg-white/20 text-white",
+    number: "text-[#159b7d]",
+    line: "bg-[#2ec4a6]",
+  },
+};
+
 type Props = {
+  collapsed: boolean;
   onNavigate?: () => void;
 };
 
 export default function SidebarMenu({
+  collapsed,
   onNavigate,
 }: Props) {
   const pathname = usePathname();
@@ -80,88 +148,103 @@ export default function SidebarMenu({
         const active =
           menu.href === "/admin"
             ? pathname === "/admin"
-            : pathname === menu.href ||
-              pathname.startsWith(
-                `${menu.href}/`
-              );
-
-        const isPos =
-          menu.href === "/pos/dashboard";
+            : menu.href === "/pos/dashboard"
+              ? pathname === "/pos" ||
+                pathname === "/pos/dashboard"
+              : pathname === menu.href ||
+                pathname.startsWith(
+                  `${menu.href}/`
+                );
 
         const Icon = menu.icon;
+
+        const colors =
+          menuColors[
+            menu.color as keyof typeof menuColors
+          ];
 
         return (
           <Link
             key={menu.href}
             href={menu.href}
             onClick={onNavigate}
-            className={`group relative flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-all duration-200 ${
+            title={
+              collapsed
+                ? menu.title
+                : undefined
+            }
+            className={`group relative flex overflow-hidden transition-all duration-200 ${
+              collapsed
+                ? "justify-center rounded-[18px] p-2"
+                : "items-center gap-3 rounded-[18px] px-2.5 py-2.5"
+            } ${
               active
-                ? "border border-pink-200 bg-gradient-to-r from-pink-50 via-white to-pink-50 shadow-[0_8px_20px_rgba(236,72,153,0.10)]"
-                : isPos
-                  ? "border border-orange-100 bg-orange-50/70 hover:bg-orange-50"
-                  : "border border-transparent bg-white/50 hover:border-orange-100 hover:bg-orange-50/40"
+                ? `${colors.active} shadow-[0_10px_22px_rgba(45,27,22,0.12)]`
+                : "text-[#5f5049] hover:bg-[#f7eee9]"
             }`}
           >
-            {/* ACTIVE LEFT LINE */}
-            {active && (
-              <span className="absolute bottom-2.5 left-0 top-2.5 w-1 rounded-r-full bg-pink-500" />
+            {/* MENU NUMBER */}
+            {!collapsed && (
+              <span
+                className={`w-5 shrink-0 text-[8px] font-black ${
+                  active
+                    ? "text-white/50"
+                    : colors.number
+                }`}
+              >
+                {menu.number}
+              </span>
             )}
 
             {/* ICON */}
             <span
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-200 ${
+              className={`relative flex shrink-0 items-center justify-center rounded-xl transition-all duration-200 ${
+                collapsed
+                  ? "h-12 w-12"
+                  : "h-10 w-10"
+              } ${
                 active
-                  ? "bg-gradient-to-br from-pink-500 to-pink-600 text-white shadow-md shadow-pink-500/25"
-                  : isPos
-                    ? "bg-orange-100 text-orange-600"
-                    : "bg-orange-50 text-orange-500 group-hover:bg-pink-100 group-hover:text-pink-600"
+                  ? colors.activeIcon
+                  : colors.icon
               }`}
             >
-              <Icon className="h-[18px] w-[18px]" />
+              <Icon
+                size={19}
+                strokeWidth={
+                  active ? 2.6 : 2.3
+                }
+              />
             </span>
 
             {/* TEXT */}
-            <div className="min-w-0 flex-1">
-              <p
-                className={`truncate text-sm font-black ${
-                  active
-                    ? "text-slate-800"
-                    : isPos
-                      ? "text-orange-800"
-                      : "text-slate-700"
-                }`}
-              >
-                {menu.title}
-              </p>
+            {!collapsed && (
+              <span className="min-w-0 flex-1">
+                <span className="block text-[12px] font-black">
+                  {menu.title}
+                </span>
 
-              <p className="mt-0.5 truncate text-[9px] text-slate-400">
-                {menu.description}
-              </p>
-            </div>
-
-            {/* POS BADGE */}
-            {menu.badge && (
-              <span
-                className={`shrink-0 rounded-full px-2 py-0.5 text-[8px] font-black uppercase tracking-wider ${
-                  active
-                    ? "bg-pink-100 text-pink-600"
-                    : "bg-orange-200/70 text-orange-700"
-                }`}
-              >
-                {menu.badge}
+                <span
+                  className={`mt-0.5 block truncate text-[9px] font-medium ${
+                    active
+                      ? "text-white/70"
+                      : "text-[#a18f87]"
+                  }`}
+                >
+                  {menu.subtitle}
+                </span>
               </span>
             )}
 
-            {/* RIGHT INDICATOR */}
-            {active ? (
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-pink-400 text-[8px] text-pink-500">
-                ●
-              </span>
-            ) : (
-              <span className="shrink-0 text-lg leading-none text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-pink-500">
-                ›
-              </span>
+            {/* ACTIVE DOT */}
+            {!collapsed && active && (
+              <span className="h-2 w-2 shrink-0 rounded-full bg-white shadow-sm" />
+            )}
+
+            {/* HOVER LINE */}
+            {!collapsed && !active && (
+              <span
+                className={`absolute bottom-0 left-4 h-[2px] w-0 rounded-full transition-all duration-300 group-hover:w-[calc(100%-32px)] ${colors.line}`}
+              />
             )}
           </Link>
         );

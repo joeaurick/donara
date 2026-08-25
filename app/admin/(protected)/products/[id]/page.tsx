@@ -5,6 +5,13 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import ImageUpload from "@/app/components/ImageUpload";
 
+type ProductCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+};
+
 export default function EditProductPage() {
   const router = useRouter();
   const params = useParams();
@@ -12,26 +19,53 @@ export default function EditProductPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [form, setForm] = useState({
-  name: "",
-  price: "",
-  image: "",
-  rating: 5,
-  description: "",
-  category: "normal",
-  track_stock: true,
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
 
-  // TAMBAHAN
-  promo_code: "NORMAL",
-});
+  const [form, setForm] = useState({
+    name: "",
+    price: "",
+    image: "",
+    rating: 5,
+    description: "",
+    category_id: "",
+    track_stock: true,
+
+    // TAMBAHAN
+    promo_code: "NORMAL",
+  });
 
   useEffect(() => {
-    loadProduct();
+    loadInitialData();
   }, []);
 
-  async function loadProduct() {
+  async function loadInitialData() {
     setLoading(true);
 
+    try {
+      await Promise.all([
+        loadCategories(),
+        loadProduct(),
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadCategories() {
+    const { data, error } = await supabase
+      .from("product_categories")
+      .select("*")
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      alert(error.message);
+      return;
+    }
+
+    setCategories(data || []);
+  }
+
+  async function loadProduct() {
     try {
       const { data, error } = await supabase
         .from("products")
@@ -44,25 +78,30 @@ export default function EditProductPage() {
         return;
       }
 
-      if (data) {
-        setForm({
-  name: data.name,
-  price: data.price.toString(),
-  image: data.image,
-  rating: data.rating,
-  description: data.description,
-  category: data.category,
-  track_stock: data.track_stock,
-
-  // TAMBAHAN
-  promo_code: data.promo_code || "NORMAL",
-});
+      if (!data) {
+        alert("Produk tidak ditemukan.");
+        router.push("/admin/products");
+        return;
       }
+
+      setForm({
+        name: data.name || "",
+        price: data.price?.toString() || "",
+        image: data.image || "",
+        rating: data.rating || 5,
+        description: data.description || "",
+
+        // KATEGORI BARU
+        category_id: data.category_id || "",
+
+        track_stock: data.track_stock ?? true,
+
+        // PROMO
+        promo_code: data.promo_code || "NORMAL",
+      });
     } catch (err) {
       console.error(err);
       alert("Gagal memuat data produk.");
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -71,7 +110,8 @@ export default function EditProductPage() {
       !form.name.trim() ||
       !form.price ||
       !form.image.trim() ||
-      !form.description.trim()
+      !form.description.trim() ||
+      !form.category_id
     ) {
       alert("Semua data wajib diisi.");
       return;
@@ -80,18 +120,30 @@ export default function EditProductPage() {
     setSaving(true);
 
     try {
+      const selectedCategory = categories.find(
+        (category) => category.id === form.category_id
+      );
+
       const { error } = await supabase
         .from("products")
         .update({
-  name: form.name.trim(),
-  price: Number(form.price),
-  image: form.image.trim(),
-  rating: form.rating,
-  description: form.description.trim(),
-  category: form.category,
-  track_stock: form.track_stock,
-  promo_code: form.promo_code,
-})
+          name: form.name.trim(),
+          price: Number(form.price),
+          image: form.image.trim(),
+          rating: form.rating,
+          description: form.description.trim(),
+
+          // KATEGORI BARU
+          category_id: form.category_id,
+
+          // KOMPATIBILITAS DATA LAMA
+          category: selectedCategory?.slug || null,
+
+          track_stock: form.track_stock,
+
+          // PROMO
+          promo_code: form.promo_code,
+        })
         .eq("id", Number(params.id));
 
       if (error) {
@@ -211,6 +263,7 @@ export default function EditProductPage() {
             />
           </div>
 
+          {/* KATEGORI DINAMIS */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
               Kategori Produk
@@ -218,50 +271,57 @@ export default function EditProductPage() {
 
             <select
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
-              value={form.category}
+              value={form.category_id}
               onChange={(e) =>
                 setForm({
                   ...form,
-                  category: e.target.value,
+                  category_id: e.target.value,
                 })
               }
             >
-              <option value="normal">Produk Normal</option>
-              <option value="donat">Donat</option>
-              <option value="minuman">Minuman</option>
-              <option value="snack">Snack</option>
-              <option value="paket">Paket</option>
+              <option value="">
+                Pilih kategori
+              </option>
+
+              {categories.map((category) => (
+                <option
+                  key={category.id}
+                  value={category.id}
+                >
+                  {category.name}
+                </option>
+              ))}
             </select>
           </div>
 
           <div>
-  <label className="mb-2 block text-sm font-semibold text-slate-700">
-    Tipe Promo
-  </label>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Tipe Promo
+            </label>
 
-  <select
-    className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
-    value={form.promo_code}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        promo_code: e.target.value,
-      })
-    }
-  >
-    <option value="NORMAL">
-      Normal (Tanpa Promo)
-    </option>
+            <select
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
+              value={form.promo_code}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  promo_code: e.target.value,
+                })
+              }
+            >
+              <option value="NORMAL">
+                Normal (Tanpa Promo)
+              </option>
 
-    <option value="DONAT_3">
-      Donat Hemat 3 pcs (Rp 10.000)
-    </option>
+              <option value="DONAT_3">
+                Donat Hemat 3 pcs (Rp 10.000)
+              </option>
 
-    <option value="DONAT_6">
-      Donat Hemat 6 pcs (Rp 23.000)
-    </option>
-  </select>
-</div>
+              <option value="DONAT_6">
+                Donat Hemat 6 pcs (Rp 23.000)
+              </option>
+            </select>
+          </div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -288,7 +348,7 @@ export default function EditProductPage() {
               </p>
 
               <p className="text-sm text-slate-500">
-                Aktifkan untuk produk donat.
+                Aktifkan untuk produk yang stoknya perlu dikurangi.
               </p>
             </div>
 
@@ -317,7 +377,7 @@ export default function EditProductPage() {
             <button
               type="button"
               onClick={updateProduct}
-              disabled={saving}
+              disabled={saving || categories.length === 0}
               className="rounded-2xl bg-pink-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-pink-700 disabled:opacity-60"
             >
               {saving ? "Menyimpan..." : "Simpan Perubahan"}

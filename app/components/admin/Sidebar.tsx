@@ -9,43 +9,74 @@ import SidebarFooter from "./SidebarFooter";
 
 type Props = {
   open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpen: React.Dispatch<
+    React.SetStateAction<boolean>
+  >;
+  mobile?: boolean;
 };
 
 export default function Sidebar({
-  open,
   setOpen,
+  mobile = false,
 }: Props) {
-  const [width, setWidth] = useState(272);
-  const [dragging, setDragging] = useState(false);
+  const [width, setWidth] = useState(300);
+  const [dragging, setDragging] =
+    useState(false);
+
+  /* =========================
+      LOAD WIDTH
+  ========================== */
 
   useEffect(() => {
-    const saved = localStorage.getItem("sidebar-width");
+    if (mobile) return;
 
-    if (saved) {
-      const value = Number(saved);
+    const saved = localStorage.getItem(
+      "sidebar-width"
+    );
 
-      if (!Number.isNaN(value)) {
-        setWidth(value);
-      }
+    if (!saved) return;
+
+    const value = Number(saved);
+
+    if (!Number.isNaN(value)) {
+      setWidth(value);
     }
-  }, []);
+  }, [mobile]);
+
+  /* =========================
+      SAVE WIDTH
+  ========================== */
 
   useEffect(() => {
+    if (mobile) return;
+
     localStorage.setItem(
       "sidebar-width",
-      width.toString()
+      String(width)
     );
-  }, [width]);
+  }, [width, mobile]);
+
+  /* =========================
+      RESIZE DESKTOP
+  ========================== */
 
   useEffect(() => {
-    function handleMouseMove(e: MouseEvent) {
+    if (mobile) return;
+
+    function handleMouseMove(
+      e: MouseEvent
+    ) {
       if (!dragging) return;
 
       let newWidth = e.clientX;
 
-      if (newWidth < 248) newWidth = 248;
-      if (newWidth > 340) newWidth = 340;
+      if (newWidth < 248) {
+        newWidth = 248;
+      }
+
+      if (newWidth > 340) {
+        newWidth = 340;
+      }
 
       setWidth(newWidth);
     }
@@ -75,90 +106,156 @@ export default function Sidebar({
         handleMouseUp
       );
     };
-  }, [dragging]);
+  }, [dragging, mobile]);
+
+  /* =========================
+      NAVIGATE
+  ========================== */
 
   function handleNavigate() {
-    setOpen(false);
+    if (mobile) {
+      setOpen(false);
+    }
   }
 
   return (
-    <>
-      {/* MOBILE OVERLAY */}
-      {open && (
-        <div
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-40 bg-slate-950/40 backdrop-blur-[2px] md:hidden"
+    <aside
+      style={
+        mobile
+          ? undefined
+          : {
+              width,
+            }
+      }
+      className={`relative flex shrink-0 flex-col overflow-hidden bg-[#2d1b16] transition-all duration-300 ease-out ${
+        mobile
+          ? "h-full w-[300px] max-w-[88vw]"
+          : "h-screen"
+      }`}
+    >
+      {/* =========================
+          BACKGROUND DECORATION
+      ========================== */}
+
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full border-[24px] border-pink-400/10" />
+
+        <div className="absolute -left-20 top-[40%] h-52 w-52 rounded-full bg-orange-400/5 blur-3xl" />
+
+        <div className="absolute -bottom-16 -right-16 h-48 w-48 rounded-full bg-pink-500/10 blur-3xl" />
+
+        <div className="absolute right-5 top-[180px] h-10 w-2 rotate-[25deg] rounded-full bg-[#ffb703]/20" />
+
+        <div className="absolute left-7 top-[330px] h-8 w-2 rotate-[45deg] rounded-full bg-[#ff6b93]/20" />
+      </div>
+
+      {/* =========================
+          HEADER
+      ========================== */}
+
+      <div className="relative z-10 shrink-0">
+        <SidebarHeader
+          collapsed={false}
+          onClose={
+            mobile
+              ? () => setOpen(false)
+              : undefined
+          }
         />
-      )}
+      </div>
 
-      {/* SIDEBAR */}
-      <aside
-        style={{ width }}
-        className={`fixed left-0 top-0 z-50 flex h-dvh flex-col overflow-hidden border-r border-orange-100 bg-[#fdfcfb] transition-transform duration-300 ease-out ${
-          open
-            ? "translate-x-0 shadow-[18px_0_55px_rgba(15,23,42,0.18)]"
-            : "-translate-x-full"
-        } md:sticky md:top-0 md:z-20 md:h-screen md:translate-x-0 md:shadow-none`}
-      >
-        {/* DECORATION */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-pink-100/50 blur-3xl" />
+      {/* =========================
+          RECEIPT CONTAINER
+      ========================== */}
 
-        <div className="pointer-events-none absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-orange-100/40 blur-3xl" />
+      <div className="relative z-10 mx-3 mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-t-[30px] bg-[#fffaf5] shadow-[0_18px_40px_rgba(0,0,0,0.18)]">
+        {/* =========================
+            RECEIPT TOP
+        ========================== */}
 
-        {/* HEADER */}
-        <div className="relative shrink-0 px-4 pb-3 pt-4">
-          <SidebarHeader
-            onClose={() => setOpen(false)}
-          />
-        </div>
+        <div className="relative px-4 pt-4">
+          <div className="flex items-center gap-2">
+            <span className="h-px flex-1 bg-[#eaded7]" />
 
-        {/* MENU */}
-        <nav className="relative flex-1 overflow-y-auto px-4 py-2">
-          {/* MENU TITLE */}
-          <div className="mb-4 flex items-center gap-3 px-1">
-            <div className="h-px flex-1 bg-orange-100" />
-
-            <span className="shrink-0 text-[9px] font-black uppercase tracking-[0.24em] text-orange-400">
-              Menu Utama
+            <span className="shrink-0 text-[8px] font-black uppercase tracking-[0.2em] text-[#aa9288]">
+              Donara Admin
             </span>
 
-            <div className="h-px flex-1 bg-orange-100" />
+            <span className="h-px flex-1 bg-[#eaded7]" />
           </div>
-
-          <SidebarMenu
-            onNavigate={handleNavigate}
-          />
-        </nav>
-
-        {/* FOOTER */}
-        <div className="relative shrink-0 border-t border-orange-100 bg-white/85 px-4 py-4 backdrop-blur-xl">
-          <SidebarFooter
-            onNavigate={handleNavigate}
-          />
         </div>
 
-        {/* RESIZE HANDLE DESKTOP */}
+        {/* =========================
+            MENU
+        ========================== */}
+
+        <nav className="relative flex-1 overflow-y-auto px-3 py-4">
+          <SidebarMenu
+  collapsed={false}
+  onNavigate={handleNavigate}
+/>
+        </nav>
+
+        {/* =========================
+            FOOTER
+        ========================== */}
+
+        <div className="relative shrink-0 border-t border-dashed border-[#eaded7] p-3">
+          <SidebarFooter
+  collapsed={false}
+  onNavigate={handleNavigate}
+/>
+        </div>
+      </div>
+
+      {/* =========================
+          BOTTOM BRAND
+      ========================== */}
+
+      {!mobile && (
+        <div className="relative z-10 flex shrink-0 items-center justify-center gap-2 px-4 py-3">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#ff5c86]" />
+
+          <span className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">
+            Donara CMS
+          </span>
+
+          <span className="text-[8px] text-white/20">
+            v1.0
+          </span>
+        </div>
+      )}
+
+      {/* =========================
+          RESIZE HANDLE DESKTOP
+      ========================== */}
+
+      {!mobile && (
         <div
-          onMouseDown={() => setDragging(true)}
-          className={`group absolute right-0 top-0 hidden h-full w-2 cursor-col-resize md:block ${
-            dragging ? "bg-pink-100" : ""
+          onMouseDown={() =>
+            setDragging(true)
+          }
+          className={`group absolute right-0 top-0 z-30 hidden h-full w-2 cursor-col-resize xl:block ${
+            dragging
+              ? "bg-pink-500/10"
+              : ""
           }`}
         >
           <div
             className={`absolute right-0 top-1/2 h-14 w-1 -translate-y-1/2 rounded-full transition ${
               dragging
-                ? "bg-pink-400"
-                : "bg-transparent group-hover:bg-pink-200"
+                ? "bg-[#ff5c86]"
+                : "bg-transparent group-hover:bg-pink-300"
             }`}
           />
 
           {dragging && (
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[3px] text-pink-500">
+            <div className="absolute right-0 top-1/2 translate-x-[3px] -translate-y-1/2 text-[#ff5c86]">
               <GripVertical size={13} />
             </div>
           )}
         </div>
-      </aside>
-    </>
+      )}
+    </aside>
   );
 }

@@ -1,34 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase/client";
 import ImageUpload from "../../../../components/ImageUpload";
+
+type ProductCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  sort_order: number;
+};
 
 export default function NewProductPage() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+
+  const [categories, setCategories] = useState<ProductCategory[]>([]);
 
   const [form, setForm] = useState({
-  name: "",
-  price: "",
-  image: "",
-  rating: 5,
-  description: "",
-  category: "normal",
-  track_stock: true,
+    name: "",
+    price: "",
+    image: "",
+    rating: 5,
+    description: "",
+    category_id: "",
+    track_stock: true,
 
-  // TAMBAHAN PROMO
-  promo_code: "NORMAL",
-});
+    // TAMBAHAN PROMO
+    promo_code: "NORMAL",
+  });
+
+  useEffect(() => {
+    loadCategories();
+  }, []);
+
+  async function loadCategories() {
+    setCategoriesLoading(true);
+
+    const { data, error } = await supabase
+      .from("product_categories")
+      .select("*")
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      alert(error.message);
+      setCategoriesLoading(false);
+      return;
+    }
+
+    const categoryData = data || [];
+
+    setCategories(categoryData);
+
+    if (categoryData.length > 0) {
+      setForm((currentForm) => ({
+        ...currentForm,
+        category_id: categoryData[0].id,
+      }));
+    }
+
+    setCategoriesLoading(false);
+  }
 
   async function saveProduct() {
     if (
-      !form.name ||
+      !form.name.trim() ||
       !form.price ||
-      !form.image ||
-      !form.description
+      !form.image.trim() ||
+      !form.description.trim() ||
+      !form.category_id
     ) {
       alert("Semua data wajib diisi.");
       return;
@@ -36,32 +79,50 @@ export default function NewProductPage() {
 
     setLoading(true);
 
-    const { error } = await supabase
-      .from("products")
-      .insert({
-        name: form.name,
-        price: Number(form.price),
-        image: form.image,
-        rating: form.rating,
-        description: form.description,
-        category: form.category,
-        track_stock: form.track_stock,
+    try {
+      const selectedCategory = categories.find(
+        (category) => category.id === form.category_id
+      );
 
-// TAMBAHAN
-promo_code: form.promo_code || null,
-      });
+      const { error } = await supabase
+        .from("products")
+        .insert({
+          name: form.name.trim(),
+          price: Number(form.price),
+          image: form.image.trim(),
+          rating: form.rating,
+          description: form.description.trim(),
 
-    setLoading(false);
+          // KATEGORI BARU
+          category_id: form.category_id,
 
-    if (error) {
-      alert(error.message);
-      return;
+          // KOMPATIBILITAS DATA LAMA
+          category: selectedCategory?.slug || null,
+
+          track_stock: form.track_stock,
+
+          // PROMO
+          promo_code: form.promo_code || null,
+
+          // Produk baru masuk paling bawah
+          sort_order: null,
+        });
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      alert("Produk berhasil ditambahkan.");
+
+      router.push("/admin/products");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Terjadi kesalahan saat menyimpan.");
+    } finally {
+      setLoading(false);
     }
-
-    alert("Produk berhasil ditambahkan.");
-
-    router.push("/admin/products");
-    router.refresh();
   }
 
   return (
@@ -156,6 +217,7 @@ promo_code: form.promo_code || null,
             />
           </div>
 
+          {/* KATEGORI DINAMIS */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
               Kategori Produk
@@ -163,54 +225,73 @@ promo_code: form.promo_code || null,
 
             <select
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 focus:border-pink-400 focus:outline-none focus:ring-4 focus:ring-pink-100"
-              value={form.category}
+              value={form.category_id}
+              disabled={categoriesLoading || categories.length === 0}
               onChange={(e) =>
                 setForm({
                   ...form,
-                  category: e.target.value,
+                  category_id: e.target.value,
                 })
               }
             >
-              <option value="normal">Produk Normal</option>
-              <option value="donat">Donat</option>
-              <option value="minuman">Minuman</option>
-              <option value="snack">Snack</option>
-              <option value="paket">Paket</option>
+              {categoriesLoading && (
+                <option value="">Memuat kategori...</option>
+              )}
+
+              {!categoriesLoading && categories.length === 0 && (
+                <option value="">Belum ada kategori</option>
+              )}
+
+              {!categoriesLoading &&
+                categories.map((category) => (
+                  <option
+                    key={category.id}
+                    value={category.id}
+                  >
+                    {category.name}
+                  </option>
+                ))}
             </select>
+
+            {!categoriesLoading && categories.length === 0 && (
+              <p className="mt-2 text-sm text-red-500">
+                Belum ada kategori. Silakan tambahkan kategori terlebih dahulu.
+              </p>
+            )}
           </div>
 
           <div>
-  <label className="mb-2 block text-sm font-semibold text-slate-700">
-    Promo Produk
-  </label>
+            <label className="mb-2 block text-sm font-semibold text-slate-700">
+              Promo Produk
+            </label>
 
-  <select
-  value={form.promo_code}
-  onChange={(e) =>
-    setForm({
-      ...form,
-      promo_code: e.target.value,
-    })
-  }
-  className="w-full rounded-2xl border border-slate-200 px-4 py-3"
->
-  <option value="NORMAL">
-    Normal (Tanpa Promo)
-  </option>
+            <select
+              value={form.promo_code}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  promo_code: e.target.value,
+                })
+              }
+              className="w-full rounded-2xl border border-slate-200 px-4 py-3"
+            >
+              <option value="NORMAL">
+                Normal (Tanpa Promo)
+              </option>
 
-  <option value="DONAT_3">
-    Donat Hemat 3 pcs (Rp 10.000)
-  </option>
+              <option value="DONAT_3">
+                Donat Hemat 3 pcs (Rp 10.000)
+              </option>
 
-  <option value="DONAT_6">
-    Donat Hemat 6 pcs (Rp 23.000)
-  </option>
-</select>
+              <option value="DONAT_6">
+                Donat Hemat 6 pcs (Rp 23.000)
+              </option>
+            </select>
 
-  <p className="mt-2 text-sm text-slate-500">
-    Pilih promo yang akan dihitung otomatis di kasir.
-  </p>
-</div>
+            <p className="mt-2 text-sm text-slate-500">
+              Pilih promo yang akan dihitung otomatis di kasir.
+            </p>
+          </div>
 
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700">
@@ -237,7 +318,7 @@ promo_code: form.promo_code || null,
               </p>
 
               <p className="text-sm text-slate-500">
-                Aktifkan untuk produk donat.
+                Aktifkan untuk produk yang stoknya perlu dikurangi.
               </p>
             </div>
 
@@ -266,7 +347,11 @@ promo_code: form.promo_code || null,
             <button
               type="button"
               onClick={saveProduct}
-              disabled={loading}
+              disabled={
+                loading ||
+                categoriesLoading ||
+                categories.length === 0
+              }
               className="rounded-2xl bg-pink-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-pink-700 disabled:opacity-60"
             >
               {loading ? "Menyimpan..." : "Simpan Produk"}
