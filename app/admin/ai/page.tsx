@@ -69,9 +69,6 @@ export default function DonaraAIPage() {
   const chatScrollRef =
     useRef<HTMLDivElement | null>(null);
 
-  const bottomRef =
-    useRef<HTMLDivElement | null>(null);
-
   /* =========================
      LOAD CONVERSATION
   ========================= */
@@ -494,7 +491,7 @@ export default function DonaraAIPage() {
 
         <div className="pointer-events-none absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-orange-500/[0.025] blur-[120px]" />
 
-        {/* Header - SELALU TETAP DI ATAS */}
+        {/* HEADER */}
 
         <header className="relative z-20 flex shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#111113]/95 px-5 py-4 backdrop-blur-xl sm:px-8">
           <div className="flex min-w-0 items-center gap-3.5">
@@ -559,7 +556,7 @@ export default function DonaraAIPage() {
           </div>
         </header>
 
-        {/* CHAT AREA - HANYA BAGIAN INI YANG SCROLL */}
+        {/* CHAT AREA */}
 
         <section
           ref={chatScrollRef}
@@ -578,7 +575,6 @@ export default function DonaraAIPage() {
             </div>
           ) : messages.length === 0 ? (
             <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center py-8">
-
               <div className="relative">
                 <div className="absolute inset-0 scale-150 rounded-full bg-amber-400/[0.06] blur-3xl" />
 
@@ -611,9 +607,7 @@ export default function DonaraAIPage() {
                       key={suggestion}
                       type="button"
                       onClick={() =>
-                        useSuggestion(
-                          suggestion
-                        )
+                        useSuggestion(suggestion)
                       }
                       disabled={loading}
                       className="group flex min-h-[88px] items-start gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/20 hover:bg-white/[0.045] hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed"
@@ -632,12 +626,10 @@ export default function DonaraAIPage() {
             </div>
           ) : (
             <div className="mx-auto w-full max-w-4xl space-y-9">
-
               {messages.map(
                 (message) => {
                   const hasSources =
-                    message.role ===
-                      "assistant" &&
+                    message.role === "assistant" &&
                     message.news &&
                     message.news.length > 0;
 
@@ -648,8 +640,7 @@ export default function DonaraAIPage() {
                     <div
                       key={message.id}
                       className={`flex w-full ${
-                        message.role ===
-                        "user"
+                        message.role === "user"
                           ? "justify-end"
                           : "justify-start"
                       }`}
@@ -669,17 +660,13 @@ export default function DonaraAIPage() {
 
                       <div
                         className={
-                          message.role ===
-                          "user"
+                          message.role === "user"
                             ? "max-w-[85%] rounded-[1.5rem] rounded-br-md border border-amber-400/10 bg-[#2a2119] px-5 py-3.5 text-sm leading-6 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:max-w-[70%]"
                             : "min-w-0 max-w-[calc(100%-3rem)] flex-1 pt-1 text-sm leading-7 text-zinc-300"
                         }
                       >
-                        {message.role ===
-                        "user" ? (
-                          <p>
-                            {message.content}
-                          </p>
+                        {message.role === "user" ? (
+                          <p>{message.content}</p>
                         ) : (
                           <div className="space-y-3">
                             {renderMessageContent(
@@ -694,11 +681,8 @@ export default function DonaraAIPage() {
                               type="button"
                               onClick={() =>
                                 setShowSources(
-                                  (
-                                    current
-                                  ) =>
-                                    current ===
-                                    message.id
+                                  (current) =>
+                                    current === message.id
                                       ? null
                                       : message.id
                                 )
@@ -708,11 +692,7 @@ export default function DonaraAIPage() {
                               <Globe2 size={14} />
 
                               <span>
-                                {
-                                  message.news
-                                    ?.length
-                                }{" "}
-                                sumber
+                                {message.news?.length} sumber
                               </span>
 
                               <ChevronDown
@@ -728,15 +708,10 @@ export default function DonaraAIPage() {
                             {isSourcesOpen && (
                               <div className="mt-3 space-y-1.5 border-l border-white/[0.08] pl-3">
                                 {message.news?.map(
-                                  (
-                                    news,
-                                    index
-                                  ) => (
+                                  (news, index) => (
                                     <a
                                       key={`${news.url}-${index}`}
-                                      href={
-                                        news.url
-                                      }
+                                      href={news.url}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="group flex items-start justify-between gap-3 rounded-xl px-3 py-3 transition hover:bg-white/[0.035]"
@@ -744,35 +719,21 @@ export default function DonaraAIPage() {
                                       <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
                                           <span className="text-[11px] font-bold text-amber-400">
-                                            [
-                                            {index +
-                                              1}
-                                            ]
+                                            [{index + 1}]
                                           </span>
 
                                           <span className="text-[11px] font-medium text-zinc-500">
-                                            {
-                                              news.source
-                                            }
+                                            {news.source}
                                           </span>
 
                                           <span className="flex items-center gap-1 text-[10px] text-zinc-600">
-                                            <Clock3
-                                              size={
-                                                10
-                                              }
-                                            />
-
-                                            {
-                                              news.time
-                                            }
+                                            <Clock3 size={10} />
+                                            {news.time}
                                           </span>
                                         </div>
 
                                         <p className="mt-1.5 text-xs font-medium leading-5 text-zinc-400 transition group-hover:text-zinc-100">
-                                          {
-                                            news.title
-                                          }
+                                          {news.title}
                                         </p>
                                       </div>
 
@@ -814,13 +775,11 @@ export default function DonaraAIPage() {
                   </div>
                 </div>
               )}
-
-              <div ref={bottomRef} />
             </div>
           )}
         </section>
 
-        {/* INPUT - SELALU TETAP DI BAWAH */}
+        {/* INPUT */}
 
         <div className="relative z-20 shrink-0 border-t border-white/[0.06] bg-[#111113]/95 px-4 py-4 backdrop-blur-2xl sm:px-8 sm:py-5">
           <form

@@ -4,6 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
+/* =========================
+   TYPES
+========================= */
+
 type NewsItem = {
   id: number;
   title: string;
@@ -21,15 +25,9 @@ type SourceItem = {
   url: string;
 };
 
-type ChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-};
-
-type AIMemory = {
-  id: string;
-  memory: string;
-};
+/* =========================
+   HELPER
+========================= */
 
 function getText(value: unknown): string {
   if (typeof value === "string") {
@@ -42,7 +40,9 @@ function getText(value: unknown): string {
     "#text" in value
   ) {
     const text = (
-      value as { "#text"?: unknown }
+      value as {
+        "#text"?: unknown;
+      }
     )["#text"];
 
     return typeof text === "string"
@@ -67,6 +67,10 @@ function stripHtml(value: string): string {
     .trim();
 }
 
+/* =========================
+   FORMAT WAKTU BERITA
+========================= */
+
 function formatNewsTime(
   pubDate?: string
 ): string {
@@ -80,19 +84,31 @@ function formatNewsTime(
     return pubDate;
   }
 
-  const diff = Date.now() - date.getTime();
+  const diff =
+    Date.now() - date.getTime();
 
   if (diff < 0) {
-    return date.toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
+    return date.toLocaleDateString(
+      "id-ID",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }
+    );
   }
 
-  const minutes = Math.floor(diff / 60000);
-  const hours = Math.floor(diff / 3600000);
-  const days = Math.floor(diff / 86400000);
+  const minutes = Math.floor(
+    diff / 60000
+  );
+
+  const hours = Math.floor(
+    diff / 3600000
+  );
+
+  const days = Math.floor(
+    diff / 86400000
+  );
 
   if (minutes < 1) {
     return "Baru saja";
@@ -114,11 +130,14 @@ function formatNewsTime(
     return `${days} hari lalu`;
   }
 
-  return date.toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return date.toLocaleDateString(
+    "id-ID",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }
+  );
 }
 
 /* =========================
@@ -198,7 +217,7 @@ function needsNewsSearch(
 }
 
 /* =========================
-   EKSTRAK KATA KUNCI
+   EKSTRAK KEYWORD
 ========================= */
 
 function extractKeywords(
@@ -250,7 +269,10 @@ function extractKeywords(
 
   const cleaned = prompt
     .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(
+      /[^\p{L}\p{N}\s-]/gu,
+      " "
+    )
     .replace(/\s+/g, " ")
     .trim();
 
@@ -267,7 +289,7 @@ function extractKeywords(
 }
 
 /* =========================
-   CEK RELEVANSI BERITA
+   HITUNG RELEVANSI
 ========================= */
 
 function calculateRelevance(
@@ -278,12 +300,14 @@ function calculateRelevance(
     return 1;
   }
 
-  const title = item.title.toLowerCase();
+  const title =
+    item.title.toLowerCase();
 
   const description =
     item.description.toLowerCase();
 
-  const source = item.source.toLowerCase();
+  const source =
+    item.source.toLowerCase();
 
   let score = 0;
 
@@ -292,7 +316,9 @@ function calculateRelevance(
       score += 5;
     }
 
-    if (description.includes(keyword)) {
+    if (
+      description.includes(keyword)
+    ) {
       score += 3;
     }
 
@@ -305,403 +331,57 @@ function calculateRelevance(
 }
 
 /* =========================
-   FORMAT RIWAYAT CHAT
+   RESPONSE LOKAL
 ========================= */
 
-function formatConversationHistory(
-  messages: ChatMessage[]
-): string {
-  if (messages.length === 0) {
-    return "Belum ada riwayat percakapan sebelumnya.";
-  }
-
-  return messages
-    .map((message) => {
-      const speaker =
-        message.role === "user"
-          ? "PENGGUNA"
-          : "DONARA AI";
-
-      return `${speaker}: ${message.content}`;
-    })
-    .join("\n");
-}
-
-/* =========================
-   FORMAT MEMORY
-========================= */
-
-function formatMemories(
-  memories: AIMemory[]
-): string {
-  if (memories.length === 0) {
-    return "Belum ada ingatan khusus tentang pengguna.";
-  }
-
-  return memories
-    .map(
-      (memory, index) =>
-        `${index + 1}. ${memory.memory}`
-    )
-    .join("\n");
-}
-
-/* =========================
-   AMBIL MEMORY PENTING
-========================= */
-
-async function extractMemory(
+function generateLocalResponse(
   prompt: string,
-  answer: string
-): Promise<string[]> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  news: NewsItem[] = []
+): string {
+  const normalized = prompt
+    .toLowerCase()
+    .trim()
+    .replace(/[!?.,]/g, "");
 
-  if (!apiKey) {
-    return [];
+  if (
+    normalized === "halo" ||
+    normalized === "hai" ||
+    normalized === "hi" ||
+    normalized === "hello"
+  ) {
+    return "Halo, ada yang bisa saya bantu?";
   }
 
-  const memoryPrompt = `
-Analisis percakapan berikut dan tentukan apakah ada informasi pribadi atau preferensi jangka panjang yang berguna untuk diingat oleh asisten AI.
-
-PESAN PENGGUNA:
-${prompt}
-
-JAWABAN ASISTEN:
-${answer}
-
-Simpan HANYA informasi yang:
-- kemungkinan berguna di percakapan berikutnya
-- merupakan preferensi pengguna
-- merupakan identitas yang secara sukarela disampaikan pengguna
-- merupakan tujuan, proyek, pekerjaan, atau minat jangka panjang
-- bukan informasi sementara
-- bukan pertanyaan biasa
-- bukan informasi sensitif yang tidak perlu diingat
-
-Jika tidak ada informasi penting untuk diingat, jawab:
-NONE
-
-Jika ada, tulis maksimal 3 memory.
-
-Format:
-MEMORY: isi memory pertama
-MEMORY: isi memory kedua
-
-Jangan menulis penjelasan lain.
-`;
-
-  try {
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey,
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text: memoryPrompt,
-                },
-              ],
-            },
-          ],
-        }),
-        cache: "no-store",
-      }
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-
-    const text =
-      data?.candidates?.[0]?.content?.parts?.[0]
-        ?.text;
-
-    if (!text || typeof text !== "string") {
-      return [];
-    }
-
-    if (
-      text.trim().toUpperCase() === "NONE"
-    ) {
-      return [];
-    }
-
-    return text
-      .split("\n")
-      .map((line: string) => line.trim())
-      .filter((line: string) =>
-        line.startsWith("MEMORY:")
-      )
-      .map((line: string) =>
-        line.replace("MEMORY:", "").trim()
-      )
-      .filter(
-        (memory: string) =>
-          memory.length > 0
-      )
-      .slice(0, 3);
-  } catch {
-    return [];
+  if (
+    normalized === "apa kabar"
+  ) {
+    return "Baik. Ada yang ingin Anda cari atau ketahui?";
   }
+
+  if (
+    normalized === "tes" ||
+    normalized === "test"
+  ) {
+    return "Sistem berjalan dengan baik.";
+  }
+
+  if (news.length > 0) {
+    if (news.length === 1) {
+      return `Saya menemukan 1 berita yang relevan dengan pertanyaan Anda. Silakan lihat hasil dan sumber yang tersedia.`;
+    }
+
+    return `Saya menemukan ${news.length} berita yang relevan dengan pertanyaan Anda. Hasil yang paling relevan telah ditampilkan beserta sumbernya.`;
+  }
+
+  if (needsNewsSearch(prompt)) {
+    return "Saya belum menemukan berita yang cukup relevan dengan pencarian tersebut.";
+  }
+
+  return "Saat ini saya dapat membantu mencari informasi dan berita berdasarkan kata kunci. Coba tanyakan berita atau informasi terbaru yang ingin Anda cari.";
 }
 
 /* =========================
-   SIMPAN MEMORY
-========================= */
-
-async function saveMemories(
-  userId: string,
-  memories: string[]
-) {
-  if (memories.length === 0) {
-    return;
-  }
-
-  const supabase =
-    await createClient();
-
-  const {
-    data: existingMemories,
-    error,
-  } = await supabase
-    .from("ai_memories")
-    .select("memory")
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error(
-      "GAGAL_MENGAMBIL_MEMORY:",
-      error
-    );
-
-    return;
-  }
-
-  const existing = new Set(
-    (existingMemories || []).map(
-      (item) =>
-        item.memory.toLowerCase().trim()
-    )
-  );
-
-  const newMemories = memories.filter(
-    (memory) =>
-      !existing.has(
-        memory.toLowerCase().trim()
-      )
-  );
-
-  if (newMemories.length === 0) {
-    return;
-  }
-
-  const { error: insertError } =
-    await supabase
-      .from("ai_memories")
-      .insert(
-        newMemories.map((memory) => ({
-          user_id: userId,
-          memory,
-        }))
-      );
-
-  if (insertError) {
-    console.error(
-      "GAGAL_MENYIMPAN_MEMORY:",
-      insertError
-    );
-  }
-}
-
-/* =========================
-   GEMINI REQUEST
-========================= */
-
-async function generateWithGemini(
-  prompt: string,
-  news: NewsItem[] = [],
-  conversationHistory: ChatMessage[] = [],
-  memories: AIMemory[] = []
-): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error(
-      "GEMINI_API_KEY belum ditemukan di environment."
-    );
-  }
-
-  const hasNews = news.length > 0;
-
-  const historyContext =
-    formatConversationHistory(
-      conversationHistory
-    );
-
-  const memoryContext =
-    formatMemories(memories);
-
-  const newsContext = hasNews
-    ? news
-        .map(
-          (item) => `
-SUMBER [${item.id}]
-Judul: ${item.title}
-Media: ${item.source}
-Waktu: ${item.time}
-Isi: ${item.description}
-`
-        )
-        .join("\n-------------------\n")
-    : "";
-
-  const aiPrompt = hasNews
-    ? `
-Kamu adalah asisten AI yang membantu pengguna secara natural dalam Bahasa Indonesia.
-
-Gunakan ingatan pengguna dan riwayat percakapan hanya jika relevan dengan pertanyaan saat ini.
-
-INGATAN TENTANG PENGGUNA:
-${memoryContext}
-
-RIWAYAT PERCAKAPAN TERBARU:
-${historyContext}
-
-PERTANYAAN PENGGUNA SAAT INI:
-${prompt}
-
-INFORMASI TERBARU YANG DITEMUKAN:
-${newsContext}
-
-ATURAN:
-
-- Jawab langsung ke inti pertanyaan.
-- Jangan selalu membuka jawaban dengan "Halo".
-- Jangan selalu memperkenalkan diri.
-- Jangan mengatakan "Saya adalah Donara AI" kecuali pengguna secara khusus menanyakan identitasmu.
-- Jangan berbicara dengan gaya robot atau customer service.
-- Gunakan bahasa Indonesia yang natural.
-- Gunakan memory untuk memahami konteks pengguna, tetapi jangan menyebut "saya menyimpan memory" kecuali ditanya.
-- Jangan berpura-pura mengingat sesuatu jika tidak ada di memory atau riwayat.
-- Analisis dan gabungkan informasi dari beberapa sumber jika relevan.
-- Berikan kesimpulan jika memang diperlukan.
-- Jangan mengarang fakta di luar data yang diberikan.
-- Jika informasi yang tersedia tidak cukup, katakan dengan jujur.
-- Jangan menampilkan URL.
-- Jangan membuat daftar link.
-- Jangan menuliskan bagian "Sumber".
-- Jika sebuah fakta penting berasal dari sumber tertentu, tambahkan penanda kecil seperti [1], [2], atau [1][2].
-- Nomor sumber harus sesuai dengan nomor SUMBER yang diberikan.
-- Jangan memasukkan penanda sumber di setiap kalimat.
-- Jangan menyebut Gemini.
-- Jangan menjelaskan proses internal pencarian.
-
-Jawablah seperti percakapan manusia yang natural.
-`
-    : `
-Kamu adalah asisten AI yang membantu pengguna secara natural dalam Bahasa Indonesia.
-
-Gunakan ingatan pengguna dan riwayat percakapan untuk memahami konteks jika relevan.
-
-INGATAN TENTANG PENGGUNA:
-${memoryContext}
-
-RIWAYAT PERCAKAPAN TERBARU:
-${historyContext}
-
-PERTANYAAN PENGGUNA SAAT INI:
-${prompt}
-
-ATURAN:
-
-- Jawab langsung dan natural.
-- Jangan selalu membuka jawaban dengan "Halo".
-- Jangan selalu memperkenalkan diri.
-- Jangan mengatakan "Saya adalah Donara AI" kecuali pengguna menanyakan identitasmu.
-- Jangan menggunakan gaya bot atau customer service yang kaku.
-- Gunakan informasi dari riwayat chat jika pengguna merujuk ke percakapan sebelumnya.
-- Gunakan memory jika relevan.
-- Jangan menyebut sistem memory secara tiba-tiba.
-- Jangan mengarang informasi yang tidak ada.
-- Jangan mengarang informasi terbaru jika pengguna tidak meminta informasi terkini.
-- Jawab berdasarkan pengetahuan dan kemampuan penalaranmu.
-- Jika pertanyaan pengguna sederhana, jawaban juga boleh sederhana.
-- Jangan memaksakan jawaban panjang.
-- Jangan menawarkan daftar topik yang tidak diminta.
-- Jangan mengubah pertanyaan umum menjadi pembahasan berita.
-- Jangan menyebut Gemini.
-- Jangan menggunakan URL.
-- Jangan membuat daftar sumber.
-
-Contoh gaya yang benar:
-
-Pengguna: halo
-Jawaban: Halo, ada yang bisa saya bantu?
-
-Pengguna: apa yang harus saya pelajari?
-Jawaban: Itu tergantung tujuan Anda. Kalau Anda ingin, ceritakan dulu tujuan Anda—misalnya untuk kerja, bisnis, teknologi, atau hal lain—nanti saya bantu menentukan apa yang paling penting untuk dipelajari.
-
-Jawab secara natural sesuai konteks pengguna.
-`;
-
-  const response = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              {
-                text: aiPrompt,
-              },
-            ],
-          },
-        ],
-      }),
-      cache: "no-store",
-    }
-  );
-
-  const data = await response.json();
-
-  if (!response.ok) {
-    const errorMessage =
-      data?.error?.message ||
-      "Gagal mendapatkan respons AI.";
-
-    throw new Error(errorMessage);
-  }
-
-  const text =
-    data?.candidates?.[0]?.content?.parts?.[0]
-      ?.text;
-
-  if (!text || typeof text !== "string") {
-    throw new Error(
-      "AI tidak menghasilkan jawaban."
-    );
-  }
-
-  return text.trim();
-}
-
-/* =========================
-   AMBIL BERITA GOOGLE NEWS
+   AMBIL GOOGLE NEWS
 ========================= */
 
 async function searchNews(
@@ -756,7 +436,8 @@ async function searchNews(
           getText(item.title)
         );
 
-        const sourceData = item.source;
+        const sourceData =
+          item.source;
 
         let source = "Google News";
 
@@ -770,11 +451,14 @@ async function searchNews(
             };
 
           if (
-            typeof sourceObject["#text"] ===
-            "string"
+            typeof sourceObject[
+              "#text"
+            ] === "string"
           ) {
             source =
-              sourceObject["#text"];
+              sourceObject[
+                "#text"
+              ] as string;
           }
         } else if (
           typeof sourceData === "string"
@@ -800,7 +484,9 @@ async function searchNews(
       }
     )
     .filter(
-      (item: Omit<NewsItem, "id">) =>
+      (
+        item: Omit<NewsItem, "id">
+      ) =>
         item.title &&
         item.url
     );
@@ -821,27 +507,146 @@ async function searchNews(
       return score > 0;
     })
     .sort(
-      (a, b) =>
-        b.score - a.score
+      (a, b) => b.score - a.score
     );
 
   return scoredNews
     .slice(0, 8)
-    .map(({ item }, index) => ({
-      ...item,
-      id: index + 1,
-    }));
+    .map(
+      ({ item }, index) => ({
+        ...item,
+        id: index + 1,
+      })
+    );
 }
 
 /* =========================
-   POST - KIRIM PESAN AI
+   GET CONVERSATION
+========================= */
+
+export async function GET(
+  request: NextRequest
+) {
+  try {
+    const conversationId =
+      request.nextUrl.searchParams.get(
+        "conversationId"
+      );
+
+    if (!conversationId) {
+      return NextResponse.json(
+        {
+          messages: [],
+        }
+      );
+    }
+
+    const supabase =
+      await createClient();
+
+    const {
+      data: {
+        user,
+      },
+      error: userError,
+    } =
+      await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        {
+          error:
+            "Anda harus login untuk menggunakan Donara AI.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const {
+      data: conversation,
+      error: conversationError,
+    } = await supabase
+      .from("ai_conversations")
+      .select("id")
+      .eq("id", conversationId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (
+      conversationError ||
+      !conversation
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Percakapan tidak ditemukan.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const {
+      data: messages,
+      error: messagesError,
+    } = await supabase
+      .from("ai_messages")
+      .select(
+        "id, role, content, created_at"
+      )
+      .eq(
+        "conversation_id",
+        conversationId
+      )
+      .order("created_at", {
+        ascending: true,
+      });
+
+    if (messagesError) {
+      throw new Error(
+        messagesError.message
+      );
+    }
+
+    return NextResponse.json({
+      conversationId,
+      messages: messages || [],
+    });
+  } catch (error) {
+    console.error(
+      "DONARA_AI_GET_ERROR:",
+      error
+    );
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Gagal memuat percakapan.";
+
+    return NextResponse.json(
+      {
+        error: message,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+/* =========================
+   POST DONARA AI
 ========================= */
 
 export async function POST(
   request: NextRequest
 ) {
   try {
-    const body = await request.json();
+    const body =
+      await request.json();
 
     const prompt =
       typeof body.prompt === "string"
@@ -849,7 +654,8 @@ export async function POST(
         : "";
 
     const requestedConversationId =
-      typeof body.conversationId === "string" &&
+      typeof body.conversationId ===
+        "string" &&
       body.conversationId.trim()
         ? body.conversationId.trim()
         : null;
@@ -857,7 +663,8 @@ export async function POST(
     if (!prompt) {
       return NextResponse.json(
         {
-          error: "Prompt tidak boleh kosong.",
+          error:
+            "Prompt tidak boleh kosong.",
         },
         {
           status: 400,
@@ -877,7 +684,8 @@ export async function POST(
         user,
       },
       error: userError,
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
     if (userError || !user) {
       return NextResponse.json(
@@ -951,75 +759,6 @@ export async function POST(
     }
 
     /* =========================
-       AMBIL RIWAYAT CHAT
-    ========================= */
-
-    const {
-      data: previousMessages,
-      error: historyError,
-    } = await supabase
-      .from("ai_messages")
-      .select(
-        "role, content, created_at"
-      )
-      .eq(
-        "conversation_id",
-        conversationId
-      )
-      .order("created_at", {
-        ascending: false,
-      })
-      .limit(20);
-
-    if (historyError) {
-      throw new Error(
-        historyError.message
-      );
-    }
-
-    const conversationHistory: ChatMessage[] =
-      (previousMessages || [])
-        .reverse()
-        .map((message) => ({
-          role:
-            message.role === "assistant"
-              ? "assistant"
-              : "user",
-          content: message.content,
-        }));
-
-    /* =========================
-       AMBIL MEMORY USER
-    ========================= */
-
-    const {
-      data: memoryData,
-      error: memoryError,
-    } = await supabase
-      .from("ai_memories")
-      .select("id, memory")
-      .eq("user_id", user.id)
-      .order("updated_at", {
-        ascending: false,
-      })
-      .limit(20);
-
-    if (memoryError) {
-      console.error(
-        "GAGAL_MENGAMBIL_MEMORY:",
-        memoryError
-      );
-    }
-
-    const memories: AIMemory[] =
-      (memoryData || []).map(
-        (memory) => ({
-          id: memory.id,
-          memory: memory.memory,
-        })
-      );
-
-    /* =========================
        SIMPAN PESAN USER
     ========================= */
 
@@ -1029,63 +768,39 @@ export async function POST(
     } = await supabase
       .from("ai_messages")
       .insert({
-        conversation_id: conversationId,
+        conversation_id:
+          conversationId,
         role: "user",
         content: prompt,
       })
       .select("id")
       .single();
 
-    if (
-      saveUserMessageError ||
-      !savedUserMessage
-    ) {
+    if (saveUserMessageError) {
       throw new Error(
-        saveUserMessageError?.message ||
-          "Gagal menyimpan pesan pengguna."
+        saveUserMessageError.message
       );
     }
 
-    let answer: string;
-    let news: NewsItem[] = [];
-    let mode: "chat" | "news" = "chat";
-
     /* =========================
-       CHAT SEDERHANA
+       TENTUKAN RESPONSE
     ========================= */
 
-    if (isSimpleGreeting(prompt)) {
-      answer = await generateWithGemini(
-        prompt,
-        [],
-        conversationHistory,
-        memories
-      );
-    } else {
-      /* =========================
-         TENTUKAN MODE
-      ========================= */
+    let answer = "";
 
+    let news: NewsItem[] = [];
+
+    let mode: "chat" | "news" =
+      "chat";
+
+    if (isSimpleGreeting(prompt)) {
+      answer =
+        generateLocalResponse(prompt);
+    } else {
       const shouldSearchNews =
         needsNewsSearch(prompt);
 
-      /* =========================
-         CHAT NORMAL
-      ========================= */
-
-      if (!shouldSearchNews) {
-        answer =
-          await generateWithGemini(
-            prompt,
-            [],
-            conversationHistory,
-            memories
-          );
-      } else {
-        /* =========================
-           NEWS + AI
-        ========================= */
-
+      if (shouldSearchNews) {
         const keywords =
           extractKeywords(prompt);
 
@@ -1099,30 +814,17 @@ export async function POST(
           keywords
         );
 
-        if (news.length === 0) {
-          answer =
-            await generateWithGemini(
-              prompt,
-              [],
-              conversationHistory,
-              memories
-            );
-        } else {
-          mode = "news";
-
-          answer =
-            await generateWithGemini(
-              prompt,
-              news,
-              conversationHistory,
-              memories
-            );
-        }
+        mode = "news";
       }
+
+      answer = generateLocalResponse(
+        prompt,
+        news
+      );
     }
 
     /* =========================
-       SIMPAN JAWABAN AI
+       SIMPAN JAWABAN
     ========================= */
 
     const {
@@ -1131,25 +833,22 @@ export async function POST(
     } = await supabase
       .from("ai_messages")
       .insert({
-        conversation_id: conversationId,
+        conversation_id:
+          conversationId,
         role: "assistant",
         content: answer,
       })
       .select("id")
       .single();
 
-    if (
-      saveAssistantMessageError ||
-      !savedAssistantMessage
-    ) {
+    if (saveAssistantMessageError) {
       throw new Error(
-        saveAssistantMessageError?.message ||
-          "Gagal menyimpan jawaban AI."
+        saveAssistantMessageError.message
       );
     }
 
     /* =========================
-       UPDATE WAKTU CONVERSATION
+       UPDATE CONVERSATION
     ========================= */
 
     const {
@@ -1171,21 +870,6 @@ export async function POST(
     }
 
     /* =========================
-       BUAT MEMORY BARU
-    ========================= */
-
-    const newMemories =
-      await extractMemory(
-        prompt,
-        answer
-      );
-
-    await saveMemories(
-      user.id,
-      newMemories
-    );
-
-    /* =========================
        FORMAT SUMBER
     ========================= */
 
@@ -1198,22 +882,25 @@ export async function POST(
         url: item.url,
       }));
 
+    /* =========================
+       RESPONSE
+    ========================= */
+
     return NextResponse.json({
       success: true,
       mode,
       conversationId,
       userMessageId:
-        savedUserMessage.id,
+        savedUserMessage?.id ?? null,
       assistantMessageId:
-        savedAssistantMessage.id,
+        savedAssistantMessage?.id ?? null,
       prompt,
       answer,
       sources,
-      newMemories,
     });
   } catch (error) {
     console.error(
-      "DONARA_AI_ERROR:",
+      "DONARA_AI_POST_ERROR:",
       error
     );
 
@@ -1234,146 +921,23 @@ export async function POST(
 }
 
 /* =========================
-   GET - AMBIL CHAT LAMA
-========================= */
-
-export async function GET(
-  request: NextRequest
-) {
-  try {
-    const { searchParams } =
-      new URL(request.url);
-
-    const conversationId =
-      searchParams.get("conversationId");
-
-    if (!conversationId) {
-      return NextResponse.json(
-        {
-          error:
-            "Conversation ID tidak ditemukan.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    const supabase =
-      await createClient();
-
-    const {
-      data: {
-        user,
-      },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json(
-        {
-          error:
-            "Anda harus login untuk mengakses percakapan.",
-        },
-        {
-          status: 401,
-        }
-      );
-    }
-
-    const {
-      data: conversation,
-      error: conversationError,
-    } = await supabase
-      .from("ai_conversations")
-      .select("id")
-      .eq("id", conversationId)
-      .eq("user_id", user.id)
-      .single();
-
-    if (
-      conversationError ||
-      !conversation
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Percakapan tidak ditemukan.",
-        },
-        {
-          status: 404,
-        }
-      );
-    }
-
-    const {
-      data: messages,
-      error: messagesError,
-    } = await supabase
-      .from("ai_messages")
-      .select(
-        "id, role, content, created_at"
-      )
-      .eq(
-        "conversation_id",
-        conversationId
-      )
-      .order("created_at", {
-        ascending: true,
-      });
-
-    if (messagesError) {
-      throw new Error(
-        messagesError.message
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      conversationId,
-      messages: messages || [],
-    });
-  } catch (error) {
-    console.error(
-      "DONARA_AI_GET_ERROR:",
-      error
-    );
-
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Gagal memuat percakapan.";
-
-    return NextResponse.json(
-      {
-        error: message,
-      },
-      {
-        status: 500,
-      }
-    );
-  }
-}
-
-/* =========================
-   DELETE - HAPUS PERCAKAPAN
+   DELETE CONVERSATION
 ========================= */
 
 export async function DELETE(
   request: NextRequest
 ) {
   try {
-    const { searchParams } =
-      new URL(request.url);
-
     const conversationId =
-      searchParams.get("conversationId");
+      request.nextUrl.searchParams.get(
+        "conversationId"
+      );
 
     if (!conversationId) {
       return NextResponse.json(
         {
           error:
-            "Conversation ID tidak ditemukan.",
+            "conversationId wajib diberikan.",
         },
         {
           status: 400,
@@ -1389,7 +953,8 @@ export async function DELETE(
         user,
       },
       error: userError,
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
     if (userError || !user) {
       return NextResponse.json(
@@ -1399,31 +964,6 @@ export async function DELETE(
         },
         {
           status: 401,
-        }
-      );
-    }
-
-    const {
-      data: conversation,
-      error: conversationError,
-    } = await supabase
-      .from("ai_conversations")
-      .select("id")
-      .eq("id", conversationId)
-      .eq("user_id", user.id)
-      .single();
-
-    if (
-      conversationError ||
-      !conversation
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Percakapan tidak ditemukan.",
-        },
-        {
-          status: 404,
         }
       );
     }
