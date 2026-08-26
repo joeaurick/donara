@@ -12,6 +12,7 @@ import {
   Package,
   Rocket,
   Tags,
+  Sparkles,
 } from "lucide-react";
 
 const menus = [
@@ -87,6 +88,15 @@ const menus = [
     color: "green",
     number: "09",
   },
+
+  {
+    title: "Donara AI",
+    subtitle: "Cari & analisis berita",
+    href: "/admin/ai",
+    icon: Sparkles,
+    color: "ai",
+    number: "10",
+  },
 ];
 
 const menuColors = {
@@ -129,6 +139,14 @@ const menuColors = {
     number: "text-[#159b7d]",
     line: "bg-[#2ec4a6]",
   },
+
+  ai: {
+    active: "bg-[#2d1b16] text-[#fffaf5]",
+    icon: "bg-[#f5e6d8] text-[#8a4f2a]",
+    activeIcon: "bg-[#ffb703] text-[#2d1b16]",
+    number: "text-[#a76438]",
+    line: "bg-[#ffb703]",
+  },
 };
 
 type Props = {
@@ -152,9 +170,7 @@ export default function SidebarMenu({
               ? pathname === "/pos" ||
                 pathname === "/pos/dashboard"
               : pathname === menu.href ||
-                pathname.startsWith(
-                  `${menu.href}/`
-                );
+                pathname.startsWith(`${menu.href}/`);
 
         const Icon = menu.icon;
 
@@ -168,11 +184,7 @@ export default function SidebarMenu({
             key={menu.href}
             href={menu.href}
             onClick={onNavigate}
-            title={
-              collapsed
-                ? menu.title
-                : undefined
-            }
+            title={collapsed ? menu.title : undefined}
             className={`group relative flex overflow-hidden transition-all duration-200 ${
               collapsed
                 ? "justify-center rounded-[18px] p-2"
@@ -210,9 +222,7 @@ export default function SidebarMenu({
             >
               <Icon
                 size={19}
-                strokeWidth={
-                  active ? 2.6 : 2.3
-                }
+                strokeWidth={active ? 2.6 : 2.3}
               />
             </span>
 
@@ -237,7 +247,13 @@ export default function SidebarMenu({
 
             {/* ACTIVE DOT */}
             {!collapsed && active && (
-              <span className="h-2 w-2 shrink-0 rounded-full bg-white shadow-sm" />
+              <span
+                className={`h-2 w-2 shrink-0 rounded-full shadow-sm ${
+                  menu.color === "ai"
+                    ? "bg-[#ffb703]"
+                    : "bg-white"
+                }`}
+              />
             )}
 
             {/* HOVER LINE */}
