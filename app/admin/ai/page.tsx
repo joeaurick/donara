@@ -15,7 +15,6 @@ import {
   Clock3,
   ExternalLink,
   Globe2,
-  Menu,
   Search,
   Sparkles,
   Trash2,
@@ -55,8 +54,7 @@ const suggestions = [
 
 export default function DonaraAIPage() {
   const [prompt, setPrompt] = useState("");
-  const [messages, setMessages] =
-    useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [showSources, setShowSources] =
@@ -105,7 +103,9 @@ export default function DonaraAIPage() {
 
         const data = await response.json();
 
-        setConversationId(savedConversationId);
+        setConversationId(
+          savedConversationId
+        );
 
         if (Array.isArray(data.messages)) {
           const loadedMessages: Message[] =
@@ -155,7 +155,7 @@ export default function DonaraAIPage() {
   }, []);
 
   /* =========================
-     AUTO SCROLL CHAT
+     AUTO SCROLL CHAT AREA
   ========================= */
 
   useEffect(() => {
@@ -163,18 +163,26 @@ export default function DonaraAIPage() {
       return;
     }
 
-    const container = chatScrollRef.current;
+    const scrollToBottom = () => {
+      const container =
+        chatScrollRef.current;
 
-    if (!container) {
-      return;
-    }
+      if (!container) {
+        return;
+      }
 
-    const timeout = window.setTimeout(() => {
       container.scrollTo({
         top: container.scrollHeight,
-        behavior: loading ? "smooth" : "auto",
+        behavior: loading
+          ? "smooth"
+          : "auto",
       });
-    }, 50);
+    };
+
+    const timeout = window.setTimeout(
+      scrollToBottom,
+      50
+    );
 
     return () => {
       window.clearTimeout(timeout);
@@ -388,7 +396,9 @@ export default function DonaraAIPage() {
               0,
               30
             )}`}
-            className={index > 0 ? "mt-4" : ""}
+            className={
+              index > 0 ? "mt-4" : ""
+            }
           >
             {lines.map(
               (line, lineIndex) => {
@@ -472,22 +482,23 @@ export default function DonaraAIPage() {
   ========================= */
 
   return (
-    <main className="fixed inset-0 h-[100dvh] w-full overflow-hidden bg-[#0d0d0f] text-white">
-      <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden bg-[#111113] md:border-x md:border-white/[0.06]">
+    <main className="h-[100dvh] w-full overflow-hidden bg-[#0d0d0f] text-white">
+      <div className="relative mx-auto flex h-full w-full max-w-6xl flex-col overflow-hidden border-x border-white/[0.06] bg-[#111113]">
 
-        {/* BACKGROUND */}
+        {/* Background */}
 
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[500px] -translate-x-1/2 rounded-full bg-amber-500/[0.035] blur-[100px] sm:h-[400px] sm:w-[700px] sm:blur-[120px]" />
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full bg-amber-500/[0.035] blur-[120px]" />
 
-        <div className="pointer-events-none absolute bottom-0 left-0 h-[300px] w-[300px] rounded-full bg-orange-500/[0.025] blur-[100px] sm:h-[400px] sm:w-[400px] sm:blur-[120px]" />
+        <div className="pointer-events-none absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-orange-500/[0.025] blur-[120px]" />
 
         {/* =========================
             HEADER
+            TETAP DI ATAS
         ========================= */}
 
-        <header className="relative z-20 flex shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#111113]/95 px-4 py-3 backdrop-blur-xl sm:px-8 sm:py-4">
-          <div className="flex min-w-0 items-center gap-3 sm:gap-3.5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1d] shadow-[0_8px_25px_rgba(0,0,0,0.25)] sm:h-11 sm:w-11">
+        <header className="relative z-20 flex shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#111113]/95 px-5 py-4 backdrop-blur-xl sm:px-8">
+          <div className="flex min-w-0 items-center gap-3.5">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1d] shadow-[0_8px_25px_rgba(0,0,0,0.25)]">
               <Image
                 src="/images/logo/logo-new.png"
                 alt="Donara"
@@ -500,16 +511,16 @@ export default function DonaraAIPage() {
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="truncate text-base font-bold tracking-tight text-white sm:text-xl">
+                <h1 className="truncate text-lg font-bold tracking-tight text-white sm:text-xl">
                   Donara AI
                 </h1>
 
-                <span className="rounded-md border border-amber-400/20 bg-amber-400/[0.07] px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-amber-300 sm:px-2 sm:text-[9px]">
+                <span className="rounded-md border border-amber-400/20 bg-amber-400/[0.07] px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.14em] text-amber-300">
                   Beta
                 </span>
               </div>
 
-              <p className="mt-0.5 hidden text-xs text-zinc-500 sm:block">
+              <p className="mt-0.5 text-xs text-zinc-500">
                 Cari dan pahami informasi terbaru.
               </p>
             </div>
@@ -521,7 +532,7 @@ export default function DonaraAIPage() {
                 type="button"
                 onClick={clearConversation}
                 disabled={loading}
-                className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.025] text-zinc-500 transition hover:border-red-400/20 hover:bg-red-400/[0.07] hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-40"
+                className="hidden h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.025] text-zinc-500 transition hover:border-red-400/20 hover:bg-red-400/[0.07] hover:text-red-300 disabled:cursor-not-allowed disabled:opacity-40 sm:flex"
                 aria-label="Hapus percakapan"
                 title="Hapus percakapan"
               >
@@ -531,21 +542,12 @@ export default function DonaraAIPage() {
 
             <Link
               href="/admin"
-              className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.025] text-zinc-400 transition hover:border-amber-400/20 hover:bg-amber-400/[0.07] hover:text-amber-300 sm:w-auto sm:gap-2 sm:px-3 sm:text-xs sm:font-medium"
-              aria-label="Menu Admin"
-              title="Menu Admin"
+              className="flex h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 text-xs font-medium text-zinc-400 transition hover:border-amber-400/20 hover:bg-amber-400/[0.07] hover:text-amber-300"
             >
-              <Menu
-                size={17}
-                className="sm:hidden"
-              />
-
-              <span className="hidden sm:inline">
-                ← Menu ADMIN
-              </span>
+              ← Menu ADMIN
             </Link>
 
-            <div className="hidden items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/[0.05] px-3 py-1.5 text-[11px] font-medium text-emerald-300 lg:flex">
+            <div className="hidden items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/[0.05] px-3 py-1.5 text-[11px] font-medium text-emerald-300 sm:flex">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
 
@@ -559,11 +561,12 @@ export default function DonaraAIPage() {
 
         {/* =========================
             CHAT AREA
+            HANYA BAGIAN INI SCROLL
         ========================= */}
 
         <section
           ref={chatScrollRef}
-          className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-8 sm:py-10"
+          className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-8 touch-pan-y [-webkit-overflow-scrolling:touch] sm:px-8 sm:py-10"
         >
           {!isConversationLoaded ? (
             <div className="flex min-h-full items-center justify-center">
@@ -577,24 +580,23 @@ export default function DonaraAIPage() {
               </div>
             </div>
           ) : messages.length === 0 ? (
-            <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center py-6 sm:py-8">
-
+            <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center py-8">
               <div className="relative">
                 <div className="absolute inset-0 scale-150 rounded-full bg-amber-400/[0.06] blur-3xl" />
 
-                <div className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-[1.6rem] border border-white/[0.1] bg-[#18181b] shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:h-24 sm:w-24 sm:rounded-[1.8rem]">
+                <div className="relative flex h-24 w-24 items-center justify-center overflow-hidden rounded-[1.8rem] border border-white/[0.1] bg-[#18181b] shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
                   <Image
                     src="/images/logo/logo-new.png"
                     alt="Donara AI"
                     width={82}
                     height={82}
                     priority
-                    className="h-full w-full object-contain p-2"
+                    className="h-full w-full object-contain p-2.5"
                   />
                 </div>
               </div>
 
-              <h2 className="mt-6 text-center text-2xl font-semibold tracking-tight text-white sm:mt-8 sm:text-4xl">
+              <h2 className="mt-8 text-center text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                 Apa yang ingin Anda ketahui?
               </h2>
 
@@ -604,7 +606,7 @@ export default function DonaraAIPage() {
                 ringkas dan mudah dipahami.
               </p>
 
-              <div className="mt-7 grid w-full gap-3 sm:mt-9 sm:grid-cols-2">
+              <div className="mt-9 grid w-full gap-3 sm:grid-cols-2">
                 {suggestions.map(
                   (suggestion) => (
                     <button
@@ -614,13 +616,13 @@ export default function DonaraAIPage() {
                         useSuggestion(suggestion)
                       }
                       disabled={loading}
-                      className="group flex min-h-[72px] items-start gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-3.5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/20 hover:bg-white/[0.045] hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed sm:min-h-[88px] sm:p-4"
+                      className="group flex min-h-[88px] items-start gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/20 hover:bg-white/[0.045] hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed"
                     >
-                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-amber-400/10 bg-amber-400/[0.07] text-amber-300 transition-transform duration-200 group-hover:scale-105 sm:h-10 sm:w-10">
-                        <Search size={16} />
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/10 bg-amber-400/[0.07] text-amber-300 transition-transform duration-200 group-hover:scale-105">
+                        <Search size={17} />
                       </span>
 
-                      <span className="pt-0.5 text-sm font-medium leading-5 text-zinc-300 transition-colors group-hover:text-white sm:pt-1">
+                      <span className="pt-1 text-sm font-medium leading-5 text-zinc-300 transition-colors group-hover:text-white">
                         {suggestion}
                       </span>
                     </button>
@@ -629,7 +631,7 @@ export default function DonaraAIPage() {
               </div>
             </div>
           ) : (
-            <div className="mx-auto w-full max-w-4xl space-y-7 pb-2 sm:space-y-9">
+            <div className="mx-auto w-full max-w-4xl space-y-9 pb-4">
               {messages.map(
                 (message) => {
                   const hasSources =
@@ -665,7 +667,7 @@ export default function DonaraAIPage() {
                       <div
                         className={
                           message.role === "user"
-                            ? "max-w-[88%] rounded-[1.4rem] rounded-br-md border border-amber-400/10 bg-[#2a2119] px-4 py-3 text-sm leading-6 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:max-w-[70%] sm:px-5 sm:py-3.5"
+                            ? "max-w-[85%] rounded-[1.5rem] rounded-br-md border border-amber-400/10 bg-[#2a2119] px-5 py-3.5 text-sm leading-6 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:max-w-[70%]"
                             : "min-w-0 max-w-[calc(100%-3rem)] flex-1 pt-1 text-sm leading-7 text-zinc-300"
                         }
                       >
@@ -786,12 +788,13 @@ export default function DonaraAIPage() {
 
         {/* =========================
             INPUT
+            TETAP DI BAWAH
         ========================= */}
 
-        <div className="relative z-20 shrink-0 border-t border-white/[0.06] bg-[#111113]/95 px-3 py-3 backdrop-blur-2xl sm:px-8 sm:py-5">
+        <div className="relative z-20 shrink-0 border-t border-white/[0.06] bg-[#111113]/95 px-4 py-4 backdrop-blur-2xl sm:px-8 sm:py-5">
           <form
             onSubmit={handleSubmit}
-            className="mx-auto flex max-w-4xl items-center gap-2 rounded-[1.4rem] border border-white/[0.1] bg-[#1a1a1d] p-1.5 shadow-[0_15px_50px_rgba(0,0,0,0.35)] transition focus-within:border-white/[0.16] focus-within:bg-[#1d1d20] sm:rounded-[1.5rem] sm:p-2"
+            className="mx-auto flex max-w-4xl items-center gap-2 rounded-[1.5rem] border border-white/[0.1] bg-[#1a1a1d] p-2 shadow-[0_15px_50px_rgba(0,0,0,0.35)] transition focus-within:border-white/[0.16] focus-within:bg-[#1d1d20]"
           >
             <input
               type="text"
@@ -806,7 +809,7 @@ export default function DonaraAIPage() {
                 color: "#FFFFFF",
                 opacity: 1,
               }}
-              className="h-11 min-w-0 flex-1 bg-transparent px-3 text-base font-semibold placeholder:text-zinc-500 caret-white focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 sm:h-12"
+              className="h-12 min-w-0 flex-1 bg-transparent px-3 text-base font-semibold placeholder:text-zinc-500 caret-white focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             />
 
             <button
@@ -816,7 +819,7 @@ export default function DonaraAIPage() {
                 loading ||
                 !isConversationLoaded
               }
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-black shadow-[0_5px_20px_rgba(255,255,255,0.08)] transition-all hover:scale-[1.03] hover:bg-zinc-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30 sm:h-11 sm:w-11"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-black shadow-[0_5px_20px_rgba(255,255,255,0.08)] transition-all hover:scale-[1.03] hover:bg-zinc-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Kirim pertanyaan"
             >
               {loading ? (
@@ -833,17 +836,12 @@ export default function DonaraAIPage() {
             </button>
           </form>
 
-          <p className="mx-auto mt-2.5 flex max-w-4xl items-center justify-center gap-1.5 px-2 text-center text-[9px] leading-4 text-zinc-600 sm:mt-3 sm:text-[10px]">
-            <Check
-              size={10}
-              className="shrink-0"
-            />
+          <p className="mx-auto mt-3 flex max-w-4xl items-center justify-center gap-1.5 text-center text-[10px] text-zinc-600">
+            <Check size={11} />
 
-            <span>
-              Percakapan tersimpan di akun Anda.
-              Informasi dapat berubah dan jawaban
-              didasarkan pada sumber yang tersedia.
-            </span>
+            Percakapan tersimpan di akun Anda.
+            Informasi dapat berubah dan jawaban
+            didasarkan pada sumber yang tersedia.
           </p>
         </div>
       </div>
