@@ -1,114 +1,125 @@
 import { HomepageCardProps } from "@/types/homepage";
 import { supabase } from "@/lib/supabase/client";
+import {
+  ImagePlus,
+  ImageIcon,
+  Lightbulb,
+  Upload,
+} from "lucide-react";
 
 export default function HeroCard({
   form,
   setForm,
 }: HomepageCardProps) {
-  async function handleImageUpload(
-    file: File
-  ) {
+  async function handleImageUpload(file: File) {
     try {
-      const ext =
-        file.name.split(".").pop() || "jpg";
-
+      const ext = file.name.split(".").pop() || "jpg";
       const fileName = `hero-${Date.now()}.${ext}`;
 
-      // Upload ke Supabase Storage
-      const { error } =
-        await supabase.storage
-          .from("homepage-assets")
-          .upload(fileName, file, {
-            upsert: true,
-          });
+      const { error } = await supabase.storage
+        .from("homepage-assets")
+        .upload(fileName, file, {
+          upsert: true,
+        });
 
       if (error) {
         alert(error.message);
         return;
       }
 
-      // Ambil public URL
       const { data } = supabase.storage
         .from("homepage-assets")
         .getPublicUrl(fileName);
 
-      // Simpan ke form state
       setForm((prev) => ({
         ...prev,
         hero_image_url: data.publicUrl,
       }));
     } catch (err) {
       console.error(err);
-
-      alert(
-        "Gagal upload gambar hero"
-      );
+      alert("Gagal upload gambar hero");
     }
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-pink-100 text-xl text-pink-600">
-          🎯
-        </div>
+    <div className="space-y-7">
+      {/* INFO */}
+      <div className="rounded-[22px] border border-emerald-100 bg-emerald-50/60 p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm">
+            <ImageIcon className="h-5 w-5" />
+          </div>
 
-        <div>
-          <h2 className="text-xl font-black text-slate-900 sm:text-2xl">
-            Hero Section
-          </h2>
+          <div>
+            <p className="text-sm font-black text-emerald-900">
+              Konten utama website
+            </p>
 
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Hero Heading (H1) dikelola dari menu SEO agar tidak terjadi
-            duplikasi. Halaman Homepage hanya mengatur deskripsi Hero dan gambar
-            utama landing page.
-          </p>
+            <p className="mt-1 text-xs leading-5 text-emerald-700">
+              Atur gambar utama dan deskripsi yang pertama kali
+              dilihat oleh pengunjung.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Hero Image */}
+      {/* HERO IMAGE */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <label className="text-sm font-black uppercase tracking-wide text-slate-700">
+          <label className="text-sm font-black text-slate-800">
             Hero Image
           </label>
 
-          <span className="rounded-full bg-pink-50 px-2 py-1 text-[11px] font-black text-pink-600">
-            HERO IMAGE
+          <span className="rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-600">
+            Homepage Banner
           </span>
         </div>
 
-        {form.hero_image_url && (
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-slate-50">
+        {form.hero_image_url ? (
+          <div className="overflow-hidden rounded-[24px] border border-emerald-100 bg-slate-50">
             <img
               src={form.hero_image_url}
               alt="Hero Preview"
               className="h-56 w-full object-cover sm:h-72"
             />
           </div>
+        ) : (
+          <div className="flex min-h-[220px] flex-col items-center justify-center rounded-[24px] border border-dashed border-emerald-200 bg-emerald-50/30 px-6 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-emerald-500 shadow-sm">
+              <ImagePlus className="h-6 w-6" />
+            </div>
+
+            <p className="mt-4 text-sm font-black text-slate-700">
+              Belum ada gambar hero
+            </p>
+
+            <p className="mt-1 text-xs text-slate-400">
+              Upload gambar untuk menampilkan preview.
+            </p>
+          </div>
         )}
 
-        <label className="flex cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center transition-all duration-200 hover:border-pink-400 hover:bg-pink-50">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm">
-            🖼️
+        <label className="group flex cursor-pointer items-center gap-4 rounded-[22px] border border-dashed border-emerald-200 bg-emerald-50/40 p-4 transition-all duration-200 hover:border-emerald-400 hover:bg-emerald-50">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm transition-transform duration-200 group-hover:scale-105">
+            <Upload className="h-5 w-5" />
           </div>
 
-          <span className="mt-3 text-sm font-black text-slate-700">
-            Upload Gambar Hero
-          </span>
+          <div className="min-w-0">
+            <p className="text-sm font-black text-slate-800">
+              Upload Gambar Hero
+            </p>
 
-          <span className="mt-1 text-xs text-slate-500">
-            JPG, PNG, atau WEBP (disarankan 1600×900)
-          </span>
+            <p className="mt-1 text-xs text-slate-400">
+              JPG, PNG, WEBP · Disarankan 1600 × 900
+            </p>
+          </div>
 
           <input
             type="file"
             accept="image/*"
             className="hidden"
             onChange={(e) => {
-              const file =
-                e.target.files?.[0];
+              const file = e.target.files?.[0];
 
               if (file) {
                 handleImageUpload(file);
@@ -116,34 +127,23 @@ export default function HeroCard({
             }}
           />
         </label>
-
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
-          <div className="flex items-start gap-2">
-            <span className="text-sm">💡</span>
-
-            <p className="leading-5">
-              Gambar ini akan digunakan sebagai banner utama pada landing page
-              Donara. Gunakan foto dengan kualitas terang dan fokus pada produk.
-            </p>
-          </div>
-        </div>
       </div>
 
-      {/* Hero Description */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-black uppercase tracking-wide text-slate-700">
+      {/* DESCRIPTION */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <label className="text-sm font-black text-slate-800">
             Hero Description
           </label>
 
-          <span className="rounded-full bg-pink-50 px-2 py-1 text-[11px] font-black text-pink-600">
-            HERO COPY
+          <span className="text-xs font-bold text-slate-400">
+            {form.hero_description.length} karakter
           </span>
         </div>
 
         <textarea
           rows={6}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+          className="w-full resize-none rounded-[20px] border border-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
           placeholder="Contoh: Donara menghadirkan donat fresh setiap hari dengan tekstur lembut, topping premium, dan rasa yang selalu membuat pelanggan ingin kembali lagi."
           value={form.hero_description}
           onChange={(e) =>
@@ -154,19 +154,14 @@ export default function HeroCard({
           }
         />
 
-        <div className="flex flex-col gap-2 rounded-2xl border border-pink-100 bg-pink-50 p-4 text-xs text-pink-700 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-2">
-            <span className="text-sm">💡</span>
+        <div className="flex items-start gap-3 rounded-[20px] border border-emerald-100 bg-emerald-50/70 p-4">
+          <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
 
-            <p className="leading-5">
-              Gunakan 1–2 kalimat singkat yang menjelaskan keunggulan utama
-              Donara dan mendorong pelanggan untuk melakukan pemesanan.
-            </p>
-          </div>
-
-          <span className="font-black text-pink-800">
-            {form.hero_description.length} karakter
-          </span>
+          <p className="text-xs leading-5 text-emerald-700">
+            Gunakan deskripsi singkat yang menjelaskan keunggulan
+            utama bisnis Anda dan mendorong pelanggan untuk melakukan
+            pembelian.
+          </p>
         </div>
       </div>
     </div>

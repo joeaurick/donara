@@ -1,110 +1,114 @@
 import { HomepageCardProps } from "@/types/homepage";
+import {
+  Lightbulb,
+  MessageCircle,
+  Send,
+} from "lucide-react";
 
 export default function CtaCard({
   form,
   setForm,
 }: HomepageCardProps) {
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-xl text-emerald-600">
-          📣
-        </div>
+    <div className="space-y-7">
+      {/* INFO */}
+      <div className="rounded-[22px] border border-pink-100 bg-pink-50/60 p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-pink-500 shadow-sm">
+            <MessageCircle className="h-5 w-5" />
+          </div>
 
-        <div>
-          <h2 className="text-xl font-black text-slate-900 sm:text-2xl">
-            Call To Action
-          </h2>
+          <div>
+            <p className="text-sm font-black text-pink-900">
+              Dorong pelanggan untuk menghubungi Anda
+            </p>
 
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Atur ajakan pembelian dan pesan otomatis WhatsApp yang akan diterima
-            pelanggan saat menghubungi Donara.
-          </p>
+            <p className="mt-1 text-xs leading-5 text-pink-700">
+              Atur ajakan pembelian dan pesan WhatsApp yang akan
+              otomatis terisi saat pelanggan menghubungi bisnis Anda.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Form */}
-      <div className="grid gap-6">
-        {/* CTA Title */}
-        <div className="space-y-2">
-          <label className="text-sm font-black uppercase tracking-wide text-slate-700">
-            CTA Title
+      {/* CTA TITLE */}
+      <div className="space-y-3">
+        <label className="text-sm font-black text-slate-800">
+          CTA Title
+        </label>
+
+        <input
+          className="w-full rounded-[20px] border border-slate-200 bg-white px-4 py-4 text-sm font-medium text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+          placeholder="Contoh: Pesan Sekarang"
+          value={form.cta_title}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              cta_title: e.target.value,
+            }))
+          }
+        />
+      </div>
+
+      {/* CTA DESCRIPTION */}
+      <div className="space-y-3">
+        <label className="text-sm font-black text-slate-800">
+          CTA Description
+        </label>
+
+        <textarea
+          rows={5}
+          className="w-full resize-none rounded-[20px] border border-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+          placeholder="Contoh: Hubungi kami sekarang untuk memesan produk favorit Anda."
+          value={form.cta_description}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              cta_description: e.target.value,
+            }))
+          }
+        />
+      </div>
+
+      {/* WHATSAPP */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-4">
+          <label className="text-sm font-black text-slate-800">
+            WhatsApp Message
           </label>
 
-          <input
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-            placeholder="Contoh: Pesan Donat Sekarang"
-            value={form.cta_title}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                cta_title: e.target.value,
-              }))
-            }
-          />
+          <span className="rounded-full bg-pink-50 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-pink-600">
+            Auto Message
+          </span>
         </div>
 
-        {/* CTA Description */}
-        <div className="space-y-2">
-          <label className="text-sm font-black uppercase tracking-wide text-slate-700">
-            CTA Description
-          </label>
+        <textarea
+          rows={7}
+          className="w-full resize-none rounded-[20px] border border-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
+          placeholder={`Halo 👋
+Saya ingin mengetahui informasi produk yang tersedia hari ini.`}
+          value={form.whatsapp_message}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              whatsapp_message: e.target.value,
+            }))
+          }
+        />
 
-          <textarea
-            rows={5}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-            placeholder="Contoh: Hubungi kami sekarang untuk memesan donat fresh dengan berbagai varian favorit Anda."
-            value={form.cta_description}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                cta_description: e.target.value,
-              }))
-            }
-          />
-        </div>
+        <div className="flex flex-col gap-3 rounded-[20px] border border-pink-100 bg-pink-50/70 p-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3">
+            <Send className="mt-0.5 h-4 w-4 shrink-0 text-pink-500" />
 
-        {/* WhatsApp Message */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-black uppercase tracking-wide text-slate-700">
-              WhatsApp Message
-            </label>
-
-            <span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-black text-emerald-600">
-              WA AUTO REPLY
-            </span>
+            <p className="text-xs leading-5 text-pink-700">
+              Pesan ini akan otomatis terisi ketika pelanggan menekan
+              tombol WhatsApp pada website Anda.
+            </p>
           </div>
 
-          <textarea
-            rows={6}
-            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800 shadow-sm outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-pink-400 focus:ring-4 focus:ring-pink-100"
-            placeholder="Halo Donara 👋
-Saya ingin memesan donat hari ini. Mohon info menu dan stok yang tersedia ya 😊"
-            value={form.whatsapp_message}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                whatsapp_message: e.target.value,
-              }))
-            }
-          />
-
-          <div className="flex flex-col gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-xs text-emerald-700 sm:flex-row sm:items-start sm:justify-between">
-            <div className="flex items-start gap-2">
-              <span className="text-sm">💡</span>
-
-              <p className="leading-5">
-                Pesan ini akan otomatis terisi saat pelanggan menekan tombol
-                WhatsApp di landing page.
-              </p>
-            </div>
-
-            <span className="font-black text-emerald-800">
-              {form.whatsapp_message.length} karakter
-            </span>
-          </div>
+          <span className="shrink-0 text-xs font-black text-pink-600">
+            {form.whatsapp_message.length} karakter
+          </span>
         </div>
       </div>
     </div>
