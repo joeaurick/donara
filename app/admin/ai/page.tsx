@@ -56,6 +56,7 @@ export default function DonaraAIPage() {
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
+
   const [showSources, setShowSources] =
     useState<string | null>(null);
 
@@ -64,6 +65,9 @@ export default function DonaraAIPage() {
 
   const [isConversationLoaded, setIsConversationLoaded] =
     useState(false);
+
+  const chatScrollRef =
+    useRef<HTMLDivElement | null>(null);
 
   const bottomRef =
     useRef<HTMLDivElement | null>(null);
@@ -84,10 +88,6 @@ export default function DonaraAIPage() {
           return;
         }
 
-        setConversationId(
-          savedConversationId
-        );
-
         const response = await fetch(
           `/api/ai?conversationId=${encodeURIComponent(
             savedConversationId
@@ -105,6 +105,10 @@ export default function DonaraAIPage() {
         }
 
         const data = await response.json();
+
+        setConversationId(
+          savedConversationId
+        );
 
         if (Array.isArray(data.messages)) {
           const loadedMessages: Message[] =
@@ -154,15 +158,43 @@ export default function DonaraAIPage() {
   }, []);
 
   /* =========================
-     AUTO SCROLL
+     AUTO SCROLL CHAT AREA
   ========================= */
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "end",
-    });
-  }, [messages, loading]);
+    if (!isConversationLoaded) {
+      return;
+    }
+
+    const scrollToBottom = () => {
+      const container =
+        chatScrollRef.current;
+
+      if (!container) {
+        return;
+      }
+
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: loading
+          ? "smooth"
+          : "auto",
+      });
+    };
+
+    const timeout = window.setTimeout(
+      scrollToBottom,
+      50
+    );
+
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [
+    messages,
+    loading,
+    isConversationLoaded,
+  ]);
 
   /* =========================
      SUBMIT CHAT
@@ -453,8 +485,8 @@ export default function DonaraAIPage() {
   ========================= */
 
   return (
-    <main className="min-h-screen w-full bg-[#0d0d0f] text-white">
-      <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col overflow-hidden border-x border-white/[0.06] bg-[#111113]">
+    <main className="h-dvh w-full overflow-hidden bg-[#0d0d0f] text-white">
+      <div className="relative mx-auto flex h-dvh w-full max-w-6xl flex-col overflow-hidden border-x border-white/[0.06] bg-[#111113]">
 
         {/* Background */}
 
@@ -462,10 +494,10 @@ export default function DonaraAIPage() {
 
         <div className="pointer-events-none absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-orange-500/[0.025] blur-[120px]" />
 
-        {/* Header */}
+        {/* Header - SELALU TETAP DI ATAS */}
 
-        <header className="relative z-10 flex items-center justify-between border-b border-white/[0.07] bg-[#111113]/80 px-5 py-4 backdrop-blur-xl sm:px-8">
-          <div className="flex items-center gap-3.5">
+        <header className="relative z-20 flex shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#111113]/95 px-5 py-4 backdrop-blur-xl sm:px-8">
+          <div className="flex min-w-0 items-center gap-3.5">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a1a1d] shadow-[0_8px_25px_rgba(0,0,0,0.25)]">
               <Image
                 src="/images/logo/logo-new.png"
@@ -477,9 +509,9 @@ export default function DonaraAIPage() {
               />
             </div>
 
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold tracking-tight text-white sm:text-xl">
+                <h1 className="truncate text-lg font-bold tracking-tight text-white sm:text-xl">
                   Donara AI
                 </h1>
 
@@ -494,8 +526,7 @@ export default function DonaraAIPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-
+          <div className="ml-3 flex shrink-0 items-center gap-2">
             {messages.length > 0 && (
               <button
                 type="button"
@@ -528,12 +559,14 @@ export default function DonaraAIPage() {
           </div>
         </header>
 
-        {/* Chat */}
+        {/* CHAT AREA - HANYA BAGIAN INI YANG SCROLL */}
 
-        <section className="relative z-10 min-h-[calc(100vh-150px)] flex-1 px-4 py-8 sm:px-8 sm:py-10">
-
+        <section
+          ref={chatScrollRef}
+          className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-8 sm:px-8 sm:py-10"
+        >
           {!isConversationLoaded ? (
-            <div className="flex min-h-[520px] items-center justify-center">
+            <div className="flex min-h-full items-center justify-center">
               <div className="flex items-center gap-2 text-sm text-zinc-500">
                 <Sparkles
                   size={16}
@@ -544,7 +577,7 @@ export default function DonaraAIPage() {
               </div>
             </div>
           ) : messages.length === 0 ? (
-            <div className="mx-auto flex min-h-[520px] max-w-3xl flex-col items-center justify-center pb-12">
+            <div className="mx-auto flex min-h-full max-w-3xl flex-col items-center justify-center py-8">
 
               <div className="relative">
                 <div className="absolute inset-0 scale-150 rounded-full bg-amber-400/[0.06] blur-3xl" />
@@ -621,7 +654,6 @@ export default function DonaraAIPage() {
                           : "justify-start"
                       }`}
                     >
-
                       {message.role ===
                         "assistant" && (
                         <div className="mr-3 mt-1 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#18181b] shadow-[0_5px_18px_rgba(0,0,0,0.2)]">
@@ -658,7 +690,6 @@ export default function DonaraAIPage() {
 
                         {hasSources && (
                           <div className="mt-6">
-
                             <button
                               type="button"
                               onClick={() =>
@@ -712,7 +743,6 @@ export default function DonaraAIPage() {
                                     >
                                       <div className="min-w-0">
                                         <div className="flex flex-wrap items-center gap-2">
-
                                           <span className="text-[11px] font-bold text-amber-400">
                                             [
                                             {index +
@@ -790,9 +820,9 @@ export default function DonaraAIPage() {
           )}
         </section>
 
-        {/* Input */}
+        {/* INPUT - SELALU TETAP DI BAWAH */}
 
-        <div className="sticky bottom-0 z-20 border-t border-white/[0.06] bg-[#111113]/85 px-4 py-4 backdrop-blur-2xl sm:px-8 sm:py-5">
+        <div className="relative z-20 shrink-0 border-t border-white/[0.06] bg-[#111113]/95 px-4 py-4 backdrop-blur-2xl sm:px-8 sm:py-5">
           <form
             onSubmit={handleSubmit}
             className="mx-auto flex max-w-4xl items-center gap-2 rounded-[1.5rem] border border-white/[0.1] bg-[#1a1a1d] p-2 shadow-[0_15px_50px_rgba(0,0,0,0.35)] transition focus-within:border-white/[0.16] focus-within:bg-[#1d1d20]"
