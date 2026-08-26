@@ -2,7 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   ArrowUp,
   Check,
@@ -24,18 +29,21 @@ type NewsItem = {
 };
 
 type Message = {
-  id: number;
+  id: string;
   role: "user" | "assistant";
   content: string;
   news?: NewsItem[];
 };
 
-type ConversationHistoryItem = {
+type ApiMessage = {
+  id: string;
   role: "user" | "assistant";
   content: string;
+  created_at?: string;
 };
 
-const STORAGE_KEY = "donara-ai-conversation";
+const CONVERSATION_STORAGE_KEY =
+  "donara-ai-conversation-id";
 
 const suggestions = [
   "Cari berita bisnis dan ekonomi terbaru hari ini",
@@ -48,59 +56,106 @@ export default function DonaraAIPage() {
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
-  const [showSources, setShowSources] = useState<number | null>(null);
-  const [isMemoryLoaded, setIsMemoryLoaded] = useState(false);
+  const [showSources, setShowSources] =
+    useState<string | null>(null);
 
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const [conversationId, setConversationId] =
+    useState<string | null>(null);
+
+  const [isConversationLoaded, setIsConversationLoaded] =
+    useState(false);
+
+  const bottomRef =
+    useRef<HTMLDivElement | null>(null);
+
+  /* =========================
+     LOAD CONVERSATION
+  ========================= */
 
   useEffect(() => {
-    try {
-      const savedConversation = localStorage.getItem(STORAGE_KEY);
-
-      if (savedConversation) {
-        const parsedConversation = JSON.parse(savedConversation);
-
-        if (Array.isArray(parsedConversation)) {
-          const validMessages = parsedConversation.filter(
-            (message): message is Message =>
-              message &&
-              typeof message === "object" &&
-              typeof message.id === "number" &&
-              (message.role === "user" ||
-                message.role === "assistant") &&
-              typeof message.content === "string"
+    async function loadConversation() {
+      try {
+        const savedConversationId =
+          localStorage.getItem(
+            CONVERSATION_STORAGE_KEY
           );
 
-          setMessages(validMessages);
+        if (!savedConversationId) {
+          return;
         }
+
+        setConversationId(
+          savedConversationId
+        );
+
+        const response = await fetch(
+          `/api/ai?conversationId=${encodeURIComponent(
+            savedConversationId
+          )}`,
+          {
+            method: "GET",
+            cache: "no-store",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "Gagal memuat percakapan."
+          );
+        }
+
+        const data = await response.json();
+
+        if (Array.isArray(data.messages)) {
+          const loadedMessages: Message[] =
+            data.messages
+              .filter(
+                (
+                  message: ApiMessage
+                ): message is ApiMessage =>
+                  message &&
+                  typeof message === "object" &&
+                  typeof message.id === "string" &&
+                  (message.role === "user" ||
+                    message.role ===
+                      "assistant") &&
+                  typeof message.content ===
+                    "string"
+              )
+              .map(
+                (message: ApiMessage): Message => ({
+                  id: message.id,
+                  role: message.role,
+                  content: message.content,
+                  news: [],
+                })
+              );
+
+          setMessages(loadedMessages);
+        }
+      } catch (error) {
+        console.error(
+          "DONARA_AI_CONVERSATION_LOAD_ERROR:",
+          error
+        );
+
+        localStorage.removeItem(
+          CONVERSATION_STORAGE_KEY
+        );
+
+        setConversationId(null);
+        setMessages([]);
+      } finally {
+        setIsConversationLoaded(true);
       }
-    } catch (error) {
-      console.error(
-        "DONARA_AI_MEMORY_LOAD_ERROR:",
-        error
-      );
-    } finally {
-      setIsMemoryLoaded(true);
     }
+
+    loadConversation();
   }, []);
 
-  useEffect(() => {
-    if (!isMemoryLoaded) {
-      return;
-    }
-
-    try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(messages)
-      );
-    } catch (error) {
-      console.error(
-        "DONARA_AI_MEMORY_SAVE_ERROR:",
-        error
-      );
-    }
-  }, [messages, isMemoryLoaded]);
+  /* =========================
+     AUTO SCROLL
+  ========================= */
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
@@ -109,18 +164,9 @@ export default function DonaraAIPage() {
     });
   }, [messages, loading]);
 
-  function getConversationHistory(): ConversationHistoryItem[] {
-    return messages
-      .filter(
-        (message) =>
-          message.content.trim().length > 0
-      )
-      .slice(-20)
-      .map((message) => ({
-        role: message.role,
-        content: message.content,
-      }));
-  }
+  /* =========================
+     SUBMIT CHAT
+  ========================= */
 
   async function handleSubmit(
     e: FormEvent<HTMLFormElement>
@@ -133,18 +179,15 @@ export default function DonaraAIPage() {
       return;
     }
 
-    const conversationHistory =
-      getConversationHistory();
-
-    const userMessage: Message = {
-      id: Date.now(),
+    const temporaryUserMessage: Message = {
+      id: `temp-user-${Date.now()}`,
       role: "user",
       content: question,
     };
 
     setMessages((current) => [
       ...current,
-      userMessage,
+      temporaryUserMessage,
     ]);
 
     setPrompt("");
@@ -155,11 +198,12 @@ export default function DonaraAIPage() {
       const response = await fetch("/api/ai", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type":
+            "application/json",
         },
         body: JSON.stringify({
           prompt: question,
-          conversationHistory,
+          conversationId,
         }),
       });
 
@@ -172,19 +216,61 @@ export default function DonaraAIPage() {
         );
       }
 
+      const newConversationId =
+        typeof data.conversationId === "string"
+          ? data.conversationId
+          : conversationId;
+
+      if (newConversationId) {
+        setConversationId(newConversationId);
+
+        localStorage.setItem(
+          CONVERSATION_STORAGE_KEY,
+          newConversationId
+        );
+      }
+
+      const realUserMessageId =
+        typeof data.userMessageId === "string"
+          ? data.userMessageId
+          : temporaryUserMessage.id;
+
+      const assistantMessageId =
+        typeof data.assistantMessageId === "string"
+          ? data.assistantMessageId
+          : `assistant-${Date.now()}`;
+
       const aiMessage: Message = {
-        id: Date.now() + 1,
+        id: assistantMessageId,
         role: "assistant",
-        content: data.answer,
-        news: data.sources || [],
+        content:
+          typeof data.answer === "string"
+            ? data.answer
+            : "Maaf, AI tidak memberikan jawaban.",
+        news: Array.isArray(data.sources)
+          ? data.sources
+          : [],
       };
 
-      setMessages((current) => [
-        ...current,
-        aiMessage,
-      ]);
+      setMessages((current) => {
+        const updatedMessages = current.map(
+          (message) =>
+            message.id ===
+            temporaryUserMessage.id
+              ? {
+                  ...message,
+                  id: realUserMessageId,
+                }
+              : message
+        );
+
+        return [
+          ...updatedMessages,
+          aiMessage,
+        ];
+      });
     } catch (error) {
-      const message =
+      const errorMessage =
         error instanceof Error
           ? error.message
           : "Terjadi kesalahan saat memproses permintaan.";
@@ -192,15 +278,19 @@ export default function DonaraAIPage() {
       setMessages((current) => [
         ...current,
         {
-          id: Date.now() + 1,
+          id: `error-${Date.now()}`,
           role: "assistant",
-          content: `Maaf, ${message}`,
+          content: `Maaf, ${errorMessage}`,
         },
       ]);
     } finally {
       setLoading(false);
     }
   }
+
+  /* =========================
+     SUGGESTION
+  ========================= */
 
   function useSuggestion(value: string) {
     if (loading) {
@@ -210,107 +300,169 @@ export default function DonaraAIPage() {
     setPrompt(value);
   }
 
-  function clearConversation() {
+  /* =========================
+     CLEAR CONVERSATION
+  ========================= */
+
+  async function clearConversation() {
     if (loading) {
       return;
     }
 
+    const currentConversationId =
+      conversationId;
+
     setMessages([]);
     setShowSources(null);
+    setConversationId(null);
+
+    localStorage.removeItem(
+      CONVERSATION_STORAGE_KEY
+    );
+
+    if (!currentConversationId) {
+      return;
+    }
 
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      const response = await fetch(
+        `/api/ai?conversationId=${encodeURIComponent(
+          currentConversationId
+        )}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          "Gagal menghapus percakapan."
+        );
+      }
     } catch (error) {
       console.error(
-        "DONARA_AI_MEMORY_CLEAR_ERROR:",
+        "DONARA_AI_CONVERSATION_CLEAR_ERROR:",
         error
       );
     }
   }
 
-  function renderMessageContent(content: string) {
-    const paragraphs = content.split(/\n\s*\n/);
+  /* =========================
+     RENDER MESSAGE
+  ========================= */
 
-    return paragraphs.map((paragraph, index) => {
-      const lines = paragraph.split("\n");
+  function renderMessageContent(
+    content: string
+  ) {
+    const paragraphs =
+      content.split(/\n\s*\n/);
 
-      return (
-        <div
-          key={`${index}-${paragraph.slice(0, 30)}`}
-          className={index > 0 ? "mt-4" : ""}
-        >
-          {lines.map((line, lineIndex) => {
-            const trimmedLine = line.trim();
+    return paragraphs.map(
+      (paragraph, index) => {
+        const lines = paragraph.split("\n");
 
-            if (!trimmedLine) {
-              return null;
+        return (
+          <div
+            key={`${index}-${paragraph.slice(
+              0,
+              30
+            )}`}
+            className={
+              index > 0 ? "mt-4" : ""
             }
+          >
+            {lines.map(
+              (line, lineIndex) => {
+                const trimmedLine =
+                  line.trim();
 
-            const cleanLine = trimmedLine
-              .replace(/^\*\*(.+)\*\*$/, "$1")
-              .trim();
-
-            if (
-              trimmedLine.startsWith("- ") ||
-              trimmedLine.startsWith("• ")
-            ) {
-              return (
-                <div
-                  key={`${lineIndex}-${trimmedLine}`}
-                  className="mt-2 flex gap-3"
-                >
-                  <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
-
-                  <p>{trimmedLine.slice(2)}</p>
-                </div>
-              );
-            }
-
-            const numberedMatch = trimmedLine.match(
-              /^(\d+)\.\s+(.+)$/
-            );
-
-            if (numberedMatch) {
-              return (
-                <div
-                  key={`${lineIndex}-${trimmedLine}`}
-                  className="mt-3 flex gap-3"
-                >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-[11px] font-bold text-amber-300">
-                    {numberedMatch[1]}
-                  </span>
-
-                  <p className="pt-0.5">
-                    {numberedMatch[2]}
-                  </p>
-                </div>
-              );
-            }
-
-            return (
-              <p
-                key={`${lineIndex}-${trimmedLine}`}
-                className={
-                  lineIndex > 0
-                    ? "mt-2.5"
-                    : ""
+                if (!trimmedLine) {
+                  return null;
                 }
-              >
-                {cleanLine}
-              </p>
-            );
-          })}
-        </div>
-      );
-    });
+
+                const cleanLine =
+                  trimmedLine
+                    .replace(
+                      /^\*\*(.+)\*\*$/,
+                      "$1"
+                    )
+                    .trim();
+
+                if (
+                  trimmedLine.startsWith("- ") ||
+                  trimmedLine.startsWith("• ")
+                ) {
+                  return (
+                    <div
+                      key={`${lineIndex}-${trimmedLine}`}
+                      className="mt-2 flex gap-3"
+                    >
+                      <span className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" />
+
+                      <p>
+                        {trimmedLine.slice(2)}
+                      </p>
+                    </div>
+                  );
+                }
+
+                const numberedMatch =
+                  trimmedLine.match(
+                    /^(\d+)\.\s+(.+)$/
+                  );
+
+                if (numberedMatch) {
+                  return (
+                    <div
+                      key={`${lineIndex}-${trimmedLine}`}
+                      className="mt-3 flex gap-3"
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-[11px] font-bold text-amber-300">
+                        {numberedMatch[1]}
+                      </span>
+
+                      <p className="pt-0.5">
+                        {numberedMatch[2]}
+                      </p>
+                    </div>
+                  );
+                }
+
+                return (
+                  <p
+                    key={`${lineIndex}-${trimmedLine}`}
+                    className={
+                      lineIndex > 0
+                        ? "mt-2.5"
+                        : ""
+                    }
+                  >
+                    {cleanLine}
+                  </p>
+                );
+              }
+            )}
+          </div>
+        );
+      }
+    );
   }
+
+  /* =========================
+     PAGE
+  ========================= */
 
   return (
     <main className="min-h-screen w-full bg-[#0d0d0f] text-white">
       <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col overflow-hidden border-x border-white/[0.06] bg-[#111113]">
+
+        {/* Background */}
+
         <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[700px] -translate-x-1/2 rounded-full bg-amber-500/[0.035] blur-[120px]" />
 
         <div className="pointer-events-none absolute bottom-0 left-0 h-[400px] w-[400px] rounded-full bg-orange-500/[0.025] blur-[120px]" />
+
+        {/* Header */}
 
         <header className="relative z-10 flex items-center justify-between border-b border-white/[0.07] bg-[#111113]/80 px-5 py-4 backdrop-blur-xl sm:px-8">
           <div className="flex items-center gap-3.5">
@@ -343,6 +495,7 @@ export default function DonaraAIPage() {
           </div>
 
           <div className="flex items-center gap-2">
+
             {messages.length > 0 && (
               <button
                 type="button"
@@ -357,11 +510,11 @@ export default function DonaraAIPage() {
             )}
 
             <Link
-  href="/admin"
-  className="flex h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 text-xs font-medium text-zinc-400 transition hover:border-amber-400/20 hover:bg-amber-400/[0.07] hover:text-amber-300"
->
-  ← Menu ADMIN
-</Link>
+              href="/admin"
+              className="flex h-9 items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 text-xs font-medium text-zinc-400 transition hover:border-amber-400/20 hover:bg-amber-400/[0.07] hover:text-amber-300"
+            >
+              ← Menu ADMIN
+            </Link>
 
             <div className="hidden items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/[0.05] px-3 py-1.5 text-[11px] font-medium text-emerald-300 sm:flex">
               <span className="relative flex h-2 w-2">
@@ -375,9 +528,24 @@ export default function DonaraAIPage() {
           </div>
         </header>
 
+        {/* Chat */}
+
         <section className="relative z-10 min-h-[calc(100vh-150px)] flex-1 px-4 py-8 sm:px-8 sm:py-10">
-          {messages.length === 0 ? (
+
+          {!isConversationLoaded ? (
+            <div className="flex min-h-[520px] items-center justify-center">
+              <div className="flex items-center gap-2 text-sm text-zinc-500">
+                <Sparkles
+                  size={16}
+                  className="animate-pulse"
+                />
+
+                Memuat percakapan...
+              </div>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="mx-auto flex min-h-[520px] max-w-3xl flex-col items-center justify-center pb-12">
+
               <div className="relative">
                 <div className="absolute inset-0 scale-150 rounded-full bg-amber-400/[0.06] blur-3xl" />
 
@@ -404,153 +572,196 @@ export default function DonaraAIPage() {
               </p>
 
               <div className="mt-9 grid w-full gap-3 sm:grid-cols-2">
-                {suggestions.map((suggestion) => (
-                  <button
-                    key={suggestion}
-                    type="button"
-                    onClick={() =>
-                      useSuggestion(suggestion)
-                    }
-                    disabled={loading}
-                    className="group flex min-h-[88px] items-start gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/20 hover:bg-white/[0.045] hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed"
-                  >
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/10 bg-amber-400/[0.07] text-amber-300 transition-transform duration-200 group-hover:scale-105">
-                      <Search size={17} />
-                    </span>
+                {suggestions.map(
+                  (suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() =>
+                        useSuggestion(
+                          suggestion
+                        )
+                      }
+                      disabled={loading}
+                      className="group flex min-h-[88px] items-start gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.025] p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-400/20 hover:bg-white/[0.045] hover:shadow-[0_15px_40px_rgba(0,0,0,0.18)] disabled:cursor-not-allowed"
+                    >
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/10 bg-amber-400/[0.07] text-amber-300 transition-transform duration-200 group-hover:scale-105">
+                        <Search size={17} />
+                      </span>
 
-                    <span className="pt-1 text-sm font-medium leading-5 text-zinc-300 transition-colors group-hover:text-white">
-                      {suggestion}
-                    </span>
-                  </button>
-                ))}
+                      <span className="pt-1 text-sm font-medium leading-5 text-zinc-300 transition-colors group-hover:text-white">
+                        {suggestion}
+                      </span>
+                    </button>
+                  )
+                )}
               </div>
             </div>
           ) : (
             <div className="mx-auto w-full max-w-4xl space-y-9">
-              {messages.map((message) => {
-                const hasSources =
-                  message.role === "assistant" &&
-                  message.news &&
-                  message.news.length > 0;
 
-                const isSourcesOpen =
-                  showSources === message.id;
+              {messages.map(
+                (message) => {
+                  const hasSources =
+                    message.role ===
+                      "assistant" &&
+                    message.news &&
+                    message.news.length > 0;
 
-                return (
-                  <div
-                    key={message.id}
-                    className={`flex w-full ${
-                      message.role === "user"
-                        ? "justify-end"
-                        : "justify-start"
-                    }`}
-                  >
-                    {message.role === "assistant" && (
-                      <div className="mr-3 mt-1 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#18181b] shadow-[0_5px_18px_rgba(0,0,0,0.2)]">
-                        <Image
-                          src="/images/logo/logo-new.png"
-                          alt="Donara AI"
-                          width={36}
-                          height={36}
-                          className="h-full w-full object-contain p-1"
-                        />
-                      </div>
-                    )}
+                  const isSourcesOpen =
+                    showSources === message.id;
 
+                  return (
                     <div
-                      className={
-                        message.role === "user"
-                          ? "max-w-[85%] rounded-[1.5rem] rounded-br-md border border-amber-400/10 bg-[#2a2119] px-5 py-3.5 text-sm leading-6 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:max-w-[70%]"
-                          : "min-w-0 max-w-[calc(100%-3rem)] flex-1 pt-1 text-sm leading-7 text-zinc-300"
-                      }
+                      key={message.id}
+                      className={`flex w-full ${
+                        message.role ===
+                        "user"
+                          ? "justify-end"
+                          : "justify-start"
+                      }`}
                     >
-                      {message.role === "user" ? (
-                        <p>{message.content}</p>
-                      ) : (
-                        <div className="space-y-3">
-                          {renderMessageContent(
-                            message.content
-                          )}
+
+                      {message.role ===
+                        "assistant" && (
+                        <div className="mr-3 mt-1 flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/[0.08] bg-[#18181b] shadow-[0_5px_18px_rgba(0,0,0,0.2)]">
+                          <Image
+                            src="/images/logo/logo-new.png"
+                            alt="Donara AI"
+                            width={36}
+                            height={36}
+                            className="h-full w-full object-contain p-1"
+                          />
                         </div>
                       )}
 
-                      {hasSources && (
-                        <div className="mt-6">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowSources((current) =>
-                                current === message.id
-                                  ? null
-                                  : message.id
-                              )
-                            }
-                            className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.035] px-3.5 py-2 text-xs font-medium text-zinc-400 transition hover:border-white/[0.14] hover:bg-white/[0.06] hover:text-zinc-200"
-                          >
-                            <Globe2 size={14} />
+                      <div
+                        className={
+                          message.role ===
+                          "user"
+                            ? "max-w-[85%] rounded-[1.5rem] rounded-br-md border border-amber-400/10 bg-[#2a2119] px-5 py-3.5 text-sm leading-6 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:max-w-[70%]"
+                            : "min-w-0 max-w-[calc(100%-3rem)] flex-1 pt-1 text-sm leading-7 text-zinc-300"
+                        }
+                      >
+                        {message.role ===
+                        "user" ? (
+                          <p>
+                            {message.content}
+                          </p>
+                        ) : (
+                          <div className="space-y-3">
+                            {renderMessageContent(
+                              message.content
+                            )}
+                          </div>
+                        )}
 
-                            <span>
-                              {message.news?.length} sumber
-                            </span>
+                        {hasSources && (
+                          <div className="mt-6">
 
-                            <ChevronDown
-                              size={14}
-                              className={`transition-transform duration-200 ${
-                                isSourcesOpen
-                                  ? "rotate-180"
-                                  : ""
-                              }`}
-                            />
-                          </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowSources(
+                                  (
+                                    current
+                                  ) =>
+                                    current ===
+                                    message.id
+                                      ? null
+                                      : message.id
+                                )
+                              }
+                              className="inline-flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.035] px-3.5 py-2 text-xs font-medium text-zinc-400 transition hover:border-white/[0.14] hover:bg-white/[0.06] hover:text-zinc-200"
+                            >
+                              <Globe2 size={14} />
 
-                          {isSourcesOpen && (
-                            <div className="mt-3 space-y-1.5 border-l border-white/[0.08] pl-3">
-                              {message.news?.map(
-                                (news, index) => (
-                                  <a
-                                    key={`${news.url}-${index}`}
-                                    href={news.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="group flex items-start justify-between gap-3 rounded-xl px-3 py-3 transition hover:bg-white/[0.035]"
-                                  >
-                                    <div className="min-w-0">
-                                      <div className="flex flex-wrap items-center gap-2">
-                                        <span className="text-[11px] font-bold text-amber-400">
-                                          [{index + 1}]
-                                        </span>
+                              <span>
+                                {
+                                  message.news
+                                    ?.length
+                                }{" "}
+                                sumber
+                              </span>
 
-                                        <span className="text-[11px] font-medium text-zinc-500">
-                                          {news.source}
-                                        </span>
+                              <ChevronDown
+                                size={14}
+                                className={`transition-transform duration-200 ${
+                                  isSourcesOpen
+                                    ? "rotate-180"
+                                    : ""
+                                }`}
+                              />
+                            </button>
 
-                                        <span className="flex items-center gap-1 text-[10px] text-zinc-600">
-                                          <Clock3 size={10} />
+                            {isSourcesOpen && (
+                              <div className="mt-3 space-y-1.5 border-l border-white/[0.08] pl-3">
+                                {message.news?.map(
+                                  (
+                                    news,
+                                    index
+                                  ) => (
+                                    <a
+                                      key={`${news.url}-${index}`}
+                                      href={
+                                        news.url
+                                      }
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="group flex items-start justify-between gap-3 rounded-xl px-3 py-3 transition hover:bg-white/[0.035]"
+                                    >
+                                      <div className="min-w-0">
+                                        <div className="flex flex-wrap items-center gap-2">
 
-                                          {news.time}
-                                        </span>
+                                          <span className="text-[11px] font-bold text-amber-400">
+                                            [
+                                            {index +
+                                              1}
+                                            ]
+                                          </span>
+
+                                          <span className="text-[11px] font-medium text-zinc-500">
+                                            {
+                                              news.source
+                                            }
+                                          </span>
+
+                                          <span className="flex items-center gap-1 text-[10px] text-zinc-600">
+                                            <Clock3
+                                              size={
+                                                10
+                                              }
+                                            />
+
+                                            {
+                                              news.time
+                                            }
+                                          </span>
+                                        </div>
+
+                                        <p className="mt-1.5 text-xs font-medium leading-5 text-zinc-400 transition group-hover:text-zinc-100">
+                                          {
+                                            news.title
+                                          }
+                                        </p>
                                       </div>
 
-                                      <p className="mt-1.5 text-xs font-medium leading-5 text-zinc-400 transition group-hover:text-zinc-100">
-                                        {news.title}
-                                      </p>
-                                    </div>
-
-                                    <ExternalLink
-                                      size={14}
-                                      className="mt-1 shrink-0 text-zinc-600 transition group-hover:text-amber-400"
-                                    />
-                                  </a>
-                                )
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
+                                      <ExternalLink
+                                        size={14}
+                                        className="mt-1 shrink-0 text-zinc-600 transition group-hover:text-amber-400"
+                                      />
+                                    </a>
+                                  )
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                }
+              )}
 
               {loading && (
                 <div className="flex items-start">
@@ -579,29 +790,35 @@ export default function DonaraAIPage() {
           )}
         </section>
 
+        {/* Input */}
+
         <div className="sticky bottom-0 z-20 border-t border-white/[0.06] bg-[#111113]/85 px-4 py-4 backdrop-blur-2xl sm:px-8 sm:py-5">
           <form
             onSubmit={handleSubmit}
             className="mx-auto flex max-w-4xl items-center gap-2 rounded-[1.5rem] border border-white/[0.1] bg-[#1a1a1d] p-2 shadow-[0_15px_50px_rgba(0,0,0,0.35)] transition focus-within:border-white/[0.16] focus-within:bg-[#1d1d20]"
           >
             <input
-  type="text"
-  value={prompt}
-  onChange={(e) => setPrompt(e.target.value)}
-  placeholder="Tanyakan sesuatu..."
-  disabled={loading}
-  autoComplete="off"
-  style={{
-    color: "#FFFFFF",
-    opacity: 1,
-  }}
-  className="h-12 min-w-0 flex-1 bg-transparent px-3 text-base font-semibold placeholder:text-zinc-500 caret-white focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
-/>
+              type="text"
+              value={prompt}
+              onChange={(e) =>
+                setPrompt(e.target.value)
+              }
+              placeholder="Tanyakan sesuatu..."
+              disabled={loading}
+              autoComplete="off"
+              style={{
+                color: "#FFFFFF",
+                opacity: 1,
+              }}
+              className="h-12 min-w-0 flex-1 bg-transparent px-3 text-base font-semibold placeholder:text-zinc-500 caret-white focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            />
 
             <button
               type="submit"
               disabled={
-                !prompt.trim() || loading
+                !prompt.trim() ||
+                loading ||
+                !isConversationLoaded
               }
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-black shadow-[0_5px_20px_rgba(255,255,255,0.08)] transition-all hover:scale-[1.03] hover:bg-zinc-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-30"
               aria-label="Kirim pertanyaan"
@@ -622,7 +839,8 @@ export default function DonaraAIPage() {
 
           <p className="mx-auto mt-3 flex max-w-4xl items-center justify-center gap-1.5 text-center text-[10px] text-zinc-600">
             <Check size={11} />
-            Percakapan disimpan di perangkat ini.
+
+            Percakapan tersimpan di akun Anda.
             Informasi dapat berubah dan jawaban
             didasarkan pada sumber yang tersedia.
           </p>
