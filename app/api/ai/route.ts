@@ -41,9 +41,13 @@ function getText(value: unknown): string {
     typeof value === "object" &&
     "#text" in value
   ) {
-    const text = (value as { "#text"?: unknown })["#text"];
+    const text = (
+      value as { "#text"?: unknown }
+    )["#text"];
 
-    return typeof text === "string" ? text : "";
+    return typeof text === "string"
+      ? text
+      : "";
   }
 
   return "";
@@ -63,7 +67,9 @@ function stripHtml(value: string): string {
     .trim();
 }
 
-function formatNewsTime(pubDate?: string): string {
+function formatNewsTime(
+  pubDate?: string
+): string {
   if (!pubDate) {
     return "Baru saja";
   }
@@ -119,7 +125,9 @@ function formatNewsTime(pubDate?: string): string {
    DETEKSI CHAT SEDERHANA
 ========================= */
 
-function isSimpleGreeting(prompt: string): boolean {
+function isSimpleGreeting(
+  prompt: string
+): boolean {
   const normalized = prompt
     .toLowerCase()
     .trim()
@@ -150,7 +158,9 @@ function isSimpleGreeting(prompt: string): boolean {
    DETEKSI PERLU BERITA
 ========================= */
 
-function needsNewsSearch(prompt: string): boolean {
+function needsNewsSearch(
+  prompt: string
+): boolean {
   const text = prompt.toLowerCase();
 
   const newsKeywords = [
@@ -182,8 +192,8 @@ function needsNewsSearch(prompt: string): boolean {
     "viral",
   ];
 
-  return newsKeywords.some((keyword) =>
-    text.includes(keyword)
+  return newsKeywords.some(
+    (keyword) => text.includes(keyword)
   );
 }
 
@@ -191,7 +201,9 @@ function needsNewsSearch(prompt: string): boolean {
    EKSTRAK KATA KUNCI
 ========================= */
 
-function extractKeywords(prompt: string): string[] {
+function extractKeywords(
+  prompt: string
+): string[] {
   const stopWords = new Set([
     "cari",
     "carikan",
@@ -267,7 +279,10 @@ function calculateRelevance(
   }
 
   const title = item.title.toLowerCase();
-  const description = item.description.toLowerCase();
+
+  const description =
+    item.description.toLowerCase();
+
   const source = item.source.toLowerCase();
 
   let score = 0;
@@ -407,13 +422,16 @@ Jangan menulis penjelasan lain.
     const data = await response.json();
 
     const text =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      data?.candidates?.[0]?.content?.parts?.[0]
+        ?.text;
 
     if (!text || typeof text !== "string") {
       return [];
     }
 
-    if (text.trim().toUpperCase() === "NONE") {
+    if (
+      text.trim().toUpperCase() === "NONE"
+    ) {
       return [];
     }
 
@@ -427,7 +445,8 @@ Jangan menulis penjelasan lain.
         line.replace("MEMORY:", "").trim()
       )
       .filter(
-        (memory: string) => memory.length > 0
+        (memory: string) =>
+          memory.length > 0
       )
       .slice(0, 3);
   } catch {
@@ -447,13 +466,16 @@ async function saveMemories(
     return;
   }
 
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
-  const { data: existingMemories, error } =
-    await supabase
-      .from("ai_memories")
-      .select("memory")
-      .eq("user_id", userId);
+  const {
+    data: existingMemories,
+    error,
+  } = await supabase
+    .from("ai_memories")
+    .select("memory")
+    .eq("user_id", userId);
 
   if (error) {
     console.error(
@@ -465,14 +487,17 @@ async function saveMemories(
   }
 
   const existing = new Set(
-    (existingMemories || []).map((item) =>
-      item.memory.toLowerCase().trim()
+    (existingMemories || []).map(
+      (item) =>
+        item.memory.toLowerCase().trim()
     )
   );
 
   const newMemories = memories.filter(
     (memory) =>
-      !existing.has(memory.toLowerCase().trim())
+      !existing.has(
+        memory.toLowerCase().trim()
+      )
   );
 
   if (newMemories.length === 0) {
@@ -663,7 +688,8 @@ Jawab secara natural sesuai konteks pengguna.
   }
 
   const text =
-    data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    data?.candidates?.[0]?.content?.parts?.[0]
+      ?.text;
 
   if (!text || typeof text !== "string") {
     throw new Error(
@@ -794,7 +820,10 @@ async function searchNews(
 
       return score > 0;
     })
-    .sort((a, b) => b.score - a.score);
+    .sort(
+      (a, b) =>
+        b.score - a.score
+    );
 
   return scoredNews
     .slice(0, 8)
@@ -805,7 +834,7 @@ async function searchNews(
 }
 
 /* =========================
-   API DONARA AI
+   POST - KIRIM PESAN AI
 ========================= */
 
 export async function POST(
@@ -840,7 +869,8 @@ export async function POST(
        SUPABASE + USER
     ========================= */
 
-    const supabase = await createClient();
+    const supabase =
+      await createClient();
 
     const {
       data: {
@@ -929,8 +959,13 @@ export async function POST(
       error: historyError,
     } = await supabase
       .from("ai_messages")
-      .select("role, content, created_at")
-      .eq("conversation_id", conversationId)
+      .select(
+        "role, content, created_at"
+      )
+      .eq(
+        "conversation_id",
+        conversationId
+      )
       .order("created_at", {
         ascending: false,
       })
@@ -977,16 +1012,19 @@ export async function POST(
     }
 
     const memories: AIMemory[] =
-      (memoryData || []).map((memory) => ({
-        id: memory.id,
-        memory: memory.memory,
-      }));
+      (memoryData || []).map(
+        (memory) => ({
+          id: memory.id,
+          memory: memory.memory,
+        })
+      );
 
     /* =========================
        SIMPAN PESAN USER
     ========================= */
 
     const {
+      data: savedUserMessage,
       error: saveUserMessageError,
     } = await supabase
       .from("ai_messages")
@@ -994,11 +1032,17 @@ export async function POST(
         conversation_id: conversationId,
         role: "user",
         content: prompt,
-      });
+      })
+      .select("id")
+      .single();
 
-    if (saveUserMessageError) {
+    if (
+      saveUserMessageError ||
+      !savedUserMessage
+    ) {
       throw new Error(
-        saveUserMessageError.message
+        saveUserMessageError?.message ||
+          "Gagal menyimpan pesan pengguna."
       );
     }
 
@@ -1030,12 +1074,13 @@ export async function POST(
       ========================= */
 
       if (!shouldSearchNews) {
-        answer = await generateWithGemini(
-          prompt,
-          [],
-          conversationHistory,
-          memories
-        );
+        answer =
+          await generateWithGemini(
+            prompt,
+            [],
+            conversationHistory,
+            memories
+          );
       } else {
         /* =========================
            NEWS + AI
@@ -1055,21 +1100,23 @@ export async function POST(
         );
 
         if (news.length === 0) {
-          answer = await generateWithGemini(
-            prompt,
-            [],
-            conversationHistory,
-            memories
-          );
+          answer =
+            await generateWithGemini(
+              prompt,
+              [],
+              conversationHistory,
+              memories
+            );
         } else {
           mode = "news";
 
-          answer = await generateWithGemini(
-            prompt,
-            news,
-            conversationHistory,
-            memories
-          );
+          answer =
+            await generateWithGemini(
+              prompt,
+              news,
+              conversationHistory,
+              memories
+            );
         }
       }
     }
@@ -1079,6 +1126,7 @@ export async function POST(
     ========================= */
 
     const {
+      data: savedAssistantMessage,
       error: saveAssistantMessageError,
     } = await supabase
       .from("ai_messages")
@@ -1086,11 +1134,17 @@ export async function POST(
         conversation_id: conversationId,
         role: "assistant",
         content: answer,
-      });
+      })
+      .select("id")
+      .single();
 
-    if (saveAssistantMessageError) {
+    if (
+      saveAssistantMessageError ||
+      !savedAssistantMessage
+    ) {
       throw new Error(
-        saveAssistantMessageError.message
+        saveAssistantMessageError?.message ||
+          "Gagal menyimpan jawaban AI."
       );
     }
 
@@ -1098,14 +1152,16 @@ export async function POST(
        UPDATE WAKTU CONVERSATION
     ========================= */
 
-    const { error: updateConversationError } =
-      await supabase
-        .from("ai_conversations")
-        .update({
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", conversationId)
-        .eq("user_id", user.id);
+    const {
+      error: updateConversationError,
+    } = await supabase
+      .from("ai_conversations")
+      .update({
+        updated_at:
+          new Date().toISOString(),
+      })
+      .eq("id", conversationId)
+      .eq("user_id", user.id);
 
     if (updateConversationError) {
       console.error(
@@ -1146,6 +1202,10 @@ export async function POST(
       success: true,
       mode,
       conversationId,
+      userMessageId:
+        savedUserMessage.id,
+      assistantMessageId:
+        savedAssistantMessage.id,
       prompt,
       answer,
       sources,
@@ -1161,6 +1221,256 @@ export async function POST(
       error instanceof Error
         ? error.message
         : "Terjadi kesalahan saat memproses permintaan.";
+
+    return NextResponse.json(
+      {
+        error: message,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+/* =========================
+   GET - AMBIL CHAT LAMA
+========================= */
+
+export async function GET(
+  request: NextRequest
+) {
+  try {
+    const { searchParams } =
+      new URL(request.url);
+
+    const conversationId =
+      searchParams.get("conversationId");
+
+    if (!conversationId) {
+      return NextResponse.json(
+        {
+          error:
+            "Conversation ID tidak ditemukan.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const supabase =
+      await createClient();
+
+    const {
+      data: {
+        user,
+      },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        {
+          error:
+            "Anda harus login untuk mengakses percakapan.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const {
+      data: conversation,
+      error: conversationError,
+    } = await supabase
+      .from("ai_conversations")
+      .select("id")
+      .eq("id", conversationId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (
+      conversationError ||
+      !conversation
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Percakapan tidak ditemukan.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const {
+      data: messages,
+      error: messagesError,
+    } = await supabase
+      .from("ai_messages")
+      .select(
+        "id, role, content, created_at"
+      )
+      .eq(
+        "conversation_id",
+        conversationId
+      )
+      .order("created_at", {
+        ascending: true,
+      });
+
+    if (messagesError) {
+      throw new Error(
+        messagesError.message
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      conversationId,
+      messages: messages || [],
+    });
+  } catch (error) {
+    console.error(
+      "DONARA_AI_GET_ERROR:",
+      error
+    );
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Gagal memuat percakapan.";
+
+    return NextResponse.json(
+      {
+        error: message,
+      },
+      {
+        status: 500,
+      }
+    );
+  }
+}
+
+/* =========================
+   DELETE - HAPUS PERCAKAPAN
+========================= */
+
+export async function DELETE(
+  request: NextRequest
+) {
+  try {
+    const { searchParams } =
+      new URL(request.url);
+
+    const conversationId =
+      searchParams.get("conversationId");
+
+    if (!conversationId) {
+      return NextResponse.json(
+        {
+          error:
+            "Conversation ID tidak ditemukan.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const supabase =
+      await createClient();
+
+    const {
+      data: {
+        user,
+      },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return NextResponse.json(
+        {
+          error:
+            "Anda harus login.",
+        },
+        {
+          status: 401,
+        }
+      );
+    }
+
+    const {
+      data: conversation,
+      error: conversationError,
+    } = await supabase
+      .from("ai_conversations")
+      .select("id")
+      .eq("id", conversationId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (
+      conversationError ||
+      !conversation
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Percakapan tidak ditemukan.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    const {
+      error: deleteMessagesError,
+    } = await supabase
+      .from("ai_messages")
+      .delete()
+      .eq(
+        "conversation_id",
+        conversationId
+      );
+
+    if (deleteMessagesError) {
+      throw new Error(
+        deleteMessagesError.message
+      );
+    }
+
+    const {
+      error: deleteConversationError,
+    } = await supabase
+      .from("ai_conversations")
+      .delete()
+      .eq("id", conversationId)
+      .eq("user_id", user.id);
+
+    if (deleteConversationError) {
+      throw new Error(
+        deleteConversationError.message
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+    });
+  } catch (error) {
+    console.error(
+      "DONARA_AI_DELETE_ERROR:",
+      error
+    );
+
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Gagal menghapus percakapan.";
 
     return NextResponse.json(
       {
