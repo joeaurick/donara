@@ -12,7 +12,6 @@ interface Product {
   category: string;
   is_package: boolean;
   package_size?: number;
-
   promo_code?: string | null;
 
   [key: string]: any;
@@ -26,70 +25,92 @@ interface ProductGridProps {
   cart?: any[];
 }
 
-function animateToCart(sourceElement: HTMLElement) {
+function animateToCart(
+  sourceElement: HTMLElement
+) {
   const cartButton = document.getElementById(
-    "mobile-cart-button"
+    "mobile-floating-cart"
   );
 
-  if (!cartButton) return;
+  if (!cartButton) {
+    return;
+  }
+
+  const productImage =
+    sourceElement.querySelector(
+      "[data-product-image]"
+    ) as HTMLElement | null;
+
+  const flyingElement =
+    productImage || sourceElement;
 
   const sourceRect =
-    sourceElement.getBoundingClientRect();
+    flyingElement.getBoundingClientRect();
 
   const targetRect =
     cartButton.getBoundingClientRect();
 
   const clone =
-    sourceElement.cloneNode(true) as HTMLElement;
+    flyingElement.cloneNode(true) as HTMLElement;
 
   clone.style.position = "fixed";
   clone.style.left = `${sourceRect.left}px`;
   clone.style.top = `${sourceRect.top}px`;
   clone.style.width = `${sourceRect.width}px`;
   clone.style.height = `${sourceRect.height}px`;
+  clone.style.margin = "0";
   clone.style.zIndex = "9999";
   clone.style.pointerEvents = "none";
-  clone.style.borderRadius = "24px";
+  clone.style.borderRadius = "50%";
   clone.style.overflow = "hidden";
+  clone.style.transformOrigin = "center center";
+  clone.style.boxShadow =
+    "0 12px 30px rgba(236,25,117,0.28)";
+
   clone.style.transition =
-    "transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.7s ease";
+    "transform 0.65s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.65s ease";
 
   document.body.appendChild(clone);
 
+  const startX =
+    sourceRect.left +
+    sourceRect.width / 2;
+
+  const startY =
+    sourceRect.top +
+    sourceRect.height / 2;
+
+  const endX =
+    targetRect.left +
+    targetRect.width / 2;
+
+  const endY =
+    targetRect.top +
+    targetRect.height / 2;
+
+  const translateX =
+    endX - startX;
+
+  const translateY =
+    endY - startY;
+
   requestAnimationFrame(() => {
-    const translateX =
-      targetRect.left +
-      targetRect.width / 2 -
-      (sourceRect.left +
-        sourceRect.width / 2);
-
-    const translateY =
-      targetRect.top +
-      targetRect.height / 2 -
-      (sourceRect.top +
-        sourceRect.height / 2);
-
     clone.style.transform = `
       translate(${translateX}px, ${translateY}px)
-      scale(0.12)
+      scale(0.18)
+      rotate(360deg)
     `;
 
-    clone.style.opacity = "0.15";
+    clone.style.opacity = "0";
   });
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     clone.remove();
 
-    cartButton.classList.add(
-      "cart-bounce"
+    window.dispatchEvent(
+      new CustomEvent("donara-cart-receive")
     );
-
-    setTimeout(() => {
-      cartButton.classList.remove(
-        "cart-bounce"
-      );
-    }, 500);
-  }, 700);
+  }, 650);
 }
 
 export default function ProductGrid({
@@ -159,21 +180,24 @@ export default function ProductGrid({
                 const handleItemClick = (
                   e: React.MouseEvent<HTMLButtonElement>
                 ) => {
-                  animateToCart(
-                    e.currentTarget
-                  );
+                  /*
+                    Animasi hanya untuk mobile.
+                    Desktop tetap memakai cart kanan.
+                  */
+                  if (
+                    typeof window !== "undefined" &&
+                    window.innerWidth < 1280
+                  ) {
+                    animateToCart(
+                      e.currentTarget
+                    );
+                  }
 
-                  setTimeout(() => {
-                    if (
-                      product.is_package
-                    ) {
-                      onPackageClick(
-                        product
-                      );
+                  window.setTimeout(() => {
+                    if (product.is_package) {
+                      onPackageClick(product);
                     } else {
-                      onProductClick(
-                        product
-                      );
+                      onProductClick(product);
                     }
                   }, 120);
                 };
@@ -203,7 +227,10 @@ export default function ProductGrid({
                     <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-pink-50/0 via-pink-50/0 to-pink-50/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
                     {/* IMAGE */}
-                    <div className="relative aspect-square w-full overflow-hidden rounded-[17px] bg-[#fff8f7]">
+                    <div
+                      data-product-image
+                      className="relative aspect-square w-full overflow-hidden rounded-[17px] bg-[#fff8f7]"
+                    >
                       {finalImageUrl ? (
                         <Image
                           src={finalImageUrl}

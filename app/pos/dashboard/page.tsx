@@ -28,6 +28,8 @@ import PendingOrdersModal from "../components/PendingOrdersModal";
 
 import PosReminderTicker from "../components/PosReminderTicker";
 
+import FloatingCartButton from "../components/FloatingCartButton";
+
 export default function PosDashboardPage() {
   // =========================
   // PRODUCTS
@@ -543,7 +545,7 @@ export default function PosDashboardPage() {
 
   return (
     <>
-      <main className="flex h-dvh w-full flex-col overflow-hidden bg-gradient-to-b from-[#fff8f7] via-[#fffdfc] to-white pb-[76px] select-none xl:pb-0">
+      <main className="flex min-h-full w-full flex-col bg-gradient-to-b from-[#fff8f7] via-[#fffdfc] to-white pb-[170px] select-none xl:h-dvh xl:overflow-hidden xl:pb-0">
 
         {/* =========================
             TOKO TUTUP BANNER
@@ -793,18 +795,18 @@ export default function PosDashboardPage() {
         {/* =========================
             MAIN CONTENT
         ========================= */}
-        <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden xl:grid-cols-4">
+        <div className="block w-full xl:grid xl:min-h-0 xl:flex-1 xl:grid-cols-4 xl:overflow-hidden">
 
           {/* =========================
               LEFT AREA
           ========================= */}
           <section
-            className={`col-span-1 flex min-h-0 flex-col xl:col-span-3 ${
-              cartDisabled && !isAdmin
-                ? "pointer-events-none opacity-50"
-                : ""
-            }`}
-          >
+  className={`flex w-full flex-col xl:col-span-3 xl:min-h-0 ${
+    cartDisabled && !isAdmin
+      ? "pointer-events-none opacity-50"
+      : ""
+  }`}
+>
 
             {/* =========================
                 STOCK MANAGEMENT
@@ -1067,7 +1069,7 @@ export default function PosDashboardPage() {
             {/* =========================
                 PRODUCT GRID
             ========================= */}
-            <div className="flex-1 overflow-y-auto px-3 pb-5 xl:px-4">
+            <div className="px-3 pb-5 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:px-4">
               <ProductGrid
                 products={filtered}
                 todayStock={todayStock}
@@ -1112,44 +1114,14 @@ export default function PosDashboardPage() {
         {/* =========================
     MOBILE CART BUTTON
 ========================= */}
-<div className="fixed inset-x-0 bottom-0 z-[250] border-t border-[#eaded7] bg-[#fffaf5]/95 px-3 pb-3 pt-2 backdrop-blur-xl xl:hidden">
-  <button
-    id="mobile-cart-button"
-    type="button"
-    onClick={openCart}
-    disabled={
-      cartDisabled && !isAdmin
-    }
-    className="group relative flex w-full items-center justify-center overflow-hidden rounded-[18px] bg-gradient-to-r from-[#ec0755] via-[#f00663] to-[#ec0755] px-4 py-3.5 text-white shadow-[0_10px_24px_rgba(236,7,85,0.28)] transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:from-gray-300 disabled:via-gray-300 disabled:to-gray-300 disabled:text-gray-500"
-  >
-    {/* GLOW */}
-    <span className="pointer-events-none absolute -left-8 top-0 h-full w-20 bg-white/10 blur-xl" />
 
-    {/* ICON */}
-    <span className="relative z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/15 text-[11px] font-black">
-      N
-    </span>
-
-    {/* TEXT */}
-    <span className="relative z-10 mx-3 text-[10px] font-black uppercase tracking-[0.16em]">
-      Lihat Keranjang
-    </span>
-
-    {/* ITEM BADGE */}
-    <span className="relative z-10 flex min-w-[24px] items-center justify-center rounded-full bg-white/20 px-2 py-1 text-[10px] font-black shadow-sm">
-      {cart?.reduce(
-        (total, item) =>
-          total + item.qty,
-        0
-      ) ?? 0}
-    </span>
-  </button>
-</div>
 
         {/* =========================
             MOBILE CART
         ========================= */}
-        <MobileCartSheet />
+        <FloatingCartButton />
+
+<MobileCartSheet />
 
         {/* =========================
             PACKAGE PICKER
