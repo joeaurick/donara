@@ -11,7 +11,7 @@ export const runtime = "nodejs";
 const DONARA_AI_SERVER_URL =
   (
     process.env.DONARA_AI_SERVER_URL ||
-    "https://polymer-laser-tsunami-tony.trycloudflare.com"
+    "https://transcription-size-corner-growing.trycloudflare.com"
   ).replace(/\/$/, "");
 
 /* =========================
