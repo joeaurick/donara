@@ -5,6 +5,16 @@ import { createClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 /* =========================
+   DONARA AI SERVER
+========================= */
+
+const DONARA_AI_SERVER_URL =
+  (
+    process.env.DONARA_AI_SERVER_URL ||
+    "https://polymer-laser-tsunami-tony.trycloudflare.com"
+  ).replace(/\/$/, "");
+
+/* =========================
    TYPES
 ========================= */
 
@@ -23,6 +33,13 @@ type SourceItem = {
   source: string;
   time: string;
   url: string;
+};
+
+type DonaraAIResponse = {
+  success?: boolean;
+  answer?: string;
+  error?: string;
+  detail?: string;
 };
 
 /* =========================
@@ -65,6 +82,137 @@ function stripHtml(value: string): string {
     .replace(/&#8217;/g, "'")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/* =========================
+   DONARA AI SERVER
+========================= */
+
+async function askDonaraAI(
+  prompt: string,
+  news: NewsItem[] = []
+): Promise<string> {
+  const newsContext =
+    news.length > 0
+      ? news
+          .map(
+            (item, index) =>
+              `${index + 1}. ${item.title}\n` +
+              `Sumber: ${item.source}\n` +
+              `Waktu: ${item.time}\n` +
+              `Deskripsi: ${item.description}\n` +
+              `URL: ${item.url}`
+          )
+          .join("\n\n")
+      : "";
+
+  const aiPrompt = newsContext
+    ? `Jawab pertanyaan pengguna dalam bahasa Indonesia.
+
+Anda adalah Donara AI.
+
+Pertanyaan pengguna:
+${prompt}
+
+Berikut adalah informasi berita yang ditemukan:
+
+${newsContext}
+
+Gunakan informasi berita tersebut sebagai konteks untuk menjawab pertanyaan pengguna.
+
+Jangan membuat fakta baru yang tidak didukung oleh informasi yang tersedia.
+
+Buat jawaban yang:
+- jelas
+- natural
+- mudah dipahami
+- ringkas tetapi tetap informatif
+
+Jangan menampilkan URL sumber di dalam jawaban karena sumber sudah ditampilkan terpisah di aplikasi.`
+    : `Anda adalah Donara AI, asisten AI yang membantu pengguna dalam bahasa Indonesia.
+
+Jawab pertanyaan pengguna secara natural, jelas, membantu, dan mudah dipahami.
+
+Pertanyaan pengguna:
+${prompt}`;
+
+  let response: Response;
+
+  try {
+    response = await fetch(
+      `${DONARA_AI_SERVER_URL}/chat`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+        }),
+        cache: "no-store",
+      }
+    );
+  } catch (error) {
+    console.error(
+      "DONARA_AI_SERVER_CONNECTION_ERROR:",
+      error
+    );
+
+    throw new Error(
+      "Tidak dapat terhubung ke Donara AI Server. Pastikan FastAPI dan Cloudflare Tunnel sedang berjalan."
+    );
+  }
+
+  const responseText =
+    await response.text();
+
+  let data: DonaraAIResponse;
+
+  try {
+    data = JSON.parse(
+      responseText
+    ) as DonaraAIResponse;
+  } catch {
+    console.error(
+      "DONARA_AI_SERVER_NON_JSON_RESPONSE:",
+      {
+        status: response.status,
+        statusText: response.statusText,
+        responseText,
+      }
+    );
+
+    throw new Error(
+      `Donara AI Server mengembalikan respons yang bukan JSON. Status: ${response.status}. Kemungkinan Cloudflare Tunnel bermasalah atau URL tunnel sudah berubah.`
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      typeof data.detail === "string"
+        ? data.detail
+        : typeof data.error === "string"
+          ? data.error
+          : `Donara AI Server gagal memproses permintaan. Status: ${response.status}`
+    );
+  }
+
+  if (
+    !data ||
+    typeof data.answer !== "string" ||
+    !data.answer.trim()
+  ) {
+    console.error(
+      "DONARA_AI_SERVER_INVALID_RESPONSE:",
+      data
+    );
+
+    throw new Error(
+      "Donara AI Server tidak memberikan jawaban yang valid."
+    );
+  }
+
+  return data.answer.trim();
 }
 
 /* =========================
@@ -328,56 +476,6 @@ function calculateRelevance(
   }
 
   return score;
-}
-
-/* =========================
-   RESPONSE LOKAL
-========================= */
-
-function generateLocalResponse(
-  prompt: string,
-  news: NewsItem[] = []
-): string {
-  const normalized = prompt
-    .toLowerCase()
-    .trim()
-    .replace(/[!?.,]/g, "");
-
-  if (
-    normalized === "halo" ||
-    normalized === "hai" ||
-    normalized === "hi" ||
-    normalized === "hello"
-  ) {
-    return "Halo, ada yang bisa saya bantu?";
-  }
-
-  if (
-    normalized === "apa kabar"
-  ) {
-    return "Baik. Ada yang ingin Anda cari atau ketahui?";
-  }
-
-  if (
-    normalized === "tes" ||
-    normalized === "test"
-  ) {
-    return "Sistem berjalan dengan baik.";
-  }
-
-  if (news.length > 0) {
-    if (news.length === 1) {
-      return `Saya menemukan 1 berita yang relevan dengan pertanyaan Anda. Silakan lihat hasil dan sumber yang tersedia.`;
-    }
-
-    return `Saya menemukan ${news.length} berita yang relevan dengan pertanyaan Anda. Hasil yang paling relevan telah ditampilkan beserta sumbernya.`;
-  }
-
-  if (needsNewsSearch(prompt)) {
-    return "Saya belum menemukan berita yang cukup relevan dengan pencarian tersebut.";
-  }
-
-  return "Saat ini saya dapat membantu mencari informasi dan berita berdasarkan kata kunci. Coba tanyakan berita atau informasi terbaru yang ingin Anda cari.";
 }
 
 /* =========================
@@ -783,20 +881,15 @@ export async function POST(
     }
 
     /* =========================
-       TENTUKAN RESPONSE
+       TENTUKAN MODE + NEWS
     ========================= */
-
-    let answer = "";
 
     let news: NewsItem[] = [];
 
     let mode: "chat" | "news" =
       "chat";
 
-    if (isSimpleGreeting(prompt)) {
-      answer =
-        generateLocalResponse(prompt);
-    } else {
+    if (!isSimpleGreeting(prompt)) {
       const shouldSearchNews =
         needsNewsSearch(prompt);
 
@@ -816,15 +909,19 @@ export async function POST(
 
         mode = "news";
       }
-
-      answer = generateLocalResponse(
-        prompt,
-        news
-      );
     }
 
     /* =========================
-       SIMPAN JAWABAN
+       TANYAKAN KE DONARA AI
+    ========================= */
+
+    const answer = await askDonaraAI(
+      prompt,
+      news
+    );
+
+    /* =========================
+       SIMPAN JAWABAN AI
     ========================= */
 
     const {
@@ -968,6 +1065,39 @@ export async function DELETE(
       );
     }
 
+    /* =========================
+       CEK KEPEMILIKAN CONVERSATION
+    ========================= */
+
+    const {
+      data: conversation,
+      error: conversationError,
+    } = await supabase
+      .from("ai_conversations")
+      .select("id")
+      .eq("id", conversationId)
+      .eq("user_id", user.id)
+      .single();
+
+    if (
+      conversationError ||
+      !conversation
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Percakapan tidak ditemukan atau tidak dapat diakses.",
+        },
+        {
+          status: 404,
+        }
+      );
+    }
+
+    /* =========================
+       HAPUS MESSAGES
+    ========================= */
+
     const {
       error: deleteMessagesError,
     } = await supabase
@@ -983,6 +1113,10 @@ export async function DELETE(
         deleteMessagesError.message
       );
     }
+
+    /* =========================
+       HAPUS CONVERSATION
+    ========================= */
 
     const {
       error: deleteConversationError,
